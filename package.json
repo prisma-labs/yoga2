@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "dev": "graphql-yoga dev"
+    "dev": "yoga",
+    "build": "yoga build",
+    "start": "yoga start"
   },
   "dependencies": {
     "gqliteral": "^0.3.0"
