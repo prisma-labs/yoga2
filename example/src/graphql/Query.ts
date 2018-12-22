@@ -1,4 +1,4 @@
-import { prismaObjectType } from 'yoga'
+import { objectType } from 'nexus'
 
 /*
 type Query {
@@ -7,6 +7,6 @@ type Query {
   brands: [Brand!]!
 }
 */
-export const Query = prismaObjectType('Query', t => {
-  t.prismaFields(['products', 'options', 'brands'])
+export const Query = objectType('Query', t => {
+  t.field('hello', 'String')
 })

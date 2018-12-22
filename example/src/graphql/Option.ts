@@ -1,4 +1,4 @@
-import { prismaObjectType } from 'yoga'
+import { objectType } from 'nexus'
 
 /*
 type Option {
@@ -7,4 +7,6 @@ type Option {
   values(...): [OptionValue!]
 }
 */
-export const Option = prismaObjectType('Option')
+export const Option = objectType('Option', t => {
+  t.string('hello')
+})
