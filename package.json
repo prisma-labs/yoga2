@@ -1,14 +1,10 @@
 {
+  "private": true,
   "scripts": {
-    "dev": "yoga",
-    "build": "yoga build",
-    "start": "yoga start"
+    "build": "cd packages/yoga && yarn build && cd ../yoga-prisma && yarn build"
   },
-  "dependencies": {
-    "gqliteral": "^0.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^10.12.11",
-    "typescript": "^3.2.1"
-  }
+  "workspaces": [
+    "packages/*"
+  ],
+  "license": "MIT"
 }

@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "yoga",
+    "build": "yoga build",
+    "start": "yoga start"
+  },
+  "dependencies": {
+    "gqliteral": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.11",
+    "typescript": "^3.2.1"
+  }
+}
