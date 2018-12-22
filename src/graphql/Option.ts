@@ -1,4 +1,4 @@
-import { prismaObjectType } from 'graphql-yoga'
+import { prismaObjectType } from 'yoga'
 
 /*
 type Option {
