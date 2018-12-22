@@ -5,11 +5,11 @@
 ### Vanilla
 
 ```console
-npm install --save yoga graphql nexus
+npm install --save yoga
 ```
 
 ### With Prisma
 
 ```console
-npm install --save yoga graphql nexus nexus-prisma prisma-client-lib
+npm install --save yoga yoga-prisma
 ```
