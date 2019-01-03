@@ -3,7 +3,7 @@ import { ApolloServer } from 'apollo-server'
 import * as fs from 'fs'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
-import { basename, join } from 'path'
+import { basename, extname, join } from 'path'
 import ts from 'typescript'
 
 interface InputConfig {
@@ -114,8 +114,9 @@ function findFileByExtension(
   files = files || fs.readdirSync(base)
   result = result || []
 
-  files.forEach(function(file) {
-    var newbase = join(base, file)
+  files.forEach(file => {
+    const newbase = join(base, file)
+
     if (fs.statSync(newbase).isDirectory()) {
       result = findFileByExtension(
         newbase,
@@ -124,8 +125,8 @@ function findFileByExtension(
         result,
       )
     } else {
-      if (file.substr(-1 * (ext.length + 1)) == '.' + ext) {
-        result && result.push(newbase)
+      if (extname(file) === ext) {
+        result!.push(newbase)
       }
     }
   })
@@ -137,7 +138,7 @@ async function importGraphqlTypesAndContext(
   contextFile: string | undefined,
   outputDir: string,
 ): Promise<{ types: any[]; context?: any }> {
-  const typesFiles: string[] = findFileByExtension(typesDir, 'ts')
+  const typesFiles: string[] = findFileByExtension(typesDir, '.ts')
   const filesToCompile =
     contextFile === undefined ? typesFiles : [...typesFiles, contextFile]
 
