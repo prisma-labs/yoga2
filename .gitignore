@@ -2,3 +2,4 @@ node_modules
 dist
 .yalc
 yalc.lock
+package-lock.json
