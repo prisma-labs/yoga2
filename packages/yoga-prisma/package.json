@@ -1,0 +1,22 @@
+{
+  "name": "yoga-prisma",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "repository": "https://github.com/prisma/yoga2.git",
+  "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
+  "scripts": {
+    "build": "tsc -d"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "nexus-prisma": "^0.0.12"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  }
+}
