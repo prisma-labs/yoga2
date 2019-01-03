@@ -23,8 +23,8 @@ interface Config {
 }
 
 main({
-  outputSchemaPath: relativePath('./src/generated/nexus.graphql'),
-  outputTypegenPath: relativePath('./src/generated/nexus.ts'),
+  outputSchemaPath: relativeToCwd('./src/generated/nexus.graphql'),
+  outputTypegenPath: relativeToCwd('./src/generated/nexus.ts'),
 })
 
 async function main(inputConfig: InputConfig) {
@@ -58,21 +58,21 @@ async function main(inputConfig: InputConfig) {
 
 function setDefaults(config: InputConfig): Config {
   if (!config.typesPath) {
-    config.typesPath = relativePath('./src/graphql')
+    config.typesPath = relativeToCwd('./src/graphql')
   }
 
   if (!config.contextPath) {
-    config.contextPath = relativePath('./src/context.ts')
+    config.contextPath = relativeToCwd('./src/context.ts')
   }
 
   if (!config.distOutputPath) {
-    config.distOutputPath = relativePath('./dist')
+    config.distOutputPath = relativeToCwd('./dist')
   }
 
   return config as Config
 }
 
-function relativePath(path: string) {
+function relativeToCwd(path: string) {
   return join(process.cwd(), path)
 }
 
