@@ -6,45 +6,53 @@ import { makeSchema } from 'nexus'
 import { basename, extname, join } from 'path'
 import ts from 'typescript'
 
-interface InputConfig {
-  typesPath?: string
+export interface InputConfig {
+  resolversPath?: string
   contextPath?: string
-  distOutputPath?: string
-  outputSchemaPath: string
-  outputTypegenPath: string
+  output: {
+    schemaPath: string
+    typegenPath: string
+    build?: string
+  }
 }
 
 interface Config {
-  typesPath: string
+  resolversPath: string
   contextPath: string
-  distOutputPath: string
-  outputSchemaPath: string
-  outputTypegenPath: string
+  output: {
+    schemaPath: string
+    typegenPath: string
+    build: string
+  }
 }
 
-main({
-  outputSchemaPath: relativeToCwd('./src/generated/nexus.graphql'),
-  outputTypegenPath: relativeToCwd('./src/generated/nexus.ts'),
-})
+main()
 
-async function main(inputConfig: InputConfig) {
-  const config = setDefaults(inputConfig)
+async function main() {
+  const inputConfigPath = relativeToCwd('yoga.config.ts')
 
-  if (!existsSync(config.typesPath)) {
+  if (!existsSync(inputConfigPath)) {
+    throw new Error('Missing yoga.config.ts file')
+  }
+
+  const inputConfig = (await import(inputConfigPath)).default.default
+  const config = normalizeConfig(inputConfig)
+
+  if (!existsSync(config.resolversPath)) {
     throw new Error('Missing /graphql folder')
   }
 
   const { types, context } = await importGraphqlTypesAndContext(
-    config.typesPath,
+    config.resolversPath,
     config.contextPath,
-    config.distOutputPath,
+    config.output.build,
   )
 
   const schema = makeSchema({
     types,
     outputs: {
-      schema: config.outputSchemaPath,
-      typegen: config.outputTypegenPath,
+      schema: config.output.schemaPath,
+      typegen: config.output.typegenPath,
     },
   })
 
@@ -56,17 +64,24 @@ async function main(inputConfig: InputConfig) {
   server.listen().then(({ url }) => console.log(`🚀  Server ready at ${url}`))
 }
 
-function setDefaults(config: InputConfig): Config {
-  if (!config.typesPath) {
-    config.typesPath = relativeToCwd('./src/graphql')
+function normalizeConfig(config: InputConfig): Config {
+  config.output.schemaPath = relativeToCwd(config.output.schemaPath)
+  config.output.typegenPath = relativeToCwd(config.output.typegenPath)
+
+  if (!config.resolversPath) {
+    config.resolversPath = relativeToCwd('./src/graphql')
+  } else {
+    config.resolversPath = relativeToCwd(config.resolversPath)
   }
 
   if (!config.contextPath) {
     config.contextPath = relativeToCwd('./src/context.ts')
+  } else {
+    config.contextPath = relativeToCwd(config.contextPath)
   }
 
-  if (!config.distOutputPath) {
-    config.distOutputPath = relativeToCwd('./dist')
+  if (config.output && !config.output.build) {
+    config.output.build = relativeToCwd('./dist')
   }
 
   return config as Config
