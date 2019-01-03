@@ -5,13 +5,17 @@
     "start": "yoga start"
   },
   "dependencies": {
-    "nexus": "^0.6.2",
-    "yoga": "file:.yalc/yoga"
+    "nexus": "^0.6.2"
   },
   "devDependencies": {
     "@types/node": "^10.12.11",
     "prisma": "^1.23.2",
     "typescript": "^3.2.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
   },
   "license": "MIT"
 }

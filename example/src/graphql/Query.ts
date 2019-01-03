@@ -1,10 +1,8 @@
-import { objectType } from 'nexus'
+import { objectType } from 'yoga'
 
 /*
 type Query {
-  products: [Product!]!
-  options: [Option!]!
-  brands: [Brand!]!
+  hello: String!
 }
 */
 export const Query = objectType('Query', t => {

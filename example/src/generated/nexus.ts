@@ -33,30 +33,16 @@ export type Query_ReturnType = {
   hello: MaybeThunk<MaybePromise<string>>;
 }
 
-export type OptionHelloReturnType = string;
-
-export interface OptionRootType {
-  hello: string;
-}
-
-export type Option_ReturnType = {
-  hello: MaybeThunk<MaybePromise<string>>;
-}
-
 export interface GraphQLNexusGenArgTypes {
 }
 
 export interface GraphQLNexusGenRootTypes {
   Query: QueryRootType;
-  Option: OptionRootType;
 }
 
 export interface GraphQLNexusGenReturnTypes {
   Query: {
     hello: QueryHelloReturnType;
-  };
-  Option: {
-    hello: OptionHelloReturnType;
   };
 }
 
@@ -68,7 +54,6 @@ export interface GraphQLNexusGenTypes {
   enums: {};
   objects: {
     Query: QueryRootType;
-    Option: OptionRootType;
   };
   interfaces: {};
   unions: {};
