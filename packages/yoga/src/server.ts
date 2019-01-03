@@ -32,14 +32,14 @@ async function main() {
   const inputConfigPath = relativeToCwd('yoga.config.ts')
 
   if (!existsSync(inputConfigPath)) {
-    throw new Error('Missing yoga.config.ts file')
+    throw new Error(`Missing yoga.config.ts file in ${inputConfigPath}`)
   }
 
   const inputConfig = (await import(inputConfigPath)).default.default
   const config = normalizeConfig(inputConfig)
 
   if (!existsSync(config.resolversPath)) {
-    throw new Error('Missing /graphql folder')
+    throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
   }
 
   const { types, context } = await importGraphqlTypesAndContext(
