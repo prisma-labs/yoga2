@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { ApolloServer } from 'apollo-server'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
@@ -27,9 +26,7 @@ interface Config {
   }
 }
 
-watch()
-
-export async function watch() {
+export async function watch(): Promise<void> {
   const tsConfigPath = ts.findConfigFile(
     /*searchPath*/ process.cwd(),
     ts.sys.fileExists,
