@@ -152,7 +152,7 @@ async function importGraphqlTypesAndContext(
   typesDir: string,
   contextFile: string | undefined,
   outputDir: string,
-): Promise<{ types: any[]; context?: any }> {
+): Promise<{ types: Record<string, any>; context?: any }> {
   const typesFiles: string[] = findFileByExtension(typesDir, '.ts')
   const filesToCompile =
     contextFile === undefined ? typesFiles : [...typesFiles, contextFile]
@@ -161,7 +161,6 @@ async function importGraphqlTypesAndContext(
     module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ES5,
     outDir: outputDir,
-    noEmitOnError: true,
     lib: [
       'lib.es2015.d.ts',
       'lib.es2017.d.ts',
@@ -201,6 +200,9 @@ async function importGraphqlTypesAndContext(
 
   return {
     context,
-    types,
+    types: types.reduce<Record<string, any>>(
+      (acc, type) => ({ ...acc, ...type }),
+      {},
+    ),
   }
 }
