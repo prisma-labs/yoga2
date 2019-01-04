@@ -2,12 +2,6 @@
 // Slightly modified version
 import ts from 'typescript'
 
-const formatHost: ts.FormatDiagnosticsHost = {
-  getCanonicalFileName: path => path,
-  getCurrentDirectory: ts.sys.getCurrentDirectory,
-  getNewLine: () => ts.sys.newLine,
-}
-
 export function watch(
   configPath: string,
   optionsToExtend: ts.CompilerOptions,
