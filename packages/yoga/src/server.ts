@@ -69,6 +69,7 @@ export async function watch(): Promise<void> {
     noUnusedLocals: false,
     noUnusedParameters: false,
     noEmitOnError: false,
+    sourceMap: false,
   }
 
   let oldServer: ApolloServer | null = null
