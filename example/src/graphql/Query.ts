@@ -1,4 +1,4 @@
-import { objectType, stringArg, idArg } from 'yoga'
+import { objectType, stringArg } from 'yoga'
 
 /*
 type Query {
@@ -13,6 +13,7 @@ export const Query = objectType('Query', t => {
     },
     resolve: (root, { name }) => `Hello ${name}`,
   })
+  
   t.field('user', 'User', {
     args: {
       name: stringArg(),
