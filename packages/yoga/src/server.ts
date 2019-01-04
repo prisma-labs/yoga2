@@ -36,6 +36,11 @@ export interface Config {
   }
 }
 
+/**
+ * - Read config files
+ * - Dynamically import and compile GraphQL types
+ * - Run a GraphQL Server based on these types
+ */
 export async function watch(): Promise<void> {
   const tsConfigPath = ts.findConfigFile(
     /*searchPath*/ process.cwd(),
@@ -80,6 +85,7 @@ export async function watch(): Promise<void> {
       config.contextPath,
       config.output.buildPath,
     )
+
     const schema = makeSchema({
       types,
       outputs: {
@@ -107,11 +113,11 @@ export async function watch(): Promise<void> {
   })
 }
 
+/**
+ * - Compute paths relative to the root of the project
+ * - Set defaults if some options are missing
+ */
 function normalizeConfig(rootPath: string, config: InputConfig): Config {
-  if (!config.output) {
-    config.output = {}
-  }
-
   if (config.resolversPath) {
     config.resolversPath = relativeToRootPath(rootPath, config.resolversPath)
   } else {
@@ -122,6 +128,10 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.contextPath = relativeToRootPath(rootPath, config.contextPath)
   } else {
     config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
+  }
+
+  if (!config.output) {
+    config.output = {}
   }
 
   if (config.output.typegenPath) {
@@ -148,19 +158,28 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     )
   }
 
-  if (!config.output.buildPath) {
+  if (config.output.buildPath) {
+    config.output.buildPath = relativeToRootPath(
+      rootPath,
+      config.output.buildPath,
+    )
+  } else {
     config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
   return config as Config
 }
 
+/**
+ * Dynamically import GraphQL types from the ./src/graphql folder
+ * and also from the context file
+ */
 async function importGraphqlTypesAndContext(
-  typesDir: string,
+  resolversPath: string,
   contextFile: string | undefined,
   outputDir: string,
 ): Promise<{ types: Record<string, any>; context?: any }> {
-  const transpiledFiles = findFileByExtension(typesDir, '.ts').map(file =>
+  const transpiledFiles = findFileByExtension(resolversPath, '.ts').map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
   )
   let context = undefined
