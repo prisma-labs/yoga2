@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { ApolloServer } from 'apollo-server'
-import * as fs from 'fs'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
-import { basename, dirname, extname, join } from 'path'
+import { basename, dirname, join } from 'path'
 import ts, { CompilerOptions } from 'typescript'
-import { watch } from './compiler'
+import { watch as watchFiles } from './compiler'
+import { findFileByExtension, relativeToRootPath } from './helpers'
 
 export interface InputConfig {
   resolversPath?: string
@@ -27,9 +27,9 @@ interface Config {
   }
 }
 
-main()
+watch()
 
-async function main() {
+export async function watch() {
   const tsConfigPath = ts.findConfigFile(
     /*searchPath*/ process.cwd(),
     ts.sys.fileExists,
@@ -65,9 +65,8 @@ async function main() {
   }
 
   let oldServer: ApolloServer | null = null
-  let oldSchema: string | null = null
 
-  watch(tsConfigPath, compilerOptions, async () => {
+  watchFiles(tsConfigPath, compilerOptions, async () => {
     const { types, context } = await importGraphqlTypesAndContext(
       config.resolversPath,
       config.contextPath,
@@ -130,38 +129,6 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
   return config as Config
 }
 
-function relativeToRootPath(rootPath: string, path: string) {
-  return join(rootPath, path)
-}
-
-function findFileByExtension(
-  base: string,
-  ext: string,
-  files?: string[],
-  result?: string[],
-) {
-  files = files || fs.readdirSync(base)
-  result = result || []
-
-  files.forEach(file => {
-    const newbase = join(base, file)
-
-    if (fs.statSync(newbase).isDirectory()) {
-      result = findFileByExtension(
-        newbase,
-        ext,
-        fs.readdirSync(newbase),
-        result,
-      )
-    } else {
-      if (extname(file) === ext) {
-        result!.push(newbase)
-      }
-    }
-  })
-  return result
-}
-
 async function importGraphqlTypesAndContext(
   typesDir: string,
   contextFile: string | undefined,
@@ -170,7 +137,6 @@ async function importGraphqlTypesAndContext(
   const transpiledTypes = findFileByExtension(typesDir, '.ts').map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
   )
-  const queryFile = join(outputDir, 'graphql', `Query.js`)
   let context = undefined
 
   if (contextFile !== undefined) {
@@ -191,6 +157,13 @@ async function importGraphqlTypesAndContext(
       throw new Error('Context must be a default exported function')
     }
   }
+
+  // Invalidate import cache
+  transpiledTypes.forEach(id => {
+    if (require.cache[id]) {
+      delete require.cache[id]
+    }
+  })
 
   const types = await Promise.all(transpiledTypes.map(file => import(file)))
 
