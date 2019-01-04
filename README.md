@@ -142,3 +142,31 @@ Options:
 ```
 
 `yoga dev` will run a GraphQL server in watch mode, updating your server whenever a file change.
+
+## Contributing
+
+As no `yoga` package is published yet, here are the few steps to setup yoga locally and contribute
+
+```bash
+cd ./packages/yoga
+```
+
+Then link globally `yoga`
+
+```bash
+npm link
+```
+
+Then move onto the `./example` folder at the root of the repository (the example is used to test `yoga` locally)
+
+```bash
+cd ../../example
+```
+
+And run `yoga`
+
+```
+yoga
+```
+
+The server should start. You're ready to help 🙏
