@@ -8,5 +8,4 @@ type User {
 */
 export const User = objectType('User', t => {
   t.string('name')
-  t.string('firstname')
 })
