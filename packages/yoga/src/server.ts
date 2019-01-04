@@ -53,12 +53,13 @@ async function main() {
   const yogaConfig = (await import(yogaConfigPath)).default.default
   const config = normalizeConfig(rootPath, yogaConfig)
 
+  if (!existsSync(config.resolversPath)) {
+    throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
+  }
+
   let oldServer: ApolloServer | null = null
 
   watchMain(tsConfigPath, async () => {
-    if (!existsSync(config.resolversPath)) {
-      throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
-    }
     const { types, context } = await importGraphqlTypesAndContext(
       config.resolversPath,
       config.contextPath,
