@@ -122,10 +122,6 @@ function relativeToRootPath(rootPath: string, path: string) {
   return join(rootPath, path)
 }
 
-function relativeToCwd(path: string) {
-  return join(process.cwd(), path)
-}
-
 function findFileByExtension(
   base: string,
   ext: string,
