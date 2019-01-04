@@ -32,3 +32,11 @@ export function findFileByExtension(
 export function relativeToRootPath(rootPath: string, path: string) {
   return join(rootPath, path)
 }
+
+export function invalidateImportCache(files: string[]) {
+  files.forEach(id => {
+    if (require.cache[id]) {
+      delete require.cache[id]
+    }
+  })
+}

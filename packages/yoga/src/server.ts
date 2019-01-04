@@ -4,7 +4,11 @@ import { makeSchema } from 'nexus'
 import { basename, dirname, join } from 'path'
 import ts, { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
-import { findFileByExtension, relativeToRootPath } from './helpers'
+import {
+  findFileByExtension,
+  relativeToRootPath,
+  invalidateImportCache,
+} from './helpers'
 
 export interface InputConfig {
   resolversPath?: string
@@ -12,7 +16,7 @@ export interface InputConfig {
   output: {
     schemaPath: string
     typegenPath: string
-    build?: string
+    buildPath?: string
   }
 }
 
@@ -69,7 +73,6 @@ export async function watch(): Promise<void> {
       config.contextPath,
       config.output.build,
     )
-
     const schema = makeSchema({
       types,
       outputs: {
@@ -119,8 +122,8 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
   }
 
-  if (config.output && !config.output.build) {
-    config.output.build = relativeToRootPath(rootPath, './dist')
+  if (config.output && !config.output.buildPath) {
+    config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
   return config as Config
@@ -131,7 +134,7 @@ async function importGraphqlTypesAndContext(
   contextFile: string | undefined,
   outputDir: string,
 ): Promise<{ types: Record<string, any>; context?: any }> {
-  const transpiledTypes = findFileByExtension(typesDir, '.ts').map(file =>
+  const transpiledFiles = findFileByExtension(typesDir, '.ts').map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
   )
   let context = undefined
@@ -155,20 +158,12 @@ async function importGraphqlTypesAndContext(
     }
   }
 
-  // Invalidate import cache
-  transpiledTypes.forEach(id => {
-    if (require.cache[id]) {
-      delete require.cache[id]
-    }
-  })
+  invalidateImportCache(transpiledFiles)
 
-  const types = await Promise.all(transpiledTypes.map(file => import(file)))
+  const types = await Promise.all(transpiledFiles.map(file => import(file)))
 
   return {
     context,
-    types: types.reduce<Record<string, any>>(
-      (acc, type) => ({ ...acc, ...type }),
-      {},
-    ),
+    types: types.reduce((a, b) => ({ ...a, ...b }), {}),
   }
 }
