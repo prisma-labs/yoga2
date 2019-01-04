@@ -7,6 +7,9 @@
   "scripts": {
     "build": "tsc -d"
   },
+  "bin": {
+    "nexus-codegen": "./node_modules/.bin/nexus-codegen"
+  },
   "license": "MIT",
   "dependencies": {
     "nexus-prisma": "^0.0.12"
