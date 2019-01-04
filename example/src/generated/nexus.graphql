@@ -2,10 +2,11 @@
 ### Do not make changes to this file directly
 
 type Query {
-  hello: String!
+  hello(name: String): String!
   user: User!
 }
 
 type User {
+  firstname: String!
   name: String!
 }
