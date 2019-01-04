@@ -2,8 +2,8 @@ import { objectType, stringArg } from 'yoga'
 
 /*
 type Query {
-  hello: String!
-  user: User!
+  hello(name: String!): String!
+  user(name: String!): User!
 }
 */
 export const Query = objectType('Query', t => {
