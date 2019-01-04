@@ -11,11 +11,17 @@ import {
 } from './helpers'
 
 export interface InputConfig {
+  /** Path to the directory where your resolvers are defined */
   resolversPath?: string
+  /** Path to your context.ts file */
   contextPath?: string
+  /** Object containing all the properties for the outputted files */
   output?: {
+    /** Path to the generated schema */
     schemaPath?: string
+    /** Path to the generated typings */
     typegenPath?: string
+    /** Path to the directory where the GraphQL server will be compiled */
     buildPath?: string
   }
 }
@@ -52,7 +58,7 @@ export async function watch(): Promise<void> {
   }
 
   const rootPath = dirname(tsConfigPath)
-  const yogaConfig = (await import(yogaConfigPath)).default.default
+  const yogaConfig: InputConfig = (await import(yogaConfigPath)).default.default
   const config = normalizeConfig(rootPath, yogaConfig)
 
   if (!existsSync(config.resolversPath)) {
