@@ -3,8 +3,9 @@ import { ApolloServer } from 'apollo-server'
 import * as fs from 'fs'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
-import { basename, extname, join } from 'path'
+import { basename, extname, join, dirname } from 'path'
 import ts from 'typescript'
+import { watchMain } from './compiler'
 
 export interface InputConfig {
   resolversPath?: string
@@ -29,95 +30,99 @@ interface Config {
 main()
 
 async function main() {
-  const inputConfigPath = relativeToCwd('yoga.config.ts')
-
-  if (!existsSync(inputConfigPath)) {
-    throw new Error(`Missing yoga.config.ts file in ${inputConfigPath}`)
-  }
-
-  const inputConfig = (await import(inputConfigPath)).default.default
-  const config = normalizeConfig(inputConfig)
-
-  if (!existsSync(config.resolversPath)) {
-    throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
-  }
-
-  const { types, context } = await importGraphqlTypesAndContext(
-    config.resolversPath,
-    config.contextPath,
-    config.output.build,
+  const tsConfigPath = ts.findConfigFile(
+    /*searchPath*/ process.cwd(),
+    ts.sys.fileExists,
+    'tsconfig.json',
   )
 
-  const schema = makeSchema({
-    types,
-    outputs: {
-      schema: config.output.schemaPath,
-      typegen: config.output.typegenPath,
-    },
-  })
+  if (!tsConfigPath) {
+    throw new Error("Could not find a valid 'tsconfig.json'.")
+  }
 
-  const server = new ApolloServer({
-    schema,
-    context,
-  })
+  const rootPath = dirname(tsConfigPath)
+  const yogaConfigPath = ts.findConfigFile(
+    /*searchPath*/ rootPath,
+    ts.sys.fileExists,
+    'yoga.config.ts',
+  )
+  if (!yogaConfigPath) {
+    throw new Error("Could not find a valid 'tsconfig.json'.")
+  }
 
-  server.listen().then(({ url }) => console.log(`🚀  Server ready at ${url}`))
+  const yogaConfig = (await import(yogaConfigPath)).default.default
+  const config = normalizeConfig(rootPath, yogaConfig)
+
+  let oldServer: ApolloServer | null = null
+
+  watchMain(tsConfigPath, async () => {
+    if (!existsSync(config.resolversPath)) {
+      throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
+    }
+    const { types, context } = await importGraphqlTypesAndContext(
+      config.resolversPath,
+      config.contextPath,
+      config.output.build,
+    )
+
+    const schema = makeSchema({
+      types,
+      outputs: {
+        schema: config.output.schemaPath,
+        typegen: config.output.typegenPath,
+      },
+    })
+
+    const server = new ApolloServer({
+      schema,
+      context,
+    })
+
+    if (oldServer) {
+      oldServer.stop()
+    }
+
+    oldServer = server
+
+    server.listen().then(({ url }) => console.log(`🚀  Server ready at ${url}`))
+  })
 }
 
-function normalizeConfig(config: InputConfig): Config {
-  config.output.schemaPath = relativeToCwd(config.output.schemaPath)
-  config.output.typegenPath = relativeToCwd(config.output.typegenPath)
+function normalizeConfig(rootPath: string, config: InputConfig): Config {
+  config.output.schemaPath = relativeToRootPath(
+    rootPath,
+    config.output.schemaPath,
+  )
+  config.output.typegenPath = relativeToRootPath(
+    rootPath,
+    config.output.typegenPath,
+  )
 
   if (!config.resolversPath) {
-    config.resolversPath = relativeToCwd('./src/graphql')
+    config.resolversPath = relativeToRootPath(rootPath, './src/graphql')
   } else {
-    config.resolversPath = relativeToCwd(config.resolversPath)
+    config.resolversPath = relativeToRootPath(rootPath, config.resolversPath)
   }
 
   if (!config.contextPath) {
-    config.contextPath = relativeToCwd('./src/context.ts')
+    config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
   } else {
-    config.contextPath = relativeToCwd(config.contextPath)
+    config.contextPath = relativeToRootPath(rootPath, config.contextPath)
   }
 
   if (config.output && !config.output.build) {
-    config.output.build = relativeToCwd('./dist')
+    config.output.build = relativeToRootPath(rootPath, './dist')
   }
 
   return config as Config
 }
 
-function relativeToCwd(path: string) {
-  return join(process.cwd(), path)
+function relativeToRootPath(rootPath: string, path: string) {
+  return join(rootPath, path)
 }
 
-function compile(fileNames: string[], options: ts.CompilerOptions): void {
-  let program = ts.createProgram(fileNames, options)
-  let emitResult = program.emit()
-
-  let allDiagnostics = ts
-    .getPreEmitDiagnostics(program)
-    .concat(emitResult.diagnostics)
-
-  allDiagnostics.forEach(diagnostic => {
-    if (diagnostic.file) {
-      let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
-        diagnostic.start!,
-      )
-      let message = ts.flattenDiagnosticMessageText(
-        diagnostic.messageText,
-        '\n',
-      )
-      console.log(
-        `${diagnostic.file.fileName} (${line + 1},${character +
-          1}): ${message}`,
-      )
-    } else {
-      console.log(
-        `${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`,
-      )
-    }
-  })
+function relativeToCwd(path: string) {
+  return join(process.cwd(), path)
 }
 
 function findFileByExtension(
@@ -154,22 +159,6 @@ async function importGraphqlTypesAndContext(
   outputDir: string,
 ): Promise<{ types: Record<string, any>; context?: any }> {
   const typesFiles: string[] = findFileByExtension(typesDir, '.ts')
-  const filesToCompile =
-    contextFile === undefined ? typesFiles : [...typesFiles, contextFile]
-
-  compile(filesToCompile, {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES5,
-    outDir: outputDir,
-    lib: [
-      'lib.es2015.d.ts',
-      'lib.es2017.d.ts',
-      'lib.esnext.d.ts',
-      'lib.esnext.asynciterable.d.ts',
-    ],
-    skipLibCheck: true,
-    sourceMap: false,
-  })
 
   const transpiledTypes = typesFiles.map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
