@@ -3,4 +3,9 @@
 
 type Query {
   hello: String!
+  user: User!
+}
+
+type User {
+  name: String!
 }

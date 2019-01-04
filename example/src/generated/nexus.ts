@@ -25,12 +25,26 @@ export type MaybeThunkArgs<T, A> = T | ((args?: A) => T);
 
 export type QueryHelloReturnType = string;
 
+export type QueryUserReturnType = User_ReturnType;
+
 export interface QueryRootType {
   hello: string;
+  user: any;
 }
 
 export type Query_ReturnType = {
   hello: MaybeThunk<MaybePromise<string>>;
+  user: MaybeThunk<MaybePromise<any>>;
+}
+
+export type UserNameReturnType = string;
+
+export interface UserRootType {
+  name: string;
+}
+
+export type User_ReturnType = {
+  name: MaybeThunk<MaybePromise<string>>;
 }
 
 export interface GraphQLNexusGenArgTypes {
@@ -38,11 +52,16 @@ export interface GraphQLNexusGenArgTypes {
 
 export interface GraphQLNexusGenRootTypes {
   Query: QueryRootType;
+  User: UserRootType;
 }
 
 export interface GraphQLNexusGenReturnTypes {
   Query: {
     hello: QueryHelloReturnType;
+    user: QueryUserReturnType;
+  };
+  User: {
+    name: UserNameReturnType;
   };
 }
 
@@ -54,6 +73,7 @@ export interface GraphQLNexusGenTypes {
   enums: {};
   objects: {
     Query: QueryRootType;
+    User: UserRootType;
   };
   interfaces: {};
   unions: {};

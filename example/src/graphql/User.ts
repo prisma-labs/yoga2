@@ -1,10 +1,11 @@
 import { objectType } from 'yoga'
 
 /*
-type Query {
-  hello: String!
+type User {
+  id: ID!
+  name: String!
 }
 */
-const User = objectType('User', t => {
-  t.field('name', 'String')
+export const User = objectType('User', t => {
+  t.string('name')
 })
