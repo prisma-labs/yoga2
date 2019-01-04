@@ -5,7 +5,7 @@ import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
 import { basename, extname, join, dirname } from 'path'
 import ts from 'typescript'
-import { watchMain } from './compiler'
+import { watchMain as watch } from './compiler'
 
 export interface InputConfig {
   resolversPath?: string
@@ -59,7 +59,7 @@ async function main() {
 
   let oldServer: ApolloServer | null = null
 
-  watchMain(tsConfigPath, async () => {
+  watch(tsConfigPath, async () => {
     const { types, context } = await importGraphqlTypesAndContext(
       config.resolversPath,
       config.contextPath,
