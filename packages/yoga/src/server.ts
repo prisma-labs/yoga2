@@ -3,9 +3,9 @@ import { ApolloServer } from 'apollo-server'
 import * as fs from 'fs'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
-import { basename, extname, join, dirname } from 'path'
-import ts from 'typescript'
-import { watchMain as watch } from './compiler'
+import { basename, dirname, extname, join } from 'path'
+import ts, { CompilerOptions } from 'typescript'
+import { watch } from './compiler'
 
 export interface InputConfig {
   resolversPath?: string
@@ -40,16 +40,17 @@ async function main() {
     throw new Error("Could not find a valid 'tsconfig.json'.")
   }
 
-  const rootPath = dirname(tsConfigPath)
   const yogaConfigPath = ts.findConfigFile(
-    /*searchPath*/ rootPath,
+    /*searchPath*/ process.cwd(),
     ts.sys.fileExists,
     'yoga.config.ts',
   )
+
   if (!yogaConfigPath) {
-    throw new Error("Could not find a valid 'tsconfig.json'.")
+    throw new Error("Could not find a valid 'yoga.config.ts'.")
   }
 
+  const rootPath = dirname(tsConfigPath)
   const yogaConfig = (await import(yogaConfigPath)).default.default
   const config = normalizeConfig(rootPath, yogaConfig)
 
@@ -57,9 +58,16 @@ async function main() {
     throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
   }
 
-  let oldServer: ApolloServer | null = null
+  const compilerOptions: CompilerOptions = {
+    noUnusedLocals: false,
+    noUnusedParameters: false,
+    noEmitOnError: false,
+  }
 
-  watch(tsConfigPath, async () => {
+  let oldServer: ApolloServer | null = null
+  let oldSchema: string | null = null
+
+  watch(tsConfigPath, compilerOptions, async () => {
     const { types, context } = await importGraphqlTypesAndContext(
       config.resolversPath,
       config.contextPath,
@@ -72,16 +80,20 @@ async function main() {
         schema: config.output.schemaPath,
         typegen: config.output.typegenPath,
       },
-    })
-
-    const server = new ApolloServer({
-      schema,
-      context,
+      nullability: {
+        input: false,
+        inputList: false,
+      },
     })
 
     if (oldServer) {
       oldServer.stop()
     }
+
+    const server = new ApolloServer({
+      schema,
+      context,
+    })
 
     oldServer = server
 
@@ -99,16 +111,16 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.output.typegenPath,
   )
 
-  if (!config.resolversPath) {
-    config.resolversPath = relativeToRootPath(rootPath, './src/graphql')
-  } else {
+  if (config.resolversPath) {
     config.resolversPath = relativeToRootPath(rootPath, config.resolversPath)
+  } else {
+    config.resolversPath = relativeToRootPath(rootPath, './src/graphql')
   }
 
-  if (!config.contextPath) {
-    config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
-  } else {
+  if (config.contextPath) {
     config.contextPath = relativeToRootPath(rootPath, config.contextPath)
+  } else {
+    config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
   }
 
   if (config.output && !config.output.build) {
@@ -155,17 +167,15 @@ async function importGraphqlTypesAndContext(
   contextFile: string | undefined,
   outputDir: string,
 ): Promise<{ types: Record<string, any>; context?: any }> {
-  const typesFiles: string[] = findFileByExtension(typesDir, '.ts')
-
-  const transpiledTypes = typesFiles.map(file =>
+  const transpiledTypes = findFileByExtension(typesDir, '.ts').map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
   )
-
+  const queryFile = join(outputDir, 'graphql', `Query.js`)
   let context = undefined
 
   if (contextFile !== undefined) {
     if (!existsSync(contextFile)) {
-      throw new Error('')
+      throw new Error("Could not find a valid 'context.ts' file")
     }
 
     const transpiledContextPath = join(

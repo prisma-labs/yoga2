@@ -1,4 +1,6 @@
-import ts = require('typescript')
+// https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#writing-an-incremental-program-watcher
+// Slightly modified version
+import ts from 'typescript'
 
 const formatHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: path => path,
@@ -6,10 +8,14 @@ const formatHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
 }
 
-export function watchMain(configPath: string, callback: () => void) {
+export function watch(
+  configPath: string,
+  optionsToExtend: ts.CompilerOptions,
+  callback: () => void,
+) {
   // TypeScript can use several different program creation "strategies":
   //  * ts.createEmitAndSemanticDiagnosticsBuilderProgram,
-  //  * ts.createSemanticDiagnosticsBuilderProgram
+  //  * ts.createSemanticDiagnosticsBuilderProgram,
   //  * ts.createAbstractBuilder
   // The first two produce "builder programs". These use an incremental strategy
   // to only re-check and emit files whose contents may have changed, or whose
@@ -27,12 +33,14 @@ export function watchMain(configPath: string, callback: () => void) {
   // a set of root files.
   const host = ts.createWatchCompilerHost(
     configPath,
-    {},
+    optionsToExtend,
     ts.sys,
     createProgram,
     reportDiagnostic,
-    reportWatchStatusChanged,
+    () => {},
   )
+
+  let firstStart = true
 
   // You can technically override any given hook on the host, though you probably
   // don't need to.
@@ -45,7 +53,12 @@ export function watchMain(configPath: string, callback: () => void) {
     host,
     oldProgram,
   ) => {
-    console.log('** Restarting ... **')
+    if (firstStart) {
+      console.log('** Starting ... **')
+      firstStart = false
+    } else {
+      console.log('** Restarting ... **')
+    }
     return origCreateProgram(rootNames, options, host, oldProgram)
   }
   const origPostProgramCreate = host.afterProgramCreate
@@ -62,21 +75,18 @@ export function watchMain(configPath: string, callback: () => void) {
 }
 
 function reportDiagnostic(diagnostic: ts.Diagnostic) {
-  console.error(
-    'Error',
-    diagnostic.code,
-    ':',
-    ts.flattenDiagnosticMessageText(
-      diagnostic.messageText,
-      formatHost.getNewLine(),
-    ),
-  )
-}
-
-/**
- * Prints a diagnostic every time the watch status changes.
- * This is mainly for messages like "Starting compilation" or "Compilation completed".
- */
-function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
-  console.info(ts.formatDiagnostic(diagnostic, formatHost))
+  if (diagnostic.file) {
+    let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
+      diagnostic.start!,
+    )
+    let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+    console.error(
+      `${diagnostic.file.fileName} (${line + 1},${character +
+        1}):\n ${message}`,
+    )
+  } else {
+    console.error(
+      `${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}`,
+    )
+  }
 }
