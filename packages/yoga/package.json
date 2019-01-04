@@ -1,0 +1,35 @@
+{
+  "name": "yoga",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "repository": "https://github.com/prisma/yoga2.git",
+  "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
+  "license": "MIT",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "tsc --declaration",
+    "watch": "tsc -w"
+  },
+  "bin": {
+    "yoga": "dist/cli.js"
+  },
+  "dependencies": {
+    "apollo-server": "^2.3.1",
+    "graphql": "^14.0.2",
+    "nexus": "^0.6.2",
+    "yargs": "^12.0.5"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.3",
+    "@types/node": "^10.12.18",
+    "@types/yargs": "^12.0.5",
+    "prettier": "^1.15.3",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.2"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  }
+}
