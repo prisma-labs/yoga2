@@ -13,20 +13,20 @@ import {
 export interface InputConfig {
   resolversPath?: string
   contextPath?: string
-  output: {
-    schemaPath: string
-    typegenPath: string
+  output?: {
+    schemaPath?: string
+    typegenPath?: string
     buildPath?: string
   }
 }
 
-interface Config {
+export interface Config {
   resolversPath: string
   contextPath: string
   output: {
     schemaPath: string
     typegenPath: string
-    build: string
+    buildPath: string
   }
 }
 
@@ -71,7 +71,7 @@ export async function watch(): Promise<void> {
     const { types, context } = await importGraphqlTypesAndContext(
       config.resolversPath,
       config.contextPath,
-      config.output.build,
+      config.output.buildPath,
     )
     const schema = makeSchema({
       types,
@@ -101,14 +101,9 @@ export async function watch(): Promise<void> {
 }
 
 function normalizeConfig(rootPath: string, config: InputConfig): Config {
-  config.output.schemaPath = relativeToRootPath(
-    rootPath,
-    config.output.schemaPath,
-  )
-  config.output.typegenPath = relativeToRootPath(
-    rootPath,
-    config.output.typegenPath,
-  )
+  if (!config.output) {
+    config.output = {}
+  }
 
   if (config.resolversPath) {
     config.resolversPath = relativeToRootPath(rootPath, config.resolversPath)
@@ -122,7 +117,31 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
   }
 
-  if (config.output && !config.output.buildPath) {
+  if (config.output.typegenPath) {
+    config.output.typegenPath = relativeToRootPath(
+      rootPath,
+      config.output.typegenPath,
+    )
+  } else {
+    config.output.typegenPath = relativeToRootPath(
+      rootPath,
+      './src/generated/nexus.ts',
+    )
+  }
+
+  if (config.output.schemaPath) {
+    config.output.schemaPath = relativeToRootPath(
+      rootPath,
+      config.output.schemaPath,
+    )
+  } else {
+    config.output.schemaPath = relativeToRootPath(
+      rootPath,
+      './src/generated/nexus.graphql',
+    )
+  }
+
+  if (!config.output.buildPath) {
     config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
