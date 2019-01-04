@@ -1,6 +1,6 @@
 # Yoga
 
-A lightweight Ruby-on-Rails like framework for GraphQL
+A lightweight 'Ruby on Rails'-like framework for GraphQL
 
 > Note: This project is still very WIP
 
@@ -46,7 +46,7 @@ yarn start
 
 _Note: `yarn create` requires yarn version >= 0.25_
 
-You're ready to start 🙌
+That's it, you're ready to start 🙌
 
 ### Add to existing project
 
@@ -69,12 +69,18 @@ and add a script to your package.json like this:
 ```json
 {
   "scripts": {
-    "start": "yoga start"
+    "dev": "yoga dev"
   }
 }
 ```
 
-You're ready to start 🙌
+You can now run
+
+```bash
+npm run dev
+```
+
+That's it, you're ready to start 🙌
 
 ## Usage
 
@@ -128,11 +134,11 @@ export default () => ({ something });
 Usage: yoga [cmd] (start/build/dev)
 
 Commands:
-  yoga start  Start the server
+  yoga dev  Start the server in dev mode
 
 Options:
   --help         Show help
   -v, --version  Show version number
 ```
 
-`yoga start` will run a GraphQL server in watch mode, updating your server whenever a file changes.
+`yoga dev` will run a GraphQL server in watch mode, updating your server whenever a file change.
