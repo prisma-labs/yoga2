@@ -5,6 +5,7 @@
     "start": "yoga start"
   },
   "dependencies": {
+    "yoga": "0.0.0",
     "nexus": "^0.6.2"
   },
   "devDependencies": {

@@ -1,10 +1,14 @@
 {
   "private": true,
   "scripts": {
-    "build": "cd packages/yoga && yarn build && cd ../yoga-prisma && yarn build"
+    "bootstrap": "lerna bootstrap"
   },
   "workspaces": [
     "packages/*"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "lerna": "^3.8.4"
+  },
+  "name": "yoga2"
 }
