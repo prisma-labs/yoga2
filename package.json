@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap"
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna exec -- npm run build"
   },
   "workspaces": [
     "packages/*"
