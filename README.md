@@ -8,6 +8,7 @@ A lightweight 'Ruby on Rails'-like framework for GraphQL
 
 - Type-safe
 - Zero-config
+- Scalable
 - Conventions over configuration
 - Resolver-first GraphQL
 - Batteries included (DB, Auth, rate limiting, ...)
