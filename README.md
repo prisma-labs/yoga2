@@ -156,7 +156,7 @@ npm run bootstrap
 Move onto the `./example` folder at the root of the repository (the example is used to test `yoga` locally)
 
 ```bash
-cd ../../example
+cd ./example
 ```
 
 And run `yoga`
