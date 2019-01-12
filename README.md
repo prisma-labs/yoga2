@@ -162,7 +162,7 @@ cd ./example
 And run `yoga`
 
 ```
-yoga
+npm run yoga
 ```
 
 The server should start. You're ready to help 🙏
