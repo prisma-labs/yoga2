@@ -5,9 +5,12 @@
     "start": "yoga start"
   },
   "dependencies": {
-    "nexus": "^0.6.2"
+    "nexus": "^0.6.2",
+    "yoga": "0.0.0"
   },
   "devDependencies": {
+    "@types/graphql": "^14.0.4",
+    "@types/ws": "^6.0.1",
     "@types/node": "^10.12.11",
     "prisma": "^1.23.2",
     "typescript": "^3.2.1"

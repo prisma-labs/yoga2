@@ -146,19 +146,14 @@ Options:
 
 ## Contributing
 
-As no `yoga` package is published yet, here are the few steps to setup yoga locally and contribute
+Install dependencies
 
 ```bash
-cd ./packages/yoga
+npm install
+npm run bootstrap
 ```
 
-Then link globally `yoga`
-
-```bash
-npm link
-```
-
-Then move onto the `./example` folder at the root of the repository (the example is used to test `yoga` locally)
+Move onto the `./example` folder at the root of the repository (the example is used to test `yoga` locally)
 
 ```bash
 cd ../../example
