@@ -28,7 +28,7 @@ export interface InputConfig {
 
 export interface Config {
   resolversPath: string
-  contextPath: string
+  contextPath?: string
   output: {
     schemaPath: string
     typegenPath: string
@@ -124,10 +124,14 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.resolversPath = relativeToRootPath(rootPath, './src/graphql')
   }
 
+  // Context path is optional and should remain undefined if none is provided or if the default path doesn't exist
   if (config.contextPath) {
     config.contextPath = relativeToRootPath(rootPath, config.contextPath)
   } else {
-    config.contextPath = relativeToRootPath(rootPath, './src/context.ts')
+    const contextPath = relativeToRootPath(rootPath, './src/context.ts')
+    if (existsSync(contextPath)) {
+      config.contextPath = contextPath
+    }
   }
 
   if (!config.output) {
