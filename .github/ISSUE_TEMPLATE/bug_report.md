@@ -22,9 +22,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Versions (please complete the following information):**
  - OS: [e.g. `Windows 10`, `OS X High Sierra`, `Ubuntu 16.04`] 
- - `prisma` CLI: [e.g. `prisma/1.9.0 (darwin-x64) node-v10.4.0`]
- - Prisma Server: [e.g. `1.9.0`]
- - `graphql-cli`, `prisma-binding`, etc. if applicable
+ - `yoga` CLI: [e.g. `yoga/0.0.1 (darwin-x64) node-v10.4.0`]
 
 **Additional context**
 Add any other context about the problem here.

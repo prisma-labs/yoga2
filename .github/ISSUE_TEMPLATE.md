@@ -1,4 +1,4 @@
-**Please post usage questions or broader discussions in the [Slack collab-yoga2 channel](https://prisma.slack.com/messages/CF62PPR29)**.
+**Please post usage questions or broader discussions in the [Slack channel](https://prisma.slack.com/messages/CF62PPR29)**.
 
 ---
 
