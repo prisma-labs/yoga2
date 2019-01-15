@@ -34,10 +34,6 @@ Thanks to _opinionated conventions_, Yoga offers built-in integration tools to b
 - Easily **handle authentication and permissions**
 - **Bootstrap** a customised, fully ready-to-use GraphQL server based on a datamodel
 
-## Motivation
-
-TBD
-
 ## Get started
 
 ### Start from scratch
