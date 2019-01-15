@@ -4,6 +4,13 @@ A lightweight 'Ruby on Rails'-like framework for GraphQL
 
 > Note: This project is still very WIP
 
+## What is Yoga?
+
+Yoga is a GraphQL framework built with _conventions over configurations_ in mind.
+Its goal is to help you get setup as quick as possible and to boost your daily productivity while allowing you to eject at any moment so that you're not locked when more flexibility is needed.
+
+We take care of the boilerplate, you focus on the business logic.
+
 ## Features
 
 - Type-safe
@@ -13,6 +20,19 @@ A lightweight 'Ruby on Rails'-like framework for GraphQL
 - Resolver-first GraphQL
 - Batteries included (DB, Auth, rate limiting, ...)
 - Deploy anywhere
+
+### What sort of abstraction does Yoga provide ?
+
+Yoga is shipped with several technologies embedded such as a **GraphQL server**, a **database** to persist your data, and a **[library](https://graphql-nexus.com/)** to easily maintain and scale your server.
+
+Thanks to _opinionated conventions_, Yoga offers built-in integration tools to better your daily workflows when crafting your GraphQL server:
+
+- Speed-up your productivity with the **interactive scaffolding commands**.
+- **Deploy anywhere** with the build command to deploy to any plateform
+- Solve the usual **N+1 problem with ease** thanks to the integrated built-in dataloading helpers
+- Optimized typescript **live reload**
+- Easily **handle authentication and permissions**
+- **Bootstrap** a customised, fully ready-to-use GraphQL server based on a datamodel
 
 ## Motivation
 
