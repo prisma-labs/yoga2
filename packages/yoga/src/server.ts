@@ -1,6 +1,7 @@
 import { ApolloServer } from 'apollo-server'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
+import { buildPrismaSchema } from 'nexus-prisma'
 import { basename, dirname, join } from 'path'
 import ts, { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
@@ -9,32 +10,8 @@ import {
   relativeToRootPath,
   invalidateImportCache,
 } from './helpers'
-
-export interface InputConfig {
-  /** Path to the directory where your resolvers are defined */
-  resolversPath?: string
-  /** Path to your context.ts file */
-  contextPath?: string
-  /** Object containing all the properties for the outputted files */
-  output?: {
-    /** Path to the generated schema */
-    schemaPath?: string
-    /** Path to the generated typings */
-    typegenPath?: string
-    /** Path to the directory where the GraphQL server will be compiled */
-    buildPath?: string
-  }
-}
-
-export interface Config {
-  resolversPath: string
-  contextPath?: string
-  output: {
-    schemaPath: string
-    typegenPath: string
-    buildPath: string
-  }
-}
+import { InputConfig, Config } from './types'
+import { tmpdir } from 'os'
 
 /**
  * - Read config files
@@ -62,8 +39,8 @@ export async function watch(): Promise<void> {
     throw new Error("Could not find a valid 'yoga.config.ts'.")
   }
 
+  const yogaConfig: InputConfig = await importYogaConfig(yogaConfigPath)
   const rootPath = dirname(tsConfigPath)
-  const yogaConfig: InputConfig = (await import(yogaConfigPath)).default.default
   const config = normalizeConfig(rootPath, yogaConfig)
 
   if (!existsSync(config.resolversPath)) {
@@ -86,7 +63,7 @@ export async function watch(): Promise<void> {
       config.output.buildPath,
     )
 
-    const schema = makeSchema({
+    const nexusSchemaOptions = {
       types,
       outputs: {
         schema: config.output.schemaPath,
@@ -96,7 +73,31 @@ export async function watch(): Promise<void> {
         input: false,
         inputList: false,
       },
-    })
+    }
+
+    const schema = config.prisma
+      ? buildPrismaSchema({
+          ...nexusSchemaOptions,
+          prisma: config.prisma,
+          typegenAutoConfig: {
+            sources: [
+              {
+                module: config.prisma.prismaClientPath,
+                alias: 'prisma',
+              },
+              ...(config.contextPath
+                ? [
+                    {
+                      module: config.contextPath,
+                      alias: 'ctx',
+                    },
+                  ]
+                : []),
+            ],
+            contextType: 'ctx.Context',
+          },
+        })
+      : makeSchema(nexusSchemaOptions)
 
     if (oldServer) {
       oldServer.stop()
@@ -171,6 +172,50 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
+  if (!config.prisma || config.prisma === true) {
+    config.prisma = {}
+  }
+
+  if (config.prisma.prismaClientPath) {
+    config.prisma.prismaClientPath = relativeToRootPath(
+      rootPath,
+      config.prisma.prismaClientPath,
+    )
+  } else {
+    config.prisma.prismaClientPath = relativeToRootPath(
+      rootPath,
+      './src/generated/prisma-client/index.ts',
+    )
+
+    if (!existsSync(config.prisma.prismaClientPath)) {
+      throw new Error(
+        "Could not find a valid 'src/generated/prisma-client/index.ts' file.",
+      )
+    }
+  }
+
+  if (config.prisma.schemaPath) {
+    config.prisma.schemaPath = relativeToRootPath(
+      rootPath,
+      config.prisma.schemaPath,
+    )
+  } else {
+    config.prisma.schemaPath = relativeToRootPath(
+      rootPath,
+      './src/generated/prisma.graphql',
+    )
+
+    if (!existsSync(config.prisma.prismaClientPath)) {
+      throw new Error(
+        "Could not find a valid 'src/generated/prisma.graphql' file.",
+      )
+    }
+  }
+
+  if (!config.prisma.contextClientName) {
+    config.prisma.contextClientName = 'prisma'
+  }
+
   return config as Config
 }
 
@@ -182,7 +227,10 @@ async function importGraphqlTypesAndContext(
   resolversPath: string,
   contextFile: string | undefined,
   outputDir: string,
-): Promise<{ types: Record<string, any>; context?: any }> {
+): Promise<{
+  types: Record<string, any>
+  context?: any /** Context<any> | ContextFunction<any> */
+}> {
   const transpiledFiles = findFileByExtension(resolversPath, '.ts').map(file =>
     join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
   )
@@ -201,7 +249,7 @@ async function importGraphqlTypesAndContext(
     context = await import(transpiledContextPath)
 
     if (context.default && typeof context.default === 'function') {
-      context = context.default()
+      context = context.default
     } else {
       throw new Error('Context must be a default exported function')
     }
@@ -215,4 +263,18 @@ async function importGraphqlTypesAndContext(
     context,
     types: types.reduce((a, b) => ({ ...a, ...b }), {}),
   }
+}
+
+async function importYogaConfig(configPath: string): Promise<InputConfig> {
+  const outDir = tmpdir()
+
+  ts.createProgram([configPath], {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES5,
+    outDir,
+  }).emit()
+
+  const config = await import(join(outDir, 'yoga.config.js'))
+
+  return config.default as InputConfig
 }
