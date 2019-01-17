@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "clean": "lerna clean",
     "build": "lerna exec -- npm run build"
   },
   "workspaces": [
@@ -11,5 +12,8 @@
   "devDependencies": {
     "lerna": "^3.8.4"
   },
-  "name": "yoga2"
+  "name": "yoga2",
+  "resolutions": {
+    "graphql": "^14.0.2"
+  }
 }

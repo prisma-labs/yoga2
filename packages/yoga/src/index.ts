@@ -1,2 +1,3 @@
 export * from 'nexus'
-export { InputConfig } from './server'
+export * from 'nexus-prisma'
+export { InputConfig } from './types'
