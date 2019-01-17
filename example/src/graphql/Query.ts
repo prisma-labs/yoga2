@@ -13,11 +13,9 @@ export const Query = objectType('Query', t => {
     },
     resolve: (root, { name }) => `Hello ${name}`,
   })
-  
-  t.field('user', 'User', {
-    args: {
-      name: stringArg(),
-    },
-    resolve: (root, args) => ({ name: args.name }),
+
+  t.field('users', 'User', {
+    list: true,
+    resolve: (root, args, ctx) => ctx.prisma.users(),
   })
 })

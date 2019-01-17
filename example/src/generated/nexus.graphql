@@ -3,9 +3,10 @@
 
 type Query {
   hello(name: String!): String!
-  user(name: String!): User!
+  users: [User!]!
 }
 
 type User {
+  id: ID!
   name: String!
 }

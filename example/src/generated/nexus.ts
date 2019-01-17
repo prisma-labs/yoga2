@@ -5,7 +5,8 @@
  * For better typings, you should provide configuration for how to lookup 
  * the types. See the documentation for "typegenAutoConfig"
  */
-
+import * as ctx from "../context"
+import * as prisma from "./prisma-client/index"
 
 declare global {
   interface GraphQLNexusGen extends GraphQLNexusGenTypes {}
@@ -29,30 +30,23 @@ export interface QueryHelloArgs {
   name: string;
 }
 
-export type QueryUserReturnType = User_ReturnType;
-
-export interface QueryUserArgs {
-  name: string;
-}
+export type QueryUsersReturnType = MaybePromiseList<User_ReturnType>;
 
 export type QueryRootType = {};
 
 export type Query_ReturnType = {};
 
+export type UserIdReturnType = string;
+
 export type UserNameReturnType = string;
 
-export interface UserRootType {
-  name: string;
-}
+export type UserRootType = prisma.User;
 
-export type User_ReturnType = {
-  name: MaybeThunk<MaybePromise<string>>;
-}
+export type User_ReturnType = prisma.User
 
 export interface GraphQLNexusGenArgTypes {
   Query: {
     hello: QueryHelloArgs;
-    user: QueryUserArgs;
   };
 }
 
@@ -64,9 +58,10 @@ export interface GraphQLNexusGenRootTypes {
 export interface GraphQLNexusGenReturnTypes {
   Query: {
     hello: QueryHelloReturnType;
-    user: QueryUserReturnType;
+    users: QueryUsersReturnType;
   };
   User: {
+    id: UserIdReturnType;
     name: UserNameReturnType;
   };
 }
@@ -75,7 +70,7 @@ export interface GraphQLNexusGenTypes {
   argTypes: GraphQLNexusGenArgTypes;
   backingTypes: GraphQLNexusGenRootTypes;
   returnTypes: GraphQLNexusGenReturnTypes;
-  context: unknown;
+  context: ctx.Context;
   enums: {};
   objects: {
     Query: QueryRootType;
@@ -85,6 +80,7 @@ export interface GraphQLNexusGenTypes {
   unions: {};
   scalars: {
     String: any;
+    ID: any;
     Boolean: any;
   };
   inputObjects: {};

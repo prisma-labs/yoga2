@@ -1,10 +1,11 @@
-import { objectType } from 'yoga'
+import { prismaObjectType } from 'yoga'
 
 /*
 type User {
+  id: ID!
   name: String!
 }
 */
-export const User = objectType('User', t => {
-  t.string('name')
+export const User = prismaObjectType('User', t => {
+  t.prismaFields(['id', 'name'])
 })
