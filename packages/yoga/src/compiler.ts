@@ -48,10 +48,10 @@ export function watch(
     oldProgram,
   ) => {
     if (firstStart) {
-      console.log('** Starting ... **')
+      console.log('** Starting **')
       firstStart = false
     } else {
-      console.log('** Restarting ... **')
+      console.log('** Restarting **')
     }
     return origCreateProgram(rootNames, options, host, oldProgram)
   }
