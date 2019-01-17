@@ -3,7 +3,8 @@ import { objectType, stringArg } from 'yoga'
 /*
 type Query {
   hello(name: String!): String!
-  user(name: String!): User!
+  users: [User!]!
+  posts: [Post!]!
 }
 */
 export const Query = objectType('Query', t => {
@@ -17,5 +18,10 @@ export const Query = objectType('Query', t => {
   t.field('users', 'User', {
     list: true,
     resolve: (root, args, ctx) => ctx.prisma.users(),
+  })
+
+  t.field('posts', 'Post', {
+    list: true,
+    resolve: (root, args, ctx) => [],
   })
 })

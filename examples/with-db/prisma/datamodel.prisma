@@ -1,4 +1,18 @@
 type User {
   id: ID! @unique
   name: String!
+  posts: [Post!]!
+}
+
+type Post {
+  id: ID! @unique
+  title: String!
+  content: String!
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: ID! @unique
+  author: User!
+  content: String!
 }
