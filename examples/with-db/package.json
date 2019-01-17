@@ -1,6 +1,7 @@
 {
+  "name": "with-db",
   "scripts": {
-    "dev": "yoga",
+    "dev": "yoga dev",
     "build": "yoga build",
     "start": "yoga start"
   },

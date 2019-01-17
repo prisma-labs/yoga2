@@ -1,0 +1,24 @@
+{
+  "name": "minimal",
+  "scripts": {
+    "dev": "yoga dev",
+    "build": "yoga build",
+    "start": "yoga start"
+  },
+  "dependencies": {
+    "nexus": "^0.6.2",
+    "yoga": "0.0.0"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.4",
+    "@types/ws": "^6.0.1",
+    "@types/node": "^10.12.11",
+    "typescript": "^3.2.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "license": "MIT"
+}
