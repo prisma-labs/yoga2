@@ -8,13 +8,14 @@ import { Config } from '../../../types'
 
 export default async () => {
   const config = await importYogaConfig()
-  const { typeName } = await inquirer.prompt<{ typeName: string }>([
+  const { inputTypeName } = await inquirer.prompt<{ inputTypeName: string }>([
     {
-      name: 'typeName',
+      name: 'inputTypeName',
       message: 'Input the name of your type',
       type: 'input',
     },
   ])
+  const typeName = upperFirst(inputTypeName)
   const hasDb = !!config.prisma
   let crudOperations: string[] | null = null
 
@@ -129,7 +130,7 @@ export const User = prismaObjectType('${typeName}'/*, t => {
 
     if (queryOperations.length > 0) {
       content += `
-export const Query = prismaExtendType('Query', t => {
+export const ${typeName}Query = prismaExtendType('Query', t => {
   t.prismaFields([${queryOperations.join(', ')}])
 })
 `
@@ -137,7 +138,7 @@ export const Query = prismaExtendType('Query', t => {
 
     if (mutationOperations.length > 0) {
       content += `
-export const Mutation = prismaExtendType('Mutation', t => {
+export const ${typeName}Mutation = prismaExtendType('Mutation', t => {
   t.prismaFields([${mutationOperations.join(', ')}])
 })
 `
@@ -151,7 +152,7 @@ function scaffoldTypeWithoutDb(typeName: string) {
   return `\
 import { objectType } from 'yoga'
 
-export const User = prismaObjectType('${typeName}'/*,  t => {
+export const ${typeName} = prismaObjectType('${typeName}'/*,  t => {
   // Expose your fields using t.field()/string()/boolean().. here
 }*/)
   `
@@ -213,4 +214,11 @@ type ${typeName} {
   } catch (e) {
     console.error(e)
   }
+}
+
+/**
+ * Uppercase the first letter of a string. Useful when generating type names.
+ */
+function upperFirst(s: string): string {
+  return s.replace(/^\w/, c => c.toUpperCase())
 }
