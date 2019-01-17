@@ -25,7 +25,6 @@ export interface InputConfig {
         /** Path to the prisma-client/index.ts file (default: /src/generated/prisma-client/index.ts) */
         prismaClientPath?: string
       }
-  typegenAutoConfig?: TypegenAutoConfigOptions
 }
 
 export interface Config {
