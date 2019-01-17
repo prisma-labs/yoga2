@@ -1,5 +1,3 @@
-import { TypegenAutoConfigOptions } from 'nexus/dist/types'
-
 export interface InputConfig {
   /** Path to the directory where your resolvers are defined */
   resolversPath?: string
