@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
-import { buildPrismaSchema } from 'nexus-prisma'
+import { makePrismaSchema } from 'nexus-prisma'
 import { basename, dirname, join } from 'path'
 import ts, { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
@@ -89,7 +89,7 @@ export async function watch(): Promise<void> {
     }
 
     const schema = config.prisma
-      ? buildPrismaSchema({
+      ? makePrismaSchema({
           ...nexusSchemaOptions,
           prisma: config.prisma,
           typegenAutoConfig: {
