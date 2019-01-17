@@ -73,6 +73,19 @@ export async function watch(): Promise<void> {
         input: false,
         inputList: false,
       },
+      typegenAutoConfig: {
+        sources: [
+          ...(config.contextPath
+            ? [
+                {
+                  module: config.contextPath,
+                  alias: 'ctx',
+                },
+              ]
+            : []),
+        ],
+        contextType: 'ctx.Context',
+      },
     }
 
     const schema = config.prisma
@@ -80,21 +93,14 @@ export async function watch(): Promise<void> {
           ...nexusSchemaOptions,
           prisma: config.prisma,
           typegenAutoConfig: {
+            ...nexusSchemaOptions.typegenAutoConfig,
             sources: [
+              ...nexusSchemaOptions.typegenAutoConfig.sources,
               {
                 module: config.prisma.prismaClientPath,
                 alias: 'prisma',
               },
-              ...(config.contextPath
-                ? [
-                    {
-                      module: config.contextPath,
-                      alias: 'ctx',
-                    },
-                  ]
-                : []),
             ],
-            contextType: 'ctx.Context',
           },
         })
       : makeSchema(nexusSchemaOptions)
@@ -172,48 +178,50 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
-  if (!config.prisma || config.prisma === true) {
+  if (config.prisma === true) {
     config.prisma = {}
   }
 
-  if (config.prisma.prismaClientPath) {
-    config.prisma.prismaClientPath = relativeToRootPath(
-      rootPath,
-      config.prisma.prismaClientPath,
-    )
-  } else {
-    config.prisma.prismaClientPath = relativeToRootPath(
-      rootPath,
-      './src/generated/prisma-client/index.ts',
-    )
-
-    if (!existsSync(config.prisma.prismaClientPath)) {
-      throw new Error(
-        "Could not find a valid 'src/generated/prisma-client/index.ts' file.",
+  if (config.prisma) {
+    if (config.prisma.prismaClientPath) {
+      config.prisma.prismaClientPath = relativeToRootPath(
+        rootPath,
+        config.prisma.prismaClientPath,
       )
-    }
-  }
-
-  if (config.prisma.schemaPath) {
-    config.prisma.schemaPath = relativeToRootPath(
-      rootPath,
-      config.prisma.schemaPath,
-    )
-  } else {
-    config.prisma.schemaPath = relativeToRootPath(
-      rootPath,
-      './src/generated/prisma.graphql',
-    )
-
-    if (!existsSync(config.prisma.prismaClientPath)) {
-      throw new Error(
-        "Could not find a valid 'src/generated/prisma.graphql' file.",
+    } else {
+      config.prisma.prismaClientPath = relativeToRootPath(
+        rootPath,
+        './src/generated/prisma-client/index.ts',
       )
-    }
-  }
 
-  if (!config.prisma.contextClientName) {
-    config.prisma.contextClientName = 'prisma'
+      if (!existsSync(config.prisma.prismaClientPath)) {
+        throw new Error(
+          "Could not find a valid 'src/generated/prisma-client/index.ts' file.",
+        )
+      }
+    }
+
+    if (config.prisma.schemaPath) {
+      config.prisma.schemaPath = relativeToRootPath(
+        rootPath,
+        config.prisma.schemaPath,
+      )
+    } else {
+      config.prisma.schemaPath = relativeToRootPath(
+        rootPath,
+        './src/generated/prisma.graphql',
+      )
+
+      if (!existsSync(config.prisma.prismaClientPath)) {
+        throw new Error(
+          "Could not find a valid 'src/generated/prisma.graphql' file.",
+        )
+      }
+    }
+
+    if (!config.prisma.contextClientName) {
+      config.prisma.contextClientName = 'prisma'
+    }
   }
 
   return config as Config
