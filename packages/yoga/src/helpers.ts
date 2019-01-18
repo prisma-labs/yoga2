@@ -41,20 +41,27 @@ export function relativeOrDefault(
   filePath: string | undefined,
   defaultRelativePath: string,
   propertyName: string,
-  optionalField: boolean = false,
+  optionalProperty: boolean = false,
+  outputProperty: boolean = false,
 ): string | undefined {
   const actualFilePath = filePath ? filePath : defaultRelativePath
   const relativePath = relativeToProjectDir(projectDir, actualFilePath)
-  const fileExists = fs.existsSync(relativePath)
 
-  if (!fileExists && !optionalField) {
-    throw new Error(
-      `Could not find a file for \`${propertyName}\` at ${relativePath}`,
-    )
-  }
+  // If not an output property, make sure the path exists,
+  if (!outputProperty) {
+    const fileExists = fs.existsSync(relativePath)
 
-  if (!fileExists && optionalField) {
-    return undefined
+    // If path was inputted by user and file doesn't exist and property is required
+    if (actualFilePath === filePath && !fileExists && !optionalProperty) {
+      throw new Error(
+        `Could not find a file for \`${propertyName}\` at ${relativePath}`,
+      )
+    }
+
+    // If no path were provided, and the defaultPath doesn't exist and the property is optional, leave it undefined
+    if (!fileExists && optionalProperty) {
+      return undefined
+    }
   }
 
   return relativePath

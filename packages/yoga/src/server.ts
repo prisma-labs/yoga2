@@ -105,14 +105,16 @@ function normalizeConfig(
     filePath: string | undefined,
     defaultRelativePath: string,
     propertyName: string,
-    optionalParam: boolean = false,
+    optionalProperty: boolean = false,
+    outputProperty: boolean = false,
   ) =>
     relativeOrDefault(
       projectDir,
       filePath,
       defaultRelativePath,
       propertyName,
-      optionalParam,
+      optionalProperty,
+      outputProperty,
     )
 
   const outputConfig: Config = {
@@ -153,11 +155,15 @@ function normalizeConfig(
       config.output.typegenPath,
       './src/generated/nexus.ts',
       'output.typegenPath',
+      false,
+      true,
     )!,
     schemaPath: curryRelativeOrDefault(
       config.output.schemaPath,
       './src/generated/nexus.graphql',
       'output.schemaPath',
+      false,
+      true,
     )!,
     buildPath: outDir ? outDir : relativeToProjectDir(projectDir, './dist'),
   }
