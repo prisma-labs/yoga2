@@ -5,7 +5,7 @@ import ts from 'typescript'
 export function watch(
   configPath: string,
   optionsToExtend: ts.CompilerOptions,
-  callback: () => void,
+  onCompileFinished: () => void,
 ) {
   // TypeScript can use several different program creation "strategies":
   //  * ts.createEmitAndSemanticDiagnosticsBuilderProgram,
@@ -41,6 +41,7 @@ export function watch(
   // Note that we're assuming `origCreateProgram` and `origPostProgramCreate`
   // doesn't use `this` at all.
   const origCreateProgram = host.createProgram
+
   host.createProgram = (
     rootNames: ReadonlyArray<string> | undefined,
     options,
@@ -55,12 +56,13 @@ export function watch(
     }
     return origCreateProgram(rootNames, options, host, oldProgram)
   }
+
   const origPostProgramCreate = host.afterProgramCreate
 
   host.afterProgramCreate = program => {
     // console.log('** We finished making the program! **')
     origPostProgramCreate!(program)
-    callback()
+    onCompileFinished()
   }
 
   // `createWatchProgram` creates an initial program, watches files, and updates

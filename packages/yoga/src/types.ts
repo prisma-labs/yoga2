@@ -3,14 +3,14 @@ export interface InputConfig {
   resolversPath?: string
   /** Path to your context.ts file */
   contextPath?: string
+  /** Path to a index.ts file to eject from default configuration file (default: /src/index.ts) */
+  ejectFilePath?: string
   /** Object containing all the properties for the outputted files */
   output?: {
     /** Path to the generated schema */
     schemaPath?: string
     /** Path to the generated typings */
     typegenPath?: string
-    /** Path to the directory where the GraphQL server will be compiled */
-    buildPath?: string
   }
   /** Enable prisma */
   prisma?:
@@ -28,6 +28,7 @@ export interface InputConfig {
 export interface Config {
   resolversPath: string
   contextPath?: string
+  ejectFilePath?: string
   output: {
     schemaPath: string
     typegenPath: string
@@ -38,4 +39,10 @@ export interface Config {
     contextClientName: string
     prismaClientPath: string
   }
+}
+
+export interface Yoga<Server = any> {
+  server: (dirname: string) => Server | Promise<Server>
+  startServer: (server: Server) => any | Promise<any>
+  stopServer: (server: Server) => any | Promise<any>
 }

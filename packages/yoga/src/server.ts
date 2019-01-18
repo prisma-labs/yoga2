@@ -1,17 +1,22 @@
 import { ApolloServer } from 'apollo-server'
+import decache from 'decache'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
-import { basename, dirname, join } from 'path'
+import { tmpdir } from 'os'
+import { dirname, join } from 'path'
 import ts, { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
 import {
   findFileByExtension,
-  relativeToRootPath,
-  invalidateImportCache,
+  findPrismaConfigFile,
+  getTranspiledPath,
+  importUncached,
+  relativeOrDefault,
+  relativeToProjectDir,
 } from './helpers'
-import { InputConfig, Config } from './types'
-import { tmpdir } from 'os'
+import { makeSchemaDefaults } from './nexusDefaults'
+import { Config, InputConfig, Yoga } from './types'
 
 /**
  * - Read config files
@@ -39,12 +44,24 @@ export async function watch(): Promise<void> {
     throw new Error("Could not find a valid 'yoga.config.ts'.")
   }
 
+  const tsConfig = ts.parseJsonConfigFileContent(
+    require(tsConfigPath),
+    ts.sys,
+    dirname(tsConfigPath),
+  )
   const yogaConfig: InputConfig = await importYogaConfig(yogaConfigPath)
-  const rootPath = dirname(tsConfigPath)
-  const config = normalizeConfig(rootPath, yogaConfig)
+  const projectDir = dirname(tsConfigPath)
+  const config = normalizeConfig(
+    yogaConfig,
+    projectDir,
+    tsConfig.options.outDir,
+  )
+  const rootDir = tsConfig.options.rootDir
 
-  if (!existsSync(config.resolversPath)) {
-    throw new Error(`Missing /graphql folder in ${config.resolversPath}`)
+  if (!rootDir) {
+    throw new Error(
+      "You must define a `rootDir` and `outDir` property in your 'tsconfig.json' file",
+    )
   }
 
   const compilerOptions: CompilerOptions = {
@@ -52,71 +69,26 @@ export async function watch(): Promise<void> {
     noUnusedParameters: false,
     noEmitOnError: false,
     sourceMap: false,
+    esModuleInterop: true,
+    outDir: config.output.buildPath,
   }
 
-  let oldServer: ApolloServer | null = null
+  let oldServer: any | undefined = undefined
 
   watchFiles(tsConfigPath, compilerOptions, async () => {
-    const { types, context } = await importGraphqlTypesAndContext(
-      config.resolversPath,
-      config.contextPath,
-      config.output.buildPath,
+    const yogaServer = await getYogaServer(rootDir, config)
+
+    if (oldServer !== undefined) {
+      yogaServer.stopServer(oldServer)
+    }
+
+    const serverInstance = await yogaServer.server(
+      dirname(config.ejectFilePath ? config.ejectFilePath : __dirname),
     )
 
-    const nexusSchemaOptions = {
-      types,
-      outputs: {
-        schema: config.output.schemaPath,
-        typegen: config.output.typegenPath,
-      },
-      nullability: {
-        input: false,
-        inputList: false,
-      },
-      typegenAutoConfig: {
-        sources: [
-          ...(config.contextPath
-            ? [
-                {
-                  module: config.contextPath,
-                  alias: 'ctx',
-                },
-              ]
-            : []),
-        ],
-        contextType: 'ctx.Context',
-      },
-    }
+    oldServer = serverInstance
 
-    const schema = config.prisma
-      ? makePrismaSchema({
-          ...nexusSchemaOptions,
-          prisma: config.prisma,
-          typegenAutoConfig: {
-            ...nexusSchemaOptions.typegenAutoConfig,
-            sources: [
-              ...nexusSchemaOptions.typegenAutoConfig.sources,
-              {
-                module: config.prisma.prismaClientPath,
-                alias: 'prisma',
-              },
-            ],
-          },
-        })
-      : makeSchema(nexusSchemaOptions)
-
-    if (oldServer) {
-      oldServer.stop()
-    }
-
-    const server = new ApolloServer({
-      schema,
-      context,
-    })
-
-    oldServer = server
-
-    server.listen().then(({ url }) => console.log(`🚀  Server ready at ${url}`))
+    yogaServer.startServer(serverInstance)
   })
 }
 
@@ -124,111 +96,98 @@ export async function watch(): Promise<void> {
  * - Compute paths relative to the root of the project
  * - Set defaults if some options are missing
  */
-function normalizeConfig(rootPath: string, config: InputConfig): Config {
-  if (config.resolversPath) {
-    config.resolversPath = relativeToRootPath(rootPath, config.resolversPath)
-  } else {
-    config.resolversPath = relativeToRootPath(rootPath, './src/graphql')
+function normalizeConfig(
+  config: InputConfig,
+  projectDir: string,
+  outDir: string | undefined,
+): Config {
+  const curryRelativeOrDefault = (
+    filePath: string | undefined,
+    defaultRelativePath: string,
+    propertyName: string,
+    optionalParam: boolean = false,
+  ) =>
+    relativeOrDefault(
+      projectDir,
+      filePath,
+      defaultRelativePath,
+      propertyName,
+      optionalParam,
+    )
+
+  const outputConfig: Config = {
+    resolversPath: curryRelativeOrDefault(
+      config.resolversPath,
+      './src/graphql',
+      'resolversPath',
+    )!,
+    output: {
+      buildPath: '',
+      schemaPath: '',
+      typegenPath: '',
+    },
   }
 
   // Context path is optional and should remain undefined if none is provided or if the default path doesn't exist
-  if (config.contextPath) {
-    config.contextPath = relativeToRootPath(rootPath, config.contextPath)
-  } else {
-    const contextPath = relativeToRootPath(rootPath, './src/context.ts')
-    if (existsSync(contextPath)) {
-      config.contextPath = contextPath
-    }
-  }
+  outputConfig.contextPath = curryRelativeOrDefault(
+    config.contextPath,
+    './src/context.ts',
+    'contextPath',
+    true,
+  )
+
+  // Eject file path is optional and should remain undefined if none is provided or if the default path doesn't exist
+  outputConfig.ejectFilePath = curryRelativeOrDefault(
+    config.ejectFilePath,
+    './src/index.ts',
+    'ejectFilePath',
+    true,
+  )
 
   if (!config.output) {
     config.output = {}
   }
 
-  if (config.output.typegenPath) {
-    config.output.typegenPath = relativeToRootPath(
-      rootPath,
+  outputConfig.output = {
+    typegenPath: curryRelativeOrDefault(
       config.output.typegenPath,
-    )
-  } else {
-    config.output.typegenPath = relativeToRootPath(
-      rootPath,
       './src/generated/nexus.ts',
-    )
-  }
-
-  if (config.output.schemaPath) {
-    config.output.schemaPath = relativeToRootPath(
-      rootPath,
+      'output.typegenPath',
+    )!,
+    schemaPath: curryRelativeOrDefault(
       config.output.schemaPath,
-    )
-  } else {
-    config.output.schemaPath = relativeToRootPath(
-      rootPath,
       './src/generated/nexus.graphql',
-    )
+      'output.schemaPath',
+    )!,
+    buildPath: outDir ? outDir : relativeToProjectDir(projectDir, './dist'),
   }
-
-  if (config.output.buildPath) {
-    config.output.buildPath = relativeToRootPath(
-      rootPath,
-      config.output.buildPath,
-    )
-  } else {
-    config.output.buildPath = relativeToRootPath(rootPath, './dist')
-  }
-
   // Enable prisma integration if a prisma.yml file is found
   if (
     config.prisma === true ||
-    (!config.prisma && findPrismaConfigFile(rootPath) !== null)
+    (!config.prisma && findPrismaConfigFile(projectDir) !== null)
   ) {
     config.prisma = {}
   }
 
   if (config.prisma) {
-    if (config.prisma.prismaClientPath) {
-      config.prisma.prismaClientPath = relativeToRootPath(
-        rootPath,
+    outputConfig.prisma = {
+      prismaClientPath: curryRelativeOrDefault(
         config.prisma.prismaClientPath,
-      )
-    } else {
-      config.prisma.prismaClientPath = relativeToRootPath(
-        rootPath,
         './src/generated/prisma-client/index.ts',
-      )
-
-      if (!existsSync(config.prisma.prismaClientPath)) {
-        throw new Error(
-          "Could not find a valid 'src/generated/prisma-client/index.ts' file.",
-        )
-      }
-    }
-
-    if (config.prisma.schemaPath) {
-      config.prisma.schemaPath = relativeToRootPath(
-        rootPath,
+        'prisma.prismaClientPath',
+      )!,
+      schemaPath: curryRelativeOrDefault(
         config.prisma.schemaPath,
-      )
-    } else {
-      config.prisma.schemaPath = relativeToRootPath(
-        rootPath,
         './src/generated/prisma.graphql',
-      )
-
-      if (!existsSync(config.prisma.prismaClientPath)) {
-        throw new Error(
-          "Could not find a valid 'src/generated/prisma.graphql' file.",
-        )
-      }
-    }
-
-    if (!config.prisma.contextClientName) {
-      config.prisma.contextClientName = 'prisma'
+        'prisma.schemaPath',
+      )!,
+      contextClientName: config.prisma.contextClientName
+        ? config.prisma.contextClientName
+        : 'prisma',
     }
   }
 
-  return config as Config
+  return outputConfig
 }
 
 /**
@@ -236,6 +195,7 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
  * and also from the context file
  */
 async function importGraphqlTypesAndContext(
+  projectDir: string,
   resolversPath: string,
   contextFile: string | undefined,
   outputDir: string,
@@ -244,7 +204,7 @@ async function importGraphqlTypesAndContext(
   context?: any /** Context<any> | ContextFunction<any> */
 }> {
   const transpiledFiles = findFileByExtension(resolversPath, '.ts').map(file =>
-    join(outputDir, 'graphql', `${basename(file, '.ts')}.js`),
+    getTranspiledPath(projectDir, file, outputDir),
   )
   let context = undefined
 
@@ -253,12 +213,13 @@ async function importGraphqlTypesAndContext(
       throw new Error("Could not find a valid 'context.ts' file")
     }
 
-    const transpiledContextPath = join(
+    const transpiledContextPath = getTranspiledPath(
+      projectDir,
+      contextFile,
       outputDir,
-      `${basename(contextFile, '.ts')}.js`,
     )
 
-    context = await import(transpiledContextPath)
+    context = await importUncached(transpiledContextPath)
 
     if (context.default && typeof context.default === 'function') {
       context = context.default
@@ -267,9 +228,9 @@ async function importGraphqlTypesAndContext(
     }
   }
 
-  invalidateImportCache(transpiledFiles)
-
-  const types = await Promise.all(transpiledFiles.map(file => import(file)))
+  const types = await Promise.all(
+    transpiledFiles.map(file => importUncached(file)),
+  )
 
   return {
     context,
@@ -286,23 +247,76 @@ async function importYogaConfig(configPath: string): Promise<InputConfig> {
     outDir,
   }).emit()
 
-  const config = await import(join(outDir, 'yoga.config.js'))
+  const config = await importUncached(join(outDir, 'yoga.config.js'))
 
   return config.default as InputConfig
 }
 
-function findPrismaConfigFile(rootPath: string): string | null {
-  let definitionPath = join(rootPath, 'prisma.yml')
+async function getYogaServer(rootDir: string, config: Config): Promise<Yoga> {
+  if (!config.ejectFilePath) {
+    return {
+      async server() {
+        const { types, context } = await importGraphqlTypesAndContext(
+          rootDir,
+          config.resolversPath,
+          config.contextPath,
+          config.output.buildPath,
+        )
 
-  if (existsSync(definitionPath)) {
-    return definitionPath
+        const makeSchemaOptions = makeSchemaDefaults(config, types)
+
+        const schema = config.prisma
+          ? makePrismaSchema({
+              ...makeSchemaOptions,
+              prisma: config.prisma,
+              // @ts-ignore
+              typegenAutoConfig: {
+                ...makeSchemaOptions.typegenAutoConfig,
+                sources: [
+                  ...makeSchemaOptions.typegenAutoConfig!.sources,
+                  {
+                    module: config.prisma.prismaClientPath,
+                    alias: 'prisma',
+                  },
+                ],
+              },
+            })
+          : makeSchema(makeSchemaOptions)
+
+        return new ApolloServer({
+          schema,
+          context,
+        })
+      },
+      startServer(server) {
+        return server
+          .listen()
+          .then(({ url }) => console.log(`🚀  Server ready at ${url}`))
+      },
+      stopServer(server) {
+        return server.stop()
+      },
+    } as Yoga<ApolloServer>
   }
 
-  definitionPath = join(process.cwd(), 'prisma', 'prisma.yml')
+  const ejectFileTranspiledPath = getTranspiledPath(
+    rootDir,
+    config.ejectFilePath,
+    config.output.buildPath,
+  )
 
-  if (existsSync(definitionPath)) {
-    return definitionPath
+  // Invalidate module and all imports from this module
+  decache(ejectFileTranspiledPath)
+
+  const ejectFileImport = await import(ejectFileTranspiledPath)
+
+  if (ejectFileImport.default) {
+    const yogaServer = ejectFileImport.default as Yoga
+
+    if (yogaServer.server && yogaServer.startServer && yogaServer.stopServer) {
+      return yogaServer
+    }
   }
 
-  return null
+  throw new Error("Invalid 'src/index.ts' file")
 }
