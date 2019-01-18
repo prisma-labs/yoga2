@@ -114,7 +114,7 @@ import { prismaObjectType ${
     crudOperations && crudOperations.length > 0 ? ', prismaExtendType' : ''
   } } from 'yoga'
   
-export const User = prismaObjectType('${typeName}'/*, t => {
+export const ${typeName} = prismaObjectType('${typeName}'/*, t => {
   // To expose your fields, call t.prismaFields([‘fieldName’, …])
 }*/)
 `
@@ -207,6 +207,7 @@ function updateDatamodel(typeName: string): void {
   const typeToAdd = `\n
 type ${typeName} {
   # Add your fields here
+  id: ID! @unique
 }`
 
   try {
