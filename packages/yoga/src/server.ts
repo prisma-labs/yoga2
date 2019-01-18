@@ -178,7 +178,11 @@ function normalizeConfig(rootPath: string, config: InputConfig): Config {
     config.output.buildPath = relativeToRootPath(rootPath, './dist')
   }
 
-  if (config.prisma === true) {
+  // Enable prisma integration if a prisma.yml file is found
+  if (
+    config.prisma === true ||
+    (!config.prisma && findPrismaConfigFile(rootPath) !== null)
+  ) {
     config.prisma = {}
   }
 
@@ -285,4 +289,20 @@ async function importYogaConfig(configPath: string): Promise<InputConfig> {
   const config = await import(join(outDir, 'yoga.config.js'))
 
   return config.default as InputConfig
+}
+
+function findPrismaConfigFile(rootPath: string): string | null {
+  let definitionPath = join(rootPath, 'prisma.yml')
+
+  if (existsSync(definitionPath)) {
+    return definitionPath
+  }
+
+  definitionPath = join(process.cwd(), 'prisma', 'prisma.yml')
+
+  if (existsSync(definitionPath)) {
+    return definitionPath
+  }
+
+  return null
 }
