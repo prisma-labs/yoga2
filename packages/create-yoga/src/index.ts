@@ -22,16 +22,11 @@ const cli = meow(
     Options:
       -t, --template  Select a template. (${templatesNames})
       --no-install    Skips dependency installation.
-      --no-generate   Skips model generation.
       --force (-f)    Overwrites existing files.
 `,
   {
     flags: {
       'no-install': {
-        type: 'boolean',
-        default: false,
-      },
-      'no-generate': {
         type: 'boolean',
         default: false,
       },
@@ -97,6 +92,7 @@ async function main(cli: meow.Result) {
         name: 'path',
         message: 'Where should we scaffold graphql server?',
         type: 'input',
+        default: '.'
       },
     ])
 
@@ -117,7 +113,6 @@ async function main(cli: meow.Result) {
     fs.mkdirSync(output)
   }
   loadYogaStarter(template, path.resolve(output), {
-    installDependencies: !cli.flags['no-install'],
-    generateModels: !cli.flags['no-generate'],
+    installDependencies: !cli.flags['no-install']
   })
 }

@@ -11,7 +11,6 @@ import { Template } from './templates'
 
 export interface LoadOptions {
   installDependencies: boolean
-  generateModels: boolean
 }
 
 export async function loadYogaStarter(
@@ -26,10 +25,6 @@ export async function loadYogaStarter(
 
   if (options.installDependencies) {
     await installYogaStarter(output)
-  }
-
-  if (options.generateModels) {
-    await generateYogaStarterModels(output)
   }
 
   printHelpMessage()
@@ -116,24 +111,6 @@ async function installYogaStarter(path: string): Promise<void> {
   }
 }
 
-async function generateYogaStarterModels(path: string): Promise<void> {
-  const spinner = ora(`Generating models 👷‍`).start()
-
-  process.chdir(path)
-
-  try {
-    if (await isYarnInstalled()) {
-      await execa.shellSync('yarn generate', { stdio: `ignore` })
-    } else {
-      await execa.shellSync('npm run generate', { stdio: `ignore` })
-    }
-
-    spinner.succeed()
-  } catch (err) {
-    spinner.fail()
-  }
-}
-
 async function isYarnInstalled(): Promise<boolean> {
   try {
     await execa.shell(`yarnpkg --version`, { stdio: `ignore` })
@@ -150,9 +127,6 @@ Your GraphQL server has been successfully set up!
 Try running the following commands:
   - ${chalk.yellow(`yarn start`)}
      Starts the GraphQL server.
-
-  - ${chalk.greenBright(`yarn generate`)}
-     Generates type safe interfaces from your schema.
 `
 
   console.log(message)
