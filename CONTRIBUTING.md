@@ -16,7 +16,7 @@ They are a great foundation to find potential issues, feature requests or docume
 
 ## Issues
 
-To report a bug, you can use [this template](https://github.com/prisma/prisma/issues/new).
+To report a bug, you can use [this template](https://github.com/prisma/yoga2/issues/new).
 
 New bug reports require to be triaged. Oftentimes this includes creating a minimal reproduction, or verifying that the problem still occurs on the latest stable version or the unstable channel (see below).
 
