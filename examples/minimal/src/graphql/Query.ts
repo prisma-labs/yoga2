@@ -17,7 +17,7 @@ export const Query = objectType('Query', t => {
   t.field('users', 'User', {
     list: true,
     resolve: (root, args, ctx) => {
-      return ctx.users
+      return ctx.data.users
     },
   })
 })
