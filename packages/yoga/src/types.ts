@@ -3,7 +3,10 @@ export interface InputConfig {
   resolversPath?: string
   /** Path to your context.ts file */
   contextPath?: string
-  /** Path to a index.ts file to eject from default configuration file (default: /src/index.ts) */
+  /**
+   * Path to a index.ts file to eject from default configuration file (default: /src/index.ts)
+   * When provided, all other configuration properties are ignored and should be configured programatically
+   */
   ejectFilePath?: string
   /** Object containing all the properties for the outputted files */
   output?: {
