@@ -122,7 +122,7 @@ async function isYarnInstalled(): Promise<boolean> {
 
 function printHelpMessage(): void {
   const message = `
-Your GraphQL server has been successfully set up!
+Your template has been successfully set up!
 
 Try running the following commands:
   - ${chalk.yellow(`yarn start`)}
