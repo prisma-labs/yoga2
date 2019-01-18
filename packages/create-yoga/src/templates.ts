@@ -11,17 +11,26 @@ export interface TemplateRepository {
 }
 
 export const defaultTemplate: Template = {
-  name: 'default-yoga',
-  description: 'Default Yoga template ',
+  name: 'minimal-yoga',
+  description: 'Basic starter template ',
   repo: {
     uri: 'https://github.com/prisma/yoga2',
     branch: 'master',
-    path: '/example',
+    path: '/example/minimal',
   },
 }
 
 export const availableTemplates: Template[] = [
   defaultTemplate,
+  {
+    name: 'db-yoga',
+    description: 'Template with Prisma database support',
+    repo: {
+      uri: 'https://github.com/prisma/yoga2',
+      branch: 'master',
+      path: '/example/with-db',
+    },
+  }
 ]
 
 export const templatesNames = availableTemplates
