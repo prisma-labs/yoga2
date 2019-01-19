@@ -13,6 +13,17 @@ export default async () => {
       name: 'inputTypeName',
       message: 'Input the name of your type',
       type: 'input',
+      validate(input: string) {
+        if (input === undefined || input.length === 0) {
+          return 'Type name should be at least one character'
+        }
+
+        if (!/^[_a-zA-Z][_a-zA-Z0-9]*$/.test(input)) {
+          return `Type name must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${input}" does not`
+        }
+
+        return true
+      },
     },
   ])
   const typeName = upperFirst(inputTypeName)
