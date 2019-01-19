@@ -1,13 +1,13 @@
 import * as inquirer from 'inquirer'
 import pluralize from 'pluralize'
-import { importYogaConfig } from '../../../config'
+import { importYogaConfig, findPrismaConfigFile } from '../../../config'
 import * as path from 'path'
 import * as fs from 'fs'
 import yaml from 'js-yaml'
 import { Config } from '../../../types'
 
 export default async () => {
-  const { yogaConfig } = await importYogaConfig()
+  const { yogaConfig, projectDir } = await importYogaConfig()
   const { inputTypeName } = await inquirer.prompt<{ inputTypeName: string }>([
     {
       name: 'inputTypeName',
@@ -51,7 +51,7 @@ export default async () => {
   }
 
   if (hasDb) {
-    updateDatamodel(typeName)
+    updateDatamodel(typeName, projectDir)
   }
 
   scaffoldType(yogaConfig, typeName, hasDb, crudOperations)
@@ -152,30 +152,14 @@ function scaffoldTypeWithoutDb(typeName: string) {
   return `\
 import { objectType } from 'yoga'
 
-export const ${typeName} = prismaObjectType('${typeName}'/*,  t => {
+export const ${typeName} = objectType('${typeName}'/*,  t => {
   // Expose your fields using t.field()/string()/boolean().. here
 }*/)
   `
 }
 
-function findPrismaConfigFile(): string | null {
-  let definitionPath: string | null = path.join(process.cwd(), 'prisma.yml')
-
-  if (fs.existsSync(definitionPath)) {
-    return definitionPath
-  }
-
-  definitionPath = path.join(process.cwd(), 'prisma', 'prisma.yml')
-
-  if (fs.existsSync(definitionPath)) {
-    return definitionPath
-  }
-
-  return null
-}
-
-function updateDatamodel(typeName: string): void {
-  const configPath = findPrismaConfigFile()
+function updateDatamodel(typeName: string, projectDir: string): void {
+  const configPath = findPrismaConfigFile(projectDir)
 
   if (!configPath) {
     throw new Error('Could not find `prisma.yml` file')
