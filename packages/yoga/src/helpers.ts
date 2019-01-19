@@ -55,22 +55,3 @@ export function importUncached(mod: string): Promise<any> {
 
   return import(mod)
 }
-
-/**
- * Find a prisma.yml file if it exists
- */
-export function findPrismaConfigFile(projectDir: string): string | null {
-  let definitionPath = path.join(projectDir, 'prisma.yml')
-
-  if (fs.existsSync(definitionPath)) {
-    return definitionPath
-  }
-
-  definitionPath = path.join(process.cwd(), 'prisma', 'prisma.yml')
-
-  if (fs.existsSync(definitionPath)) {
-    return definitionPath
-  }
-
-  return null
-}

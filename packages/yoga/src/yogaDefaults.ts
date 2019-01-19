@@ -1,7 +1,12 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { findPrismaConfigFile } from './helpers'
-import { Config, PrismaInputConfig, OutputInputConfig } from './types'
+import { findPrismaConfigFile } from './config'
+import {
+  Config,
+  InputConfig,
+  OutputInputConfig,
+  PrismaInputConfig,
+} from './types'
 
 const DEFAULTS: Config = {
   contextPath: './src/context.ts',
@@ -17,6 +22,26 @@ const DEFAULTS: Config = {
     schemaPath: './src/generated/prisma.graphql',
     contextClientName: 'prisma',
   },
+}
+
+/**
+ * - Compute paths relative to the root of the project
+ * - Set defaults when needed
+ */
+export function normalizeConfig(
+  config: InputConfig,
+  projectDir: string,
+  outDir: string | undefined,
+): Config {
+  const outputConfig: Config = {
+    contextPath: contextPath(projectDir, config.contextPath),
+    resolversPath: resolversPath(projectDir, config.resolversPath),
+    ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
+    output: output(projectDir, config.output, outDir),
+    prisma: prisma(projectDir, config.prisma),
+  }
+
+  return outputConfig
 }
 
 /**
@@ -72,7 +97,7 @@ function requiredPath(path: string, errorMessage: string) {
   return path
 }
 
-export function contextPath(
+function contextPath(
   projectDir: string,
   input: string | undefined,
 ): string | undefined {
@@ -85,16 +110,16 @@ export function contextPath(
   )
 }
 
-export function resolversPath(
-  projectDir: string,
-  input: string | undefined,
-): string {
+function resolversPath(projectDir: string, input: string | undefined): string {
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.resolversPath)
 
-  return requiredPath(path, `Could not find a valid \`resolversPath\` at ${path}`)
+  return requiredPath(
+    path,
+    `Could not find a valid \`resolversPath\` at ${path}`,
+  )
 }
 
-export function ejectFilePath(
+function ejectFilePath(
   projectDir: string,
   input: string | undefined,
 ): string | undefined {
@@ -107,7 +132,7 @@ export function ejectFilePath(
   )
 }
 
-export function output(
+function output(
   projectDir: string,
   input: OutputInputConfig | undefined,
   outDir: string | undefined,
@@ -130,10 +155,13 @@ export function output(
     input.schemaPath,
     DEFAULTS.output.schemaPath,
   )
-  const buildPath = inputOrDefaultPath(
-    projectDir,
+  /**
+   * `outDir` is inputted from `tsconfig.json` It should therefore not be joined with `projectDir`
+   * as typescript already resolve the path when parsing it
+   */
+  const buildPath = inputOrDefaultValue(
     outDir,
-    DEFAULTS.output.buildPath,
+    join(projectDir, DEFAULTS.output.buildPath),
   )
 
   return {
@@ -143,10 +171,7 @@ export function output(
   }
 }
 
-export function prisma(
-  projectDir: string,
-  input: PrismaInputConfig | undefined,
-) {
+function prisma(projectDir: string, input: PrismaInputConfig | undefined) {
   const hasPrisma = !!findPrismaConfigFile(projectDir)
 
   // If `prisma` undefined and no prisma.yml file, prisma isn't used

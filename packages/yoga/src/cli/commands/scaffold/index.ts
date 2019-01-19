@@ -1,13 +1,13 @@
 import * as inquirer from 'inquirer'
 import pluralize from 'pluralize'
-import { importYogaConfig } from '../../../helpers'
+import { importYogaConfig } from '../../../config'
 import * as path from 'path'
 import * as fs from 'fs'
 import yaml from 'js-yaml'
 import { Config } from '../../../types'
 
 export default async () => {
-  const config = await importYogaConfig()
+  const { yogaConfig } = await importYogaConfig()
   const { inputTypeName } = await inquirer.prompt<{ inputTypeName: string }>([
     {
       name: 'inputTypeName',
@@ -16,7 +16,7 @@ export default async () => {
     },
   ])
   const typeName = upperFirst(inputTypeName)
-  const hasDb = !!config.prisma
+  const hasDb = !!yogaConfig.prisma
   let crudOperations: string[] | null = null
 
   if (hasDb) {
@@ -54,7 +54,7 @@ export default async () => {
     updateDatamodel(typeName)
   }
 
-  scaffoldType(config, typeName, hasDb, crudOperations)
+  scaffoldType(yogaConfig, typeName, hasDb, crudOperations)
 
   if (hasDb) {
     console.log(`\
