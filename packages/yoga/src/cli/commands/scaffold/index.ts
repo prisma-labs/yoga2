@@ -111,7 +111,7 @@ function scaffoldTypeWithDb(
   crudOperations: string[] | null,
 ): string {
   let content = `\
-import { prismaObjectType ${
+import { prismaObjectType${
     crudOperations && crudOperations.length > 0 ? ', prismaExtendType' : ''
   } } from 'yoga'
   
@@ -153,9 +153,9 @@ function scaffoldTypeWithoutDb(typeName: string) {
   return `\
 import { objectType } from 'yoga'
 
-export const ${typeName} = objectType('${typeName}'/*,  t => {
+export const ${typeName} = objectType('${typeName}', t => {
   // Expose your fields using t.field()/string()/boolean().. here
-}*/)
+})
   `
 }
 
