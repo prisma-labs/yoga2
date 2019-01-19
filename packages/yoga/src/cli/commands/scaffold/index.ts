@@ -90,13 +90,14 @@ function scaffoldType(
   crudOperations: string[] | null,
 ) {
   const typePath = path.join(config.resolversPath, `${typeName}.ts`)
-  const content = hasDb
-    ? scaffoldTypeWithDb(typeName, crudOperations)
-    : scaffoldTypeWithoutDb(typeName)
 
   if (fs.existsSync(typePath)) {
     throw new Error(`Cannot override existing file at ${typePath}.`)
   }
+
+  const content = hasDb
+    ? scaffoldTypeWithDb(typeName, crudOperations)
+    : scaffoldTypeWithoutDb(typeName)
 
   try {
     fs.writeFileSync(typePath, content)
