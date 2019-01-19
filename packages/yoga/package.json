@@ -11,7 +11,7 @@
     "watch": "tsc -w"
   },
   "bin": {
-    "yoga": "dist/cli.js"
+    "yoga": "dist/cli/index.js"
   },
   "dependencies": {
     "apollo-server": "^2.3.1",
