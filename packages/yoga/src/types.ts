@@ -2,7 +2,7 @@ export type PrismaInputConfig =
   | true
   | {
       /**
-       * Path to the prisma.graphql file
+       * Path to the prisma.graphql file.
        * @default ./src/generated/prisma.graphql
        */
       schemaPath?: string
@@ -33,18 +33,20 @@ export type OutputInputConfig = {
 
 export interface InputConfig {
   /**
-   * Path to the directory where your resolvers are defined
+   * Path to the directory where your resolvers are defined.
+   * **Path has to exist**
    * @default ./src/graphql/
    */
   resolversPath?: string
   /**
-   * Path to your context.ts file
+   * Path to your context.ts file. **If provided, path has to exist**
    * @default ./src/context.ts
    */
   contextPath?: string
   /**
-   * Path to a index.ts file to eject from default configuration file
-   * When provided, all other configuration properties are ignored and should be configured programatically
+   * Path to an `index.ts` file to eject from default configuration file `yoga.config.ts`.
+   * When provided, all other configuration properties are ignored and should be configured programatically.
+   * **If provided, path has to exist**
    * @default ./src/index.ts
    */
   ejectFilePath?: string

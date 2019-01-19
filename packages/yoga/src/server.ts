@@ -9,14 +9,12 @@ import ts, { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
 import {
   findFileByExtension,
-  findPrismaConfigFile,
   getTranspiledPath,
   importUncached,
-  relativeOrDefault,
-  relativeToProjectDir,
 } from './helpers'
 import { makeSchemaDefaults } from './nexusDefaults'
 import { Config, InputConfig, Yoga } from './types'
+import * as YogaDefaults from './yogaDefaults'
 
 /**
  * - Read config files
@@ -83,7 +81,7 @@ export async function watch(): Promise<void> {
     }
 
     const serverInstance = await yogaServer.server(
-      dirname(config.ejectFilePath ? config.ejectFilePath : __dirname),
+      config.ejectFilePath ? dirname(config.ejectFilePath) : __dirname,
     )
 
     oldServer = serverInstance
@@ -94,103 +92,19 @@ export async function watch(): Promise<void> {
 
 /**
  * - Compute paths relative to the root of the project
- * - Set defaults if some options are missing
+ * - Set defaults when needed
  */
 function normalizeConfig(
   config: InputConfig,
   projectDir: string,
   outDir: string | undefined,
 ): Config {
-  const curryRelativeOrDefault = (
-    filePath: string | undefined,
-    defaultRelativePath: string,
-    propertyName: string,
-    optionalProperty: boolean = false,
-    outputProperty: boolean = false,
-  ) =>
-    relativeOrDefault(
-      projectDir,
-      filePath,
-      defaultRelativePath,
-      propertyName,
-      optionalProperty,
-      outputProperty,
-    )
-
   const outputConfig: Config = {
-    resolversPath: curryRelativeOrDefault(
-      config.resolversPath,
-      './src/graphql',
-      'resolversPath',
-    )!,
-    output: {
-      buildPath: '',
-      schemaPath: '',
-      typegenPath: '',
-    },
-  }
-
-  // Context path is optional and should remain undefined if none is provided or if the default path doesn't exist
-  outputConfig.contextPath = curryRelativeOrDefault(
-    config.contextPath,
-    './src/context.ts',
-    'contextPath',
-    true,
-  )
-
-  // Eject file path is optional and should remain undefined if none is provided or if the default path doesn't exist
-  outputConfig.ejectFilePath = curryRelativeOrDefault(
-    config.ejectFilePath,
-    './src/index.ts',
-    'ejectFilePath',
-    true,
-  )
-
-  if (!config.output) {
-    config.output = {}
-  }
-
-  outputConfig.output = {
-    typegenPath: curryRelativeOrDefault(
-      config.output.typegenPath,
-      './src/generated/nexus.ts',
-      'output.typegenPath',
-      false,
-      true,
-    )!,
-    schemaPath: curryRelativeOrDefault(
-      config.output.schemaPath,
-      './src/generated/nexus.graphql',
-      'output.schemaPath',
-      false,
-      true,
-    )!,
-    buildPath: outDir ? outDir : relativeToProjectDir(projectDir, './dist'),
-  }
-  // Enable prisma integration if a prisma.yml file is found
-  if (
-    config.prisma === true ||
-    (!config.prisma && findPrismaConfigFile(projectDir) !== null)
-  ) {
-    config.prisma = {}
-  }
-
-  if (config.prisma) {
-    outputConfig.prisma = {
-      prismaClientPath: curryRelativeOrDefault(
-        config.prisma.prismaClientPath,
-        './src/generated/prisma-client/index.ts',
-        'prisma.prismaClientPath',
-      )!,
-      schemaPath: curryRelativeOrDefault(
-        config.prisma.schemaPath,
-        './src/generated/prisma.graphql',
-        'prisma.schemaPath',
-      )!,
-      contextClientName: config.prisma.contextClientName
-        ? config.prisma.contextClientName
-        : 'prisma',
-    }
+    contextPath: YogaDefaults.contextPath(projectDir, config.contextPath),
+    resolversPath: YogaDefaults.resolversPath(projectDir, config.resolversPath),
+    ejectFilePath: YogaDefaults.ejectFilePath(projectDir, config.ejectFilePath),
+    output: YogaDefaults.output(projectDir, config.output, outDir),
+    prisma: YogaDefaults.prisma(projectDir, config.prisma),
   }
 
   return outputConfig
