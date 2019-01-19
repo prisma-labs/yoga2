@@ -1,31 +1,61 @@
+export type PrismaInputConfig =
+  | true
+  | {
+      /**
+       * Path to the prisma.graphql file
+       * @default ./src/generated/prisma.graphql
+       */
+      schemaPath?: string
+      /**
+       * Variable name of the Prisma Client instance
+       * @default prisma
+       */
+      contextClientName?: string
+      /**
+       * Path to the prisma-client/index.ts file
+       * @default ./src/generated/prisma-client/index.ts
+       */
+      prismaClientPath?: string
+    }
+
+export type OutputInputConfig = {
+  /**
+   * Path to the generated typings
+   * @default ./src/generated/nexus.ts
+   */
+  typegenPath?: string
+  /**
+   * Path to the generated schema
+   * @default ./src/generated/nexus.graphql
+   */
+  schemaPath?: string
+}
+
 export interface InputConfig {
-  /** Path to the directory where your resolvers are defined */
+  /**
+   * Path to the directory where your resolvers are defined
+   * @default ./src/graphql/
+   */
   resolversPath?: string
-  /** Path to your context.ts file */
+  /**
+   * Path to your context.ts file
+   * @default ./src/context.ts
+   */
   contextPath?: string
   /**
-   * Path to a index.ts file to eject from default configuration file (default: /src/index.ts)
+   * Path to a index.ts file to eject from default configuration file
    * When provided, all other configuration properties are ignored and should be configured programatically
+   * @default ./src/index.ts
    */
   ejectFilePath?: string
-  /** Object containing all the properties for the outputted files */
-  output?: {
-    /** Path to the generated schema */
-    schemaPath?: string
-    /** Path to the generated typings */
-    typegenPath?: string
-  }
-  /** Enable prisma */
-  prisma?:
-    | true
-    | {
-        /** Path to the prisma.graphql file (default: /src/generated/prisma.graphql) */
-        schemaPath?: string
-        /** Variable name of the Prisma Client instance (default: prisma) */
-        contextClientName?: string
-        /** Path to the prisma-client/index.ts file (default: /src/generated/prisma-client/index.ts) */
-        prismaClientPath?: string
-      }
+  /**
+   * Config for the outputted files (schema, typings ..)
+   */
+  output?: OutputInputConfig
+  /**
+   * Config for the prisma integration
+   */
+  prisma?: PrismaInputConfig
 }
 
 export interface Config {
