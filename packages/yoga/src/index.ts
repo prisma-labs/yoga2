@@ -1,3 +1,4 @@
 export * from 'nexus'
 export * from 'nexus-prisma'
-export { InputConfig } from './types'
+export * from 'apollo-server'
+export { InputConfig, Yoga } from './types'

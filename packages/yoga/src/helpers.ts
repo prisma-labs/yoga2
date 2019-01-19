@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { extname, join } from 'path'
+import * as path from 'path'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -14,7 +14,7 @@ export function findFileByExtension(
   result = result || []
 
   files.forEach(file => {
-    const newbase = join(base, file)
+    const newbase = path.join(base, file)
 
     if (fs.statSync(newbase).isDirectory()) {
       result = findFileByExtension(
@@ -24,7 +24,7 @@ export function findFileByExtension(
         result,
       )
     } else {
-      if (extname(file) === ext) {
+      if (path.extname(file) === ext) {
         result!.push(newbase)
       }
     }
@@ -32,18 +32,45 @@ export function findFileByExtension(
   return result
 }
 
-export function relativeToRootPath(rootPath: string, path: string) {
-  return join(rootPath, path)
+/**
+ * Returns the path to a transpiled file
+ */
+export function getTranspiledPath(
+  projectDir: string,
+  filePath: string,
+  outDir: string,
+) {
+  const pathFromRootToFile = path.relative(projectDir, filePath)
+  const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
+  const pathToJsFile = `${path.dirname(pathFromRootToFile)}/${jsFileName}`
+
+  return path.join(outDir, pathToJsFile)
 }
 
 /**
- * Remove all the dynamically imported files from the cache
- * so it can be re-imported when watching files change
+ * Un-cache a module and import it
  */
-export function invalidateImportCache(files: string[]) {
-  files.forEach(id => {
-    if (require.cache[id]) {
-      delete require.cache[id]
-    }
-  })
+export function importUncached(mod: string): Promise<any> {
+  delete require.cache[require.resolve(mod)]
+
+  return import(mod)
+}
+
+/**
+ * Find a prisma.yml file if it exists
+ */
+export function findPrismaConfigFile(projectDir: string): string | null {
+  let definitionPath = path.join(projectDir, 'prisma.yml')
+
+  if (fs.existsSync(definitionPath)) {
+    return definitionPath
+  }
+
+  definitionPath = path.join(process.cwd(), 'prisma', 'prisma.yml')
+
+  if (fs.existsSync(definitionPath)) {
+    return definitionPath
+  }
+
+  return null
 }
