@@ -67,7 +67,7 @@ export function parseTsConfig(tsConfigPath: string): ts.ParsedCommandLine {
  * Dynamically import a `yoga.config.ts` file
  */
 export async function importYogaConfig(): Promise<{
-  yogaConfigPath: string
+  yogaConfigPath?: string
   yogaConfig: Config
   projectDir: string
   rootDir: string
@@ -84,8 +84,13 @@ export async function importYogaConfig(): Promise<{
     'yoga.config.ts',
   )
 
+  // If no config file, just use all defaults
   if (!yogaConfigPath) {
-    throw new Error("Could not find a valid 'yoga.config.ts'.")
+    return {
+      yogaConfig: normalizeConfig({}, projectDir, tsConfig.options.outDir),
+      projectDir,
+      rootDir,
+    }
   }
 
   ts.createProgram([yogaConfigPath], {
