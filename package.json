@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "clean": "lerna clean",
+    "clean": "lerna clean -y",
     "build": "lerna exec -- npm run build"
   },
   "workspaces": [
