@@ -3,18 +3,17 @@ import decache from 'decache'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
-import { tmpdir } from 'os'
-import { dirname, join } from 'path'
-import ts, { CompilerOptions } from 'typescript'
+import { dirname } from 'path'
+import { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
+import { findTsConfigPath, importYogaConfig } from './config'
 import {
   findFileByExtension,
   getTranspiledPath,
   importUncached,
 } from './helpers'
 import { makeSchemaDefaults } from './nexusDefaults'
-import { Config, InputConfig, Yoga } from './types'
-import * as YogaDefaults from './yogaDefaults'
+import { Config, Yoga } from './types'
 
 /**
  * - Read config files
@@ -22,45 +21,8 @@ import * as YogaDefaults from './yogaDefaults'
  * - Run a GraphQL Server based on these types
  */
 export async function watch(): Promise<void> {
-  const tsConfigPath = ts.findConfigFile(
-    /*searchPath*/ process.cwd(),
-    ts.sys.fileExists,
-    'tsconfig.json',
-  )
-
-  if (!tsConfigPath) {
-    throw new Error("Could not find a valid 'tsconfig.json'.")
-  }
-
-  const yogaConfigPath = ts.findConfigFile(
-    /*searchPath*/ process.cwd(),
-    ts.sys.fileExists,
-    'yoga.config.ts',
-  )
-
-  if (!yogaConfigPath) {
-    throw new Error("Could not find a valid 'yoga.config.ts'.")
-  }
-
-  const tsConfig = ts.parseJsonConfigFileContent(
-    require(tsConfigPath),
-    ts.sys,
-    dirname(tsConfigPath),
-  )
-  const yogaConfig: InputConfig = await importYogaConfig(yogaConfigPath)
-  const projectDir = dirname(tsConfigPath)
-  const config = normalizeConfig(
-    yogaConfig,
-    projectDir,
-    tsConfig.options.outDir,
-  )
-  const rootDir = tsConfig.options.rootDir
-
-  if (!rootDir) {
-    throw new Error(
-      "You must define a `rootDir` and `outDir` property in your 'tsconfig.json' file",
-    )
-  }
+  const tsConfigPath = findTsConfigPath()
+  const { yogaConfig, rootDir } = await importYogaConfig()
 
   const compilerOptions: CompilerOptions = {
     noUnusedLocals: false,
@@ -68,20 +30,20 @@ export async function watch(): Promise<void> {
     noEmitOnError: false,
     sourceMap: false,
     esModuleInterop: true,
-    outDir: config.output.buildPath,
+    outDir: yogaConfig.output.buildPath,
   }
 
   let oldServer: any | undefined = undefined
 
   watchFiles(tsConfigPath, compilerOptions, async () => {
-    const yogaServer = await getYogaServer(rootDir, config)
+    const yogaServer = await getYogaServer(rootDir, yogaConfig)
 
     if (oldServer !== undefined) {
       yogaServer.stopServer(oldServer)
     }
 
     const serverInstance = await yogaServer.server(
-      config.ejectFilePath ? dirname(config.ejectFilePath) : __dirname,
+      yogaConfig.ejectFilePath ? dirname(yogaConfig.ejectFilePath) : __dirname,
     )
 
     oldServer = serverInstance
@@ -91,52 +53,37 @@ export async function watch(): Promise<void> {
 }
 
 /**
- * - Compute paths relative to the root of the project
- * - Set defaults when needed
- */
-function normalizeConfig(
-  config: InputConfig,
-  projectDir: string,
-  outDir: string | undefined,
-): Config {
-  const outputConfig: Config = {
-    contextPath: YogaDefaults.contextPath(projectDir, config.contextPath),
-    resolversPath: YogaDefaults.resolversPath(projectDir, config.resolversPath),
-    ejectFilePath: YogaDefaults.ejectFilePath(projectDir, config.ejectFilePath),
-    output: YogaDefaults.output(projectDir, config.output, outDir),
-    prisma: YogaDefaults.prisma(projectDir, config.prisma),
-  }
-
-  return outputConfig
-}
-
-/**
  * Dynamically import GraphQL types from the ./src/graphql folder
  * and also from the context file
+ *
+ * @param rootDir The `rootDir` property from the `tsconfig.json` file
+ * @param resolversPath The `resolversPath` property from the `yoga.config.ts` file
+ * @param contextPath The `contextPath` property from the `yoga.config.ts` file
+ * @param outDir The `outDir` property from the `tsconfig.json` file
  */
 async function importGraphqlTypesAndContext(
-  projectDir: string,
+  rootDir: string,
   resolversPath: string,
-  contextFile: string | undefined,
-  outputDir: string,
+  contextPath: string | undefined,
+  outDir: string,
 ): Promise<{
   types: Record<string, any>
   context?: any /** Context<any> | ContextFunction<any> */
 }> {
   const transpiledFiles = findFileByExtension(resolversPath, '.ts').map(file =>
-    getTranspiledPath(projectDir, file, outputDir),
+    getTranspiledPath(rootDir, file, outDir),
   )
   let context = undefined
 
-  if (contextFile !== undefined) {
-    if (!existsSync(contextFile)) {
+  if (contextPath !== undefined) {
+    if (!existsSync(contextPath)) {
       throw new Error("Could not find a valid 'context.ts' file")
     }
 
     const transpiledContextPath = getTranspiledPath(
-      projectDir,
-      contextFile,
-      outputDir,
+      rootDir,
+      contextPath,
+      outDir,
     )
 
     context = await importUncached(transpiledContextPath)
@@ -158,20 +105,11 @@ async function importGraphqlTypesAndContext(
   }
 }
 
-async function importYogaConfig(configPath: string): Promise<InputConfig> {
-  const outDir = tmpdir()
-
-  ts.createProgram([configPath], {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES5,
-    outDir,
-  }).emit()
-
-  const config = await importUncached(join(outDir, 'yoga.config.js'))
-
-  return config.default as InputConfig
-}
-
+/**
+ *
+ * @param rootDir The `rootDir` property from a `tsconfig.json` file
+ * @param config The yoga config object
+ */
 async function getYogaServer(rootDir: string, config: Config): Promise<Yoga> {
   if (!config.ejectFilePath) {
     return {

@@ -11,19 +11,24 @@
     "watch": "tsc -w"
   },
   "bin": {
-    "yoga": "dist/cli.js"
+    "yoga": "dist/cli/index.js"
   },
   "dependencies": {
     "apollo-server": "^2.3.1",
     "decache": "^4.5.0",
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
+    "inquirer": "^6.2.1",
+    "js-yaml": "^3.12.1",
     "nexus": "^0.6.2",
     "nexus-prisma": "^0.0.16",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
     "@types/graphql": "^14.0.4",
+    "@types/inquirer": "^0.0.43",
+    "@types/js-yaml": "^3.12.0",
     "@types/node": "^10.12.18",
+    "@types/pluralize": "^0.0.29",
     "@types/yargs": "^12.0.5",
     "prettier": "^1.15.3",
     "ts-node": "^7.0.1",
