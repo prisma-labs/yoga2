@@ -125,7 +125,7 @@ function printHelpMessage(): void {
 Your template has been successfully set up!
 
 Try running the following commands:
-  - ${chalk.yellow(`yarn start`)}
+  - ${chalk.yellow(`yarn dev`)}
      Starts the GraphQL server.
 `
 

@@ -75,9 +75,7 @@ async function main(cli: meow.Result) {
       },
     ])
 
-    template = availableTemplates.find(
-      t => t.name === res.templateName,
-    )
+    template = availableTemplates.find(t => t.name === res.templateName)
   }
 
   let [output] = cli.input
@@ -92,7 +90,7 @@ async function main(cli: meow.Result) {
         name: 'path',
         message: 'Where should we scaffold graphql server?',
         type: 'input',
-        default: '.'
+        default: '.',
       },
     ])
 
@@ -113,6 +111,6 @@ async function main(cli: meow.Result) {
     fs.mkdirSync(output)
   }
   loadYogaStarter(template, path.resolve(output), {
-    installDependencies: !cli.flags['no-install']
+    installDependencies: !cli.flags['no-install'],
   })
 }

@@ -30,7 +30,7 @@ export const availableTemplates: Template[] = [
       branch: 'master',
       path: '/example/with-db',
     },
-  }
+  },
 ]
 
 export const templatesNames = availableTemplates

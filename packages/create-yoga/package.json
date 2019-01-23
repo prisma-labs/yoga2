@@ -2,6 +2,7 @@
   "name": "create-yoga",
   "version": "0.0.0",
   "main": "dist/index.js",
+  "license": "MIT",
   "scripts": {
     "prepare": "npm run build",
     "build": "rimraf dist && tsc -d",
@@ -47,5 +48,9 @@
     "tslint-config-standard": "8.0.1",
     "typescript": "3.2.2"
   },
-  "license": "MIT"
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  }
 }
