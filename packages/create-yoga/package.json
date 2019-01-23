@@ -1,0 +1,51 @@
+{
+  "name": "create-yoga",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "rimraf dist && tsc -d",
+    "pretest": "npm run build && npm run lint",
+    "test": "ava --serial",
+    "lint": "tslint {src,test}/**/*.ts",
+    "start": "ts-node src/index.ts"
+  },
+  "bin": {
+    "create-yoga": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "execa": "^1.0.0",
+    "inquirer": "^6.2.0",
+    "meow": "^5.0.0",
+    "ora": "^3.0.0",
+    "parse-github-url": "^1.0.2",
+    "request": "^2.88.0",
+    "tar": "^4.4.7",
+    "update-notifier": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/execa": "0.9.0",
+    "@types/inquirer": "0.0.43",
+    "@types/meow": "5.0.0",
+    "@types/node": "10.12.18",
+    "@types/ora": "3.0.0",
+    "@types/parse-github-url": "1.0.0",
+    "@types/request": "2.48.1",
+    "@types/tar": "4.0.0",
+    "@types/tmp": "0.0.33",
+    "@types/update-notifier": "2.5.0",
+    "prettier": "1.15.3",
+    "rimraf": "2.6.3",
+    "ts-node": "^7.0.1",
+    "tslint": "5.12.0",
+    "tslint-config-prettier": "1.17.0",
+    "tslint-config-standard": "8.0.1",
+    "typescript": "3.2.2"
+  },
+  "license": "MIT"
+}
