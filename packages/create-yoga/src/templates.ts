@@ -16,7 +16,7 @@ export const defaultTemplate: Template = {
   repo: {
     uri: 'https://github.com/prisma/yoga2',
     branch: 'master',
-    path: '/example/minimal',
+    path: '/examples/minimal',
   },
 }
 
@@ -28,7 +28,7 @@ export const availableTemplates: Template[] = [
     repo: {
       uri: 'https://github.com/prisma/yoga2',
       branch: 'master',
-      path: '/example/with-db',
+      path: '/examples/with-db',
     },
   },
 ]
