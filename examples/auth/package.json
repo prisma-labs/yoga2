@@ -1,0 +1,31 @@
+{
+  "name": "minimal-ejected",
+  "scripts": {
+    "dev": "yoga dev",
+    "build": "yoga build",
+    "start": "yoga start"
+  },
+  "dependencies": {
+    "apollo-server-express": "^2.3.2",
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "nexus": "^0.6.2",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "yoga": "0.0.0"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.4",
+    "@types/node": "^10.12.11",
+    "@types/ws": "^6.0.1",
+    "typescript": "^3.2.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "license": "MIT"
+}
