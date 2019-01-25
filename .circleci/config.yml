@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/yoga2
+    docker:
+      # Node 8 LTS
+      - image: circleci/node:carbon
+    steps:
+      - checkout
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install-dependencies
+          command: npm install
+      - run:
+          name: install-package-dependencies
+          command: npm run bootstrap
+      - run:
+          name: run-build
+          command: npm run build
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: run lint
+          command: npm run lint
+  
+
