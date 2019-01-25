@@ -41,27 +41,11 @@ Thanks to _opinionated conventions_, Yoga offers built-in integration tools to b
 Bootstrap a GraphQL server with a ready-made `yoga` setup then
 start the server:
 
-_With `npm`_
-
 ```bash
 npm init yoga my-app
 cd my-app
 npm start
 ```
-
-_Note: `npm init` requires npm version >= 6.2.0_
-
-or
-
-_With `yarn`_
-
-```bash
-yarn create yoga my-app
-cd my-app
-yarn start
-```
-
-_Note: `yarn create` requires yarn version >= 0.25_
 
 That's it, you're ready to start 🙌
 
@@ -73,12 +57,6 @@ You can install `yoga` with either of the following commands:
 
 ```bash
 npm install --save yoga
-```
-
-or
-
-```bash
-yarn add yoga
 ```
 
 and add a script to your package.json like this:
