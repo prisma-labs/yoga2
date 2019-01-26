@@ -9,7 +9,7 @@
     "pretest": "npm run build && npm run lint",
     "test": "ava --serial",
     "lint": "tslint {src,test}/**/*.ts",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/bin.ts"
   },
   "bin": {
     "create-yoga": "dist/bin.js"
