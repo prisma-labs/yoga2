@@ -3,10 +3,15 @@
 import * as yargs from 'yargs'
 import { watch } from '../server'
 import scaffold from './commands/scaffold'
+import { createTemplate } from 'create-yoga'
 
 function run() {
   yargs
     .usage('Usage: $0 <command> [options]')
+    .command(
+      'create',
+      'Create new yoga project from template', {}, createTemplate
+    )
     .command(
       'dev', 'Start the server in dev mode', {}, watch
     )
@@ -14,9 +19,10 @@ function run() {
       'scaffold',
       'Scaffold a new GraphQL type', {}, scaffold
     )
-    .help()
+    .alias('h', 'help')
+    .help('help')
+    .showHelpOnFail(true, "Specify --help for available options")
     .version()
-    .showHelp()
     .argv
 }
 
