@@ -12,7 +12,7 @@
     "start": "ts-node src/index.ts"
   },
   "bin": {
-    "create-yoga": "dist/index.js"
+    "create-yoga": "dist/bin.js"
   },
   "files": [
     "dist",

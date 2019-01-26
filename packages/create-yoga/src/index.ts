@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import * as path from 'path'
 import * as fs from 'fs'
 import * as meow from 'meow'
@@ -44,10 +42,7 @@ const cli = meow(
   },
 )
 
-main(cli)
-
 // Main
-
 async function main(cli: meow.Result) {
   let template: Template = defaultTemplate
 
@@ -113,4 +108,11 @@ async function main(cli: meow.Result) {
   loadYogaStarter(template, path.resolve(output), {
     installDependencies: !cli.flags['no-install'],
   })
+}
+
+/**
+ * Imports one of the preconfigured yoga templates
+ */
+export const createTemplate = () => {
+  main(cli);
 }
