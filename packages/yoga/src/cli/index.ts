@@ -9,7 +9,7 @@ function run() {
   yargs
     .usage('Usage: $0 <command> [options]')
     .command(
-      'create',
+      'new',
       'Create new yoga project from template', {}, createTemplate
     )
     .command(
