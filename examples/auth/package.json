@@ -1,5 +1,5 @@
 {
-  "name": "minimal-ejected",
+  "name": "auth-ejected",
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",
