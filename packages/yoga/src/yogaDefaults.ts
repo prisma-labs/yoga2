@@ -15,7 +15,7 @@ const DEFAULTS: Config = {
   ejectFilePath: './src/index.ts',
   output: {
     typegenPath: './.yoga/nexus.ts',
-    schemaPath: './src/nexus.graphql',
+    schemaPath: './src/schema.graphql',
     buildPath: './dist',
   },
   prisma: {

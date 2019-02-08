@@ -3,7 +3,7 @@
  * Do not make changes to this file directly
  */
 
-import * as ctx from "../context"
+import * as ctx from "../src/context"
 
 
 declare global {
@@ -46,7 +46,7 @@ export interface NexusGenFieldTypes {
 export interface NexusGenArgTypes {
   Query: {
     hello: { // args
-      name?: string | null; // String
+      name: string; // String!
     }
   }
 }
