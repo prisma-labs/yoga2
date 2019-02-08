@@ -14,12 +14,12 @@ const DEFAULTS: Config = {
   resolversPath: './src/graphql/',
   ejectFilePath: './src/index.ts',
   output: {
-    typegenPath: './src/generated/nexus.ts',
-    schemaPath: './src/generated/nexus.graphql',
+    typegenPath: './.yoga/nexus.ts',
+    schemaPath: './src/nexus.graphql',
     buildPath: './dist',
   },
   prisma: {
-    prismaClientPath: './src/generated/prisma-client/index.ts',
+    prismaClientPath: './.yoga/prisma-client/index.ts',
     nexusPrismaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
     contextClientName: 'prisma',
   },
