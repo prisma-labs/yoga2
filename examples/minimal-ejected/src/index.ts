@@ -14,7 +14,7 @@ export default {
       typegenAutoConfig: {
         sources: [
           {
-            module: path.join(dirname, './context.ts'),
+            source: path.join(dirname, './context.ts'),
             alias: 'ctx',
           },
         ],

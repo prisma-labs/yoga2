@@ -1,4 +1,5 @@
 import { objectType, stringArg } from 'yoga'
+import { User } from './User'
 
 /*
 type Query {
@@ -6,18 +7,21 @@ type Query {
   user(name: String!): User!
 }
 */
-export const Query = objectType('Query', t => {
-  t.field('hello', 'String', {
-    args: {
-      name: stringArg(),
-    },
-    resolve: (root, { name }) => `Hello ${name}`,
-  })
+export const Query = objectType({
+  name: 'Query',
+  definition(t) {
+    t.string('hello', {
+      args: {
+        name: stringArg(),
+      },
+      resolve: (root, { name }) => `Hello ${name}`,
+    })
 
-  t.field('users', 'User', {
-    list: true,
-    resolve: (root, args, ctx) => {
-      return ctx.users
-    },
-  })
+    t.list.field('users', {
+      type: User,
+      resolve: (root, args, ctx) => {
+        return ctx.users
+      },
+    })
+  },
 })
