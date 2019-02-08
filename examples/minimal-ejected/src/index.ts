@@ -8,13 +8,13 @@ export default {
     const schema = makeSchema({
       types,
       outputs: {
-        schema: path.join(dirname, './generated/nexus.graphql'),
-        typegen: path.join(dirname, './generated/nexus.ts'),
+        schema: path.join(dirname, './schema.graphql'),
+        typegen: path.join(dirname, '../.yoga/nexus.ts'),
       },
       typegenAutoConfig: {
         sources: [
           {
-            module: path.join(dirname, './context.ts'),
+            source: path.join(dirname, './context.ts'),
             alias: 'ctx',
           },
         ],

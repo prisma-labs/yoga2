@@ -126,9 +126,12 @@ import { prismaObjectType${
     crudOperations && crudOperations.length > 0 ? ', prismaExtendType' : ''
   } } from 'yoga'
   
-export const ${typeName} = prismaObjectType('${typeName}'/*, t => {
-  // To expose your fields, call t.prismaFields([‘fieldName’, …])
-}*/)
+export const ${typeName} = prismaObjectType({
+  name: '${typeName}',
+  /*definition(t) {
+    // To expose your fields, call t.prismaFields([‘fieldName’, …])
+  }*/
+})
 `
 
   if (crudOperations && crudOperations.length > 0) {
@@ -142,16 +145,22 @@ export const ${typeName} = prismaObjectType('${typeName}'/*, t => {
 
     if (queryOperations.length > 0) {
       content += `
-export const ${typeName}Query = prismaExtendType('Query', t => {
-  t.prismaFields([${queryOperations.join(', ')}])
+export const ${typeName}Query = prismaExtendType({
+  type: 'Query',
+  definition(t) {
+    t.prismaFields([${queryOperations.join(', ')}])
+  }
 })
 `
     }
 
     if (mutationOperations.length > 0) {
       content += `
-export const ${typeName}Mutation = prismaExtendType('Mutation', t => {
-  t.prismaFields([${mutationOperations.join(', ')}])
+export const ${typeName}Mutation = prismaExtendType({
+  type: 'Mutation',
+  definition(t) {
+    t.prismaFields([${mutationOperations.join(', ')}])
+  }
 })
 `
     }

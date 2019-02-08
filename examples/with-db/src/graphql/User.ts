@@ -6,6 +6,9 @@ type User {
   name: String!
 }
 */
-export const User = prismaObjectType('User', t => {
-  t.prismaFields(['id', 'name'])
+export const User = prismaObjectType({
+  name: 'User',
+  definition(t) {
+    t.prismaFields(['id', 'name'])
+  },
 })

@@ -127,17 +127,6 @@ async function getYogaServer(rootDir: string, config: Config): Promise<Yoga> {
           ? makePrismaSchema({
               ...makeSchemaOptions,
               prisma: config.prisma,
-              // @ts-ignore
-              typegenAutoConfig: {
-                ...makeSchemaOptions.typegenAutoConfig,
-                sources: [
-                  ...makeSchemaOptions.typegenAutoConfig!.sources,
-                  {
-                    module: config.prisma.prismaClientPath,
-                    alias: 'prisma',
-                  },
-                ],
-              },
             })
           : makeSchema(makeSchemaOptions)
 

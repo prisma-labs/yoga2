@@ -4,6 +4,7 @@ import { findPrismaConfigFile } from './config'
 import {
   Config,
   InputConfig,
+  NexusPrismaSchema,
   OutputInputConfig,
   PrismaInputConfig,
 } from './types'
@@ -13,13 +14,13 @@ const DEFAULTS: Config = {
   resolversPath: './src/graphql/',
   ejectFilePath: './src/index.ts',
   output: {
-    typegenPath: './src/generated/nexus.ts',
-    schemaPath: './src/generated/nexus.graphql',
+    typegenPath: './.yoga/nexus.ts',
+    schemaPath: './src/schema.graphql',
     buildPath: './dist',
   },
   prisma: {
-    prismaClientPath: './src/generated/prisma-client/index.ts',
-    schemaPath: './src/generated/prisma.graphql',
+    prismaClientPath: './.yoga/prisma-client/index.ts',
+    nexusPrismaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
     contextClientName: 'prisma',
   },
 }
@@ -171,7 +172,16 @@ function output(
   }
 }
 
-function prisma(projectDir: string, input: PrismaInputConfig | undefined) {
+function prisma(
+  projectDir: string,
+  input: PrismaInputConfig | undefined,
+):
+  | {
+      prismaClientPath: string
+      nexusPrismaSchema: NexusPrismaSchema
+      contextClientName: string
+    }
+  | undefined {
   const hasPrisma = !!findPrismaConfigFile(projectDir)
 
   // If `prisma` undefined and no prisma.yml file, prisma isn't used
@@ -179,21 +189,16 @@ function prisma(projectDir: string, input: PrismaInputConfig | undefined) {
     return undefined
   }
 
-  // If `prisma` === true or `prisma` === undefined but a prisma.yml file is found
+  // If `prisma` === undefined but a prisma.yml file is found
   // Use all the defaults
-  if (input === true || (input === undefined && hasPrisma)) {
-    input = {}
+  if (hasPrisma && (input === undefined || !input.nexusPrismaSchema)) {
+    throw new Error('Missing required property `prisma.nexusPrismaSchema`')
   }
 
   const prismaClientPath = inputOrDefaultPath(
     projectDir,
     input!.prismaClientPath,
     DEFAULTS.prisma!.prismaClientPath,
-  )
-  const schemaPath = inputOrDefaultPath(
-    projectDir,
-    input!.schemaPath,
-    DEFAULTS.prisma!.schemaPath,
   )
   const contextClientName = inputOrDefaultValue(
     input!.contextClientName,
@@ -205,10 +210,7 @@ function prisma(projectDir: string, input: PrismaInputConfig | undefined) {
       prismaClientPath,
       `Could not find a valid \`prisma.prismaClientPath\` at ${prismaClientPath}`,
     ),
-    schemaPath: requiredPath(
-      schemaPath,
-      `Could not find a valid \`prisma.schemaPath\` at ${schemaPath}`,
-    ),
+    nexusPrismaSchema: input!.nexusPrismaSchema,
     contextClientName,
   }
 }
