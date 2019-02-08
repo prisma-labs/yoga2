@@ -1,20 +1,20 @@
 import { Config } from './types'
-import { Types } from 'nexus/dist/core'
+import { core } from 'nexus'
 
 // TODO: shouldGenerateArtifacts should use process.env.NODE_ENV of the app using yoga, and not yoga process itself
 export function makeSchemaDefaults(
   config: Config,
   types: any,
-): Types.SchemaConfig {
+): core.SchemaConfig {
   return {
     types,
     outputs: {
       schema: config.output.schemaPath,
       typegen: config.output.typegenPath,
     },
-    nullability: {
-      input: false,
-      inputList: false,
+    nonNullDefaults: {
+      input: true,
+      output: true,
     },
     // @ts-ignore
     typegenAutoConfig: {
@@ -22,7 +22,7 @@ export function makeSchemaDefaults(
         ...(config.contextPath
           ? [
               {
-                module: config.contextPath,
+                source: config.contextPath,
                 alias: 'ctx',
               },
             ]
