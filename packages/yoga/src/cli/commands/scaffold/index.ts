@@ -142,16 +142,22 @@ export const ${typeName} = prismaObjectType('${typeName}'/*, t => {
 
     if (queryOperations.length > 0) {
       content += `
-export const ${typeName}Query = prismaExtendType('Query', t => {
-  t.prismaFields([${queryOperations.join(', ')}])
+export const ${typeName}Query = prismaExtendType({
+  name: 'Query',
+  definition(t) {
+    t.prismaFields([${queryOperations.join(', ')}])
+  }
 })
 `
     }
 
     if (mutationOperations.length > 0) {
       content += `
-export const ${typeName}Mutation = prismaExtendType('Mutation', t => {
-  t.prismaFields([${mutationOperations.join(', ')}])
+export const ${typeName}Mutation = prismaExtendType({
+  name: 'Mutation',
+  definition(t) {
+    t.prismaFields([${mutationOperations.join(', ')}])
+  }
 })
 `
     }
