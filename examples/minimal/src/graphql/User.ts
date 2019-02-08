@@ -6,7 +6,10 @@ type User {
   name: String!
 }
 */
-export const User = objectType('User', t => {
-  t.id('id')
-  t.string('name')
+export const User = objectType({
+  name: 'User',
+  definition(t) {
+    t.id('id')
+    t.string('name')
+  },
 })
