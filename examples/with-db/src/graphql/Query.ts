@@ -1,4 +1,4 @@
-import { objectType, stringArg } from 'yoga'
+import { queryType, stringArg } from 'yoga'
 
 /*
 type Query {
@@ -7,21 +7,23 @@ type Query {
   posts: [Post!]!
 }
 */
-export const Query = objectType('Query', t => {
-  t.field('hello', 'String', {
-    args: {
-      name: stringArg(),
-    },
-    resolve: (root, { name }) => `Hello ${name}`,
-  })
+export const Query = queryType({
+  definition(t) {
+    t.string('hello', {
+      args: {
+        name: stringArg(),
+      },
+      resolve: (root, { name }) => `Hello ${name}`,
+    })
 
-  t.field('users', 'User', {
-    list: true,
-    resolve: (root, args, ctx) => ctx.prisma.users(),
-  })
+    t.list.field('users', {
+      type: 'User',
+      resolve: (root, args, ctx) => ctx.prisma.users(),
+    })
 
-  t.field('posts', 'Post', {
-    list: true,
-    resolve: (root, args, ctx) => [],
-  })
+    t.list.field('posts', {
+      type: 'Post',
+      resolve: (root, args, ctx) => [],
+    })
+  },
 })
