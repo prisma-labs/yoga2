@@ -6,8 +6,6 @@ hooks:
 
 generate:
   - generator: typescript-client
-    output: ../src/generated/prisma-client/
-  - generator: graphql-schema
-    output: ../src/generated/
+    output: ../.yoga/prisma-client/
 
 endpoint: https://eu1.prisma.sh/flavian/plugin/dev
