@@ -3,7 +3,7 @@ import { prismaObjectType, stringArg } from 'yoga'
 /*
 type Query {
   feed: [Post!]!
-  filterPosts: [Post!]!
+  filterPosts(searchString: String!): [Post!]!
 }
 */
 export const Query = prismaObjectType({
