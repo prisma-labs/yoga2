@@ -17,7 +17,7 @@ export type PrismaInputConfig = {
   contextClientName?: string
   /**
    * Path to the prisma-client/index.ts file
-   * @default ./src/generated/prisma-client/index.ts
+   * @default ./.yoga/prisma-client/index.ts
    */
   prismaClientPath?: string
 }
@@ -25,12 +25,12 @@ export type PrismaInputConfig = {
 export type OutputInputConfig = {
   /**
    * Path to the generated typings
-   * @default ./src/generated/nexus.ts
+   * @default ./.yoga//nexus.ts
    */
   typegenPath?: string
   /**
    * Path to the generated schema
-   * @default ./src/generated/nexus.graphql
+   * @default ./src/schema.graphql
    */
   schemaPath?: string
 }
