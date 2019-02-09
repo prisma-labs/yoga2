@@ -27,7 +27,7 @@ export async function loadYogaStarter(
     await installYogaStarter(output)
   }
 
-  printHelpMessage()
+  console.log(template.postIntallMessage)
 }
 
 interface TemplateRepositoryTarInformation {
@@ -118,16 +118,4 @@ async function isYarnInstalled(): Promise<boolean> {
   } catch (err) {
     return false
   }
-}
-
-function printHelpMessage(): void {
-  const message = `
-Your template has been successfully set up!
-
-Try running the following commands:
-  - ${chalk.yellow(`yarn dev`)}
-     Starts the GraphQL server.
-`
-
-  console.log(message)
 }

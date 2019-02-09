@@ -1,7 +1,10 @@
+import chalk from 'chalk'
+
 export interface Template {
   name: string
   description: string
   repo: TemplateRepository
+  postIntallMessage: string
 }
 
 export interface TemplateRepository {
@@ -18,6 +21,13 @@ export const defaultTemplate: Template = {
     branch: 'master',
     path: '/examples/minimal',
   },
+  postIntallMessage: `
+Your template has been successfully set up!
+  
+Here are the next steps to get you started:
+  1. Run ${chalk.yellow(`yarn dev`)} (Starts the GraphQL server)
+  2. That's it !
+  `,
 }
 
 export const availableTemplates: Template[] = [
@@ -30,6 +40,16 @@ export const availableTemplates: Template[] = [
       branch: 'master',
       path: '/examples/with-db',
     },
+    postIntallMessage: `
+Your template has been successfully set up!
+  
+Here are the next steps to get you started:
+  1. Run ${chalk.yellow(
+    `yarn prisma deploy`,
+  )} (choose a Demo server for a quicker startup)
+  2. Run ${chalk.yellow(`yarn dev`)} (Starts the GraphQL server)
+  3. That's it !
+  `,
   },
 ]
 
