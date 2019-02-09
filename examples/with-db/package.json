@@ -7,7 +7,7 @@
     "scaffold": "yoga scaffold"
   },
   "dependencies": {
-    "yoga": "0.0.0"
+    "yoga": "0.0.2"
   },
   "devDependencies": {
     "@types/graphql": "^14.0.4",

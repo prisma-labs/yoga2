@@ -1,6 +1,6 @@
 {
   "name": "yoga",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "apollo-server": "^2.3.1",
-    "create-yoga": "0.0.0",
+    "create-yoga": "0.0.1",
     "decache": "^4.5.0",
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
     "inquirer": "^6.2.1",
