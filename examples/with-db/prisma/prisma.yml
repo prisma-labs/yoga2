@@ -7,5 +7,3 @@ hooks:
 generate:
   - generator: typescript-client
     output: ../.yoga/prisma-client/
-
-endpoint: https://eu1.prisma.sh/flavian/plugin/dev

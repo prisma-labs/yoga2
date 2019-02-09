@@ -1,29 +1,39 @@
-import { queryType, stringArg } from 'yoga'
+import { prismaObjectType, stringArg } from 'yoga'
 
 /*
 type Query {
-  hello(name: String!): String!
-  users: [User!]!
-  posts: [Post!]!
+  feed: [Post!]!
+  filterPosts: [Post!]!
 }
 */
-export const Query = queryType({
+export const Query = prismaObjectType({
+  name: 'Query',
   definition(t) {
-    t.string('hello', {
-      args: {
-        name: stringArg(),
-      },
-      resolve: (root, { name }) => `Hello ${name}`,
-    })
-
-    t.list.field('users', {
-      type: 'User',
-      resolve: (root, args, ctx) => ctx.prisma.users(),
-    })
-
-    t.list.field('posts', {
+    // Call t.primaFields to expose, hide, or customize fields
+    t.list.field('feed', {
       type: 'Post',
-      resolve: (root, args, ctx) => [],
+      resolve: (parent, args, ctx) => {
+        return ctx.prisma.posts({
+          where: { published: true },
+        })
+      },
+    })
+
+    t.list.field('filterPosts', {
+      type: 'Post',
+      args: {
+        searchString: stringArg(),
+      },
+      resolve: (parent, { searchString }, ctx) => {
+        return ctx.prisma.posts({
+          where: {
+            OR: [
+              { title_contains: searchString },
+              { content_contains: searchString },
+            ],
+          },
+        })
+      },
     })
   },
 })
