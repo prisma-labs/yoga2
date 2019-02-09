@@ -1,6 +1,6 @@
-import { idArg, prismaObjectType, stringArg } from 'yoga';
+import { idArg, prismaObjectType, stringArg } from 'yoga'
 
-/**
+/*
 type Mutation {
   deletePost(id: ID!): Post
   signupUser(name: String!, email: String!): User!
