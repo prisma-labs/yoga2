@@ -212,9 +212,7 @@ async function prisma(
     ? input!.nexusPrismaSchema
     : requiredPath(
         DEFAULT_NEXUS_PRISMA_SCHEMA_PATH,
-        `Could not find a valid \`prisma.nexusPrismaSchema\` at ${
-          DEFAULTS.prisma!.nexusPrismaSchema
-        }`,
+        `Could not find a valid \`prisma.nexusPrismaSchema\` at ${DEFAULT_NEXUS_PRISMA_SCHEMA_PATH}`,
       )
   const nexusPrismaSchema =
     typeof nexusPrismaSchemaInput === 'string'
