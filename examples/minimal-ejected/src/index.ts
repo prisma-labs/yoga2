@@ -9,7 +9,7 @@ export default {
       types,
       outputs: {
         schema: path.join(dirname, './schema.graphql'),
-        typegen: path.join(dirname, '../.yoga/nexus.ts'),
+        typegen: path.join(dirname, '../yoga/nexus.ts'),
       },
       typegenAutoConfig: {
         sources: [
