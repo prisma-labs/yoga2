@@ -8,7 +8,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc --declaration",
-    "watch": "tsc -w"
+    "watch": "tsc -d -w"
   },
   "bin": {
     "yoga": "dist/cli/index.js"

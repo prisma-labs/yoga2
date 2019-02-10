@@ -1,12 +1,13 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { findPrismaConfigFile } from './config'
+import { transpileAndImportDefault } from './helpers'
 import {
   Config,
   InputConfig,
+  InputOutputFilesConfig,
+  InputPrismaConfig,
   NexusPrismaSchema,
-  OutputInputConfig,
-  PrismaInputConfig,
 } from './types'
 
 const DEFAULTS: Config = {
@@ -20,26 +21,32 @@ const DEFAULTS: Config = {
   },
   prisma: {
     prismaClientPath: './yoga/prisma-client/index.ts',
+    /**
+     * Do not use that as a default value, this is just a placeholder
+     * When `nexusPrismaSchema` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     */
     nexusPrismaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
     contextClientName: 'prisma',
   },
 }
 
+const DEFAULT_NEXUS_PRISMA_SCHEMA_PATH = './yoga/nexus-prisma/nexus-prisma.ts'
+
 /**
  * - Compute paths relative to the root of the project
  * - Set defaults when needed
  */
-export function normalizeConfig(
+export async function normalizeConfig(
   config: InputConfig,
   projectDir: string,
   outDir: string | undefined,
-): Config {
+): Promise<Config> {
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
     output: output(projectDir, config.output, outDir),
-    prisma: prisma(projectDir, config.prisma),
+    prisma: await prisma(projectDir, config.prisma),
   }
 
   return outputConfig
@@ -135,7 +142,7 @@ function ejectFilePath(
 
 function output(
   projectDir: string,
-  input: OutputInputConfig | undefined,
+  input: InputOutputFilesConfig | undefined,
   outDir: string | undefined,
 ): {
   typegenPath: string
@@ -172,27 +179,28 @@ function output(
   }
 }
 
-function prisma(
+async function prisma(
   projectDir: string,
-  input: PrismaInputConfig | undefined,
-):
+  input: InputPrismaConfig | undefined,
+): Promise<
   | {
       prismaClientPath: string
       nexusPrismaSchema: NexusPrismaSchema
       contextClientName: string
     }
-  | undefined {
+  | undefined
+> {
   const hasPrisma = !!findPrismaConfigFile(projectDir)
 
   // If `prisma` undefined and no prisma.yml file, prisma isn't used
   if (input === undefined && !hasPrisma) {
-    return undefined
+    return Promise.resolve(undefined)
   }
 
-  // If `prisma` === undefined but a prisma.yml file is found
+  // If `prisma` === true or `prisma` === undefined but a prisma.yml file is found
   // Use all the defaults
-  if (hasPrisma && (input === undefined || !input.nexusPrismaSchema)) {
-    throw new Error('Missing required property `prisma.nexusPrismaSchema`')
+  if (input === true || (input === undefined && hasPrisma)) {
+    input = {}
   }
 
   const prismaClientPath = inputOrDefaultPath(
@@ -200,6 +208,21 @@ function prisma(
     input!.prismaClientPath,
     DEFAULTS.prisma!.prismaClientPath,
   )
+  const nexusPrismaSchemaInput = input!.nexusPrismaSchema
+    ? input!.nexusPrismaSchema
+    : requiredPath(
+        DEFAULT_NEXUS_PRISMA_SCHEMA_PATH,
+        `Could not find a valid \`prisma.nexusPrismaSchema\` at ${
+          DEFAULTS.prisma!.nexusPrismaSchema
+        }`,
+      )
+  const nexusPrismaSchema =
+    typeof nexusPrismaSchemaInput === 'string'
+      ? await transpileAndImportDefault<NexusPrismaSchema>(
+          projectDir,
+          nexusPrismaSchemaInput,
+        )
+      : nexusPrismaSchemaInput
   const contextClientName = inputOrDefaultValue(
     input!.contextClientName,
     DEFAULTS.prisma!.contextClientName,
@@ -210,7 +233,7 @@ function prisma(
       prismaClientPath,
       `Could not find a valid \`prisma.prismaClientPath\` at ${prismaClientPath}`,
     ),
-    nexusPrismaSchema: input!.nexusPrismaSchema,
+    nexusPrismaSchema,
     contextClientName,
   }
 }

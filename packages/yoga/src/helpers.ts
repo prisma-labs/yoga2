@@ -1,5 +1,7 @@
 import * as fs from 'fs'
+import { tmpdir } from 'os'
 import * as path from 'path'
+import * as ts from 'typescript'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -54,4 +56,31 @@ export function importUncached(mod: string): Promise<any> {
   delete require.cache[require.resolve(mod)]
 
   return import(mod)
+}
+
+/**
+ * Transpile a single file and return the default exported item
+ */
+export async function transpileAndImportDefault<T>(
+  projectDir: string,
+  filePath: string,
+): Promise<T> {
+  const outDir = tmpdir()
+
+  ts.createProgram([filePath], {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES5,
+    outDir,
+    noEmitOnError: false,
+  }).emit()
+
+  const config = await importUncached(
+    getTranspiledPath(projectDir, filePath, outDir),
+  )
+
+  if (!config.default) {
+    throw new Error(`\`${filePath}\` must have default export`)
+  }
+
+  return config.default
 }

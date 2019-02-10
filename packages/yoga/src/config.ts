@@ -1,10 +1,9 @@
-import * as path from 'path'
 import * as fs from 'fs'
+import * as path from 'path'
 import * as ts from 'typescript'
-import { Config } from './types'
+import { transpileAndImportDefault } from './helpers'
+import { Config, InputConfig } from './types'
 import { normalizeConfig } from './yogaDefaults'
-import { importUncached } from './helpers'
-import { tmpdir } from 'os'
 
 /**
  * Find a `prisma.yml` file if it exists
@@ -74,7 +73,6 @@ export async function importYogaConfig(): Promise<{
 }> {
   const tsConfigPath = findTsConfigPath()
   const tsConfig = parseTsConfig(tsConfigPath)
-  const yogaConfigOutDir = tmpdir() // Compile the config file in a tmp dir
   const projectDir = path.dirname(tsConfigPath)
   const rootDir = tsConfig.options.rootDir!
 
@@ -87,28 +85,23 @@ export async function importYogaConfig(): Promise<{
   // If no config file, just use all defaults
   if (!yogaConfigPath) {
     return {
-      yogaConfig: normalizeConfig({}, projectDir, tsConfig.options.outDir),
+      yogaConfig: await normalizeConfig(
+        {},
+        projectDir,
+        tsConfig.options.outDir,
+      ),
       projectDir,
       rootDir,
     }
   }
 
-  ts.createProgram([yogaConfigPath], {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES5,
-    outDir: yogaConfigOutDir,
-  }).emit()
-
-  const config = await importUncached(
-    path.join(yogaConfigOutDir, 'yoga.config.js'),
+  const config = await transpileAndImportDefault<InputConfig>(
+    projectDir,
+    yogaConfigPath,
   )
 
-  if (!config.default) {
-    throw new Error('`yoga.config.ts` must default export an object')
-  }
-
-  const yogaConfig = normalizeConfig(
-    config.default,
+  const yogaConfig = await normalizeConfig(
+    config,
     projectDir,
     tsConfig.options.outDir!,
   )
