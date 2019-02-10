@@ -1,5 +1,5 @@
 import { InputConfig } from 'yoga'
-import nexusPrismaSchema from './.yoga/nexus-prisma'
+import nexusPrismaSchema from './yoga/nexus-prisma'
 
 export default {
   prisma: {

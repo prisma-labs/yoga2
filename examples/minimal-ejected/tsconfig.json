@@ -9,7 +9,7 @@
     "lib": ["es2015", "esnext.asynciterable", "es2017", "dom"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true
   },
   "include": ["./src/**/*.ts"],
