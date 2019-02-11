@@ -1,7 +1,8 @@
 import { existsSync } from 'fs'
+import { PrismaClientInput } from 'nexus-prisma/dist/types'
 import { join } from 'path'
 import { findPrismaConfigFile } from './config'
-import { transpileAndImportDefault } from './helpers'
+import { transpileAndImportDefault as transpileAndImport } from './helpers'
 import {
   Config,
   InputConfig,
@@ -20,17 +21,24 @@ const DEFAULTS: Config = {
     buildPath: './dist',
   },
   prisma: {
-    prismaClientPath: './yoga/prisma-client/index.ts',
     /**
      * Do not use that as a default value, this is just a placeholder
-     * When `nexusPrismaSchema` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     * When `metaSchema` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
      */
-    nexusPrismaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
-    contextClientName: 'prisma',
+    metaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
+    /**
+     * Do not use that as a default value, this is just a placeholder
+     * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     */
+    client: {
+      $exists: null,
+      $graphql: null as any, // FIXME
+    },
   },
 }
 
-const DEFAULT_NEXUS_PRISMA_SCHEMA_PATH = './yoga/nexus-prisma/nexus-prisma.ts'
+const DEFAULT_NEXUS_PRISMA_SCHEMA_PATH = './yoga/nexus-prisma/index.ts'
+const DEFAULT_PRISMA_CLIENT_PATH = './yoga/prisma-client/index.ts'
 
 /**
  * - Compute paths relative to the root of the project
@@ -41,12 +49,13 @@ export async function normalizeConfig(
   projectDir: string,
   outDir: string | undefined,
 ): Promise<Config> {
+  const outputProperty = output(projectDir, config.output, outDir)
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
-    output: output(projectDir, config.output, outDir),
-    prisma: await prisma(projectDir, config.prisma),
+    output: outputProperty,
+    prisma: await prisma(projectDir, config.prisma, outputProperty.buildPath),
   }
 
   return outputConfig
@@ -103,6 +112,33 @@ function requiredPath(path: string, errorMessage: string) {
   }
 
   return path
+}
+
+async function inputOrImportAtDefaultPath(opts: {
+  projectDir: string
+  outDir: string
+  files: {
+    input: any | undefined
+    defaultPath: string
+    errorMessage: string
+    exportName: string
+  }[]
+}): Promise<any[]> {
+  const existingInputs = opts.files
+    .filter(file => file.input !== undefined)
+    .map(file => file.input)
+  const filesToTranspile = opts.files.filter(file => file.input === undefined)
+
+  const importedFiles = await transpileAndImport(
+    filesToTranspile.map(f => ({
+      filePath: requiredPath(f.defaultPath, f.errorMessage),
+      exportName: f.exportName,
+    })),
+    opts.projectDir,
+    opts.outDir,
+  )
+
+  return [...importedFiles, ...existingInputs]
 }
 
 function contextPath(
@@ -182,11 +218,11 @@ function output(
 async function prisma(
   projectDir: string,
   input: InputPrismaConfig | undefined,
+  outDir: string,
 ): Promise<
   | {
-      prismaClientPath: string
-      nexusPrismaSchema: NexusPrismaSchema
-      contextClientName: string
+      metaSchema: NexusPrismaSchema
+      client: PrismaClientInput
     }
   | undefined
 > {
@@ -203,35 +239,27 @@ async function prisma(
     input = {}
   }
 
-  const prismaClientPath = inputOrDefaultPath(
+  const [metaSchema, client] = await inputOrImportAtDefaultPath({
+    files: [
+      {
+        input: input!.metaSchema,
+        defaultPath: DEFAULT_NEXUS_PRISMA_SCHEMA_PATH,
+        errorMessage: `Could not find a valid \`prisma.metaSchema\` at ${DEFAULT_NEXUS_PRISMA_SCHEMA_PATH}`,
+        exportName: 'default',
+      },
+      {
+        input: input!.client,
+        defaultPath: DEFAULT_PRISMA_CLIENT_PATH,
+        errorMessage: `Could not find a valid \`prisma.client\` at ${DEFAULT_PRISMA_CLIENT_PATH}`,
+        exportName: 'prisma',
+      },
+    ],
+    outDir,
     projectDir,
-    input!.prismaClientPath,
-    DEFAULTS.prisma!.prismaClientPath,
-  )
-  const nexusPrismaSchemaInput = input!.nexusPrismaSchema
-    ? input!.nexusPrismaSchema
-    : requiredPath(
-        DEFAULT_NEXUS_PRISMA_SCHEMA_PATH,
-        `Could not find a valid \`prisma.nexusPrismaSchema\` at ${DEFAULT_NEXUS_PRISMA_SCHEMA_PATH}`,
-      )
-  const nexusPrismaSchema =
-    typeof nexusPrismaSchemaInput === 'string'
-      ? await transpileAndImportDefault<NexusPrismaSchema>(
-          projectDir,
-          nexusPrismaSchemaInput,
-        )
-      : nexusPrismaSchemaInput
-  const contextClientName = inputOrDefaultValue(
-    input!.contextClientName,
-    DEFAULTS.prisma!.contextClientName,
-  )
+  })
 
   return {
-    prismaClientPath: requiredPath(
-      prismaClientPath,
-      `Could not find a valid \`prisma.prismaClientPath\` at ${prismaClientPath}`,
-    ),
-    nexusPrismaSchema,
-    contextClientName,
+    metaSchema: metaSchema as NexusPrismaSchema,
+    client: client as PrismaClientInput,
   }
 }

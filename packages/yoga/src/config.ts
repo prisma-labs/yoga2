@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
 import { transpileAndImportDefault } from './helpers'
-import { Config, InputConfig } from './types'
+import { Config } from './types'
 import { normalizeConfig } from './yogaDefaults'
 
 /**
@@ -95,13 +95,14 @@ export async function importYogaConfig(): Promise<{
     }
   }
 
-  const config = await transpileAndImportDefault<InputConfig>(
+  const config = await transpileAndImportDefault(
+    [{ filePath: yogaConfigPath, exportName: 'default' }],
     projectDir,
-    yogaConfigPath,
+    tsConfig.options.outDir!,
   )
 
   const yogaConfig = await normalizeConfig(
-    config,
+    config[0],
     projectDir,
     tsConfig.options.outDir!,
   )

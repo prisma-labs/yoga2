@@ -1,7 +1,7 @@
 import * as fs from 'fs'
-import { tmpdir } from 'os'
 import * as path from 'path'
 import * as ts from 'typescript'
+import { EOL } from 'os'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -44,7 +44,7 @@ export function getTranspiledPath(
 ) {
   const pathFromRootToFile = path.relative(projectDir, filePath)
   const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
-  const pathToJsFile = `${path.dirname(pathFromRootToFile)}/${jsFileName}`
+  const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
 
   return path.join(outDir, pathToJsFile)
 }
@@ -61,26 +61,43 @@ export function importUncached(mod: string): Promise<any> {
 /**
  * Transpile a single file and return the default exported item
  */
-export async function transpileAndImportDefault<T>(
+export async function transpileAndImportDefault(
+  files: { filePath: string; exportName: string }[],
   projectDir: string,
-  filePath: string,
-): Promise<T> {
-  const outDir = tmpdir()
+  outDir: string,
+): Promise<any[]> {
+  const resolvedFilesPath = files.map(file => {
+    if (file.filePath.startsWith('/')) {
+      return file.filePath
+    }
 
-  ts.createProgram([filePath], {
+    return path.join(projectDir, file.filePath)
+  })
+
+  ts.createProgram(resolvedFilesPath, {
     module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ES5,
     outDir,
-    noEmitOnError: false,
+    rootDir: projectDir, // /!\ rootDir is needed in order to keep to folder structure in outDir
   }).emit()
 
-  const config = await importUncached(
-    getTranspiledPath(projectDir, filePath, outDir),
+  const importedFiles = await Promise.all(
+    files.map(file =>
+      importUncached(getTranspiledPath(projectDir, file.filePath, outDir)),
+    ),
   )
 
-  if (!config.default) {
-    throw new Error(`\`${filePath}\` must have default export`)
+  const wrongImports = files.filter(
+    (file, i) => importedFiles[i][file.exportName] === undefined,
+  )
+
+  if (wrongImports.length > 0) {
+    const errorString = wrongImports
+      .map(file => `\`${file.filePath}\` must have a ${file.exportName} export`)
+      .join(EOL)
+
+    throw new Error(errorString)
   }
 
-  return config.default
+  return files.map((file, i) => importedFiles[i][file.exportName])
 }

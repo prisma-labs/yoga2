@@ -11,8 +11,11 @@ type Mutation {
 export const Mutation = prismaObjectType({
   name: 'Mutation',
   definition(t) {
-    // Call t.primaFields to expose, hide, or customize fields
-    // t.prismaFields(['createUser', 'deleteUser'])
+    // All fields from the underlying object type are exposed automatically
+    // use `t.primaFields(['fieldName', ...])` to hide, customize, or select specific fields
+
+    // This removes all fields from the underlying Mutation object type
+    t.prismaFields([])
 
     t.field('deletePost', {
       type: 'Post',
