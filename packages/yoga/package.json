@@ -1,6 +1,6 @@
 {
   "name": "yoga",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
