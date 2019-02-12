@@ -1,45 +1,65 @@
-import * as inquirer from 'inquirer'
-import pluralize from 'pluralize'
-import { importYogaConfig, findPrismaConfigFile } from '../../../config'
-import * as path from 'path'
 import * as fs from 'fs'
+import * as inquirer from 'inquirer'
 import yaml from 'js-yaml'
+import * as path from 'path'
+import pluralize from 'pluralize'
+import { findPrismaConfigFile, importYogaConfig } from '../../../config'
 import { Config } from '../../../types'
+import { spawnAsync } from '../../spawnAsync'
+import execa = require('execa')
 
 export default async () => {
   const { yogaConfig, projectDir } = await importYogaConfig()
-  const { inputTypeName } = await inquirer.prompt<{ inputTypeName: string }>([
-    {
-      name: 'inputTypeName',
-      message: 'Input the name of your type',
-      type: 'input',
-      validate(input: string) {
-        if (input === undefined || input.length === 0) {
-          return 'Type name should be at least one character'
-        }
-
-        if (!/^[_a-zA-Z][_a-zA-Z0-9]*$/.test(input)) {
-          return `Type name must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${input}" does not`
-        }
-
-        return true
-      },
-    },
-  ])
-  const typeName = upperFirst(inputTypeName)
   const hasDb = !!yogaConfig.prisma
-  let crudOperations: string[] | null = null
+  const inputTypeQuestion: inquirer.Question<{ inputTypeName: string }> = {
+    name: 'inputTypeName',
+    message: 'Input the name of your type',
+    type: 'input',
+    validate(input: string) {
+      if (input === undefined || input.length === 0) {
+        return 'Type name should be at least one character'
+      }
+
+      if (!/^[_a-zA-Z][_a-zA-Z0-9]*$/.test(input)) {
+        return `Type name must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "${input}" does not`
+      }
+
+      return true
+    },
+  }
+
+  let { inputTypeName } = await inquirer.prompt(inputTypeQuestion)
+
+  const typeName = upperFirst(inputTypeName)
 
   if (hasDb) {
-    const { answer } = await inquirer.prompt<{ answer: boolean }>([
-      {
-        name: 'answer',
-        message: 'Do you want to expose CRUD operations ?',
-        type: 'confirm',
-      },
-    ])
+    let crudOperations: string[] | null = null
+    const { datamodelPath, datamodelContent } = getPrismaDatamodel(projectDir)
+    const relativeDatamodelPath = path.relative(projectDir, datamodelPath)
 
-    if (answer) {
+    while (isModelNameAlreadyDefined(inputTypeName, datamodelContent)) {
+      const { inputTypeName: retry } = await inquirer.prompt([
+        {
+          ...inputTypeQuestion,
+          message:
+            'Type name already defined in your datamodel. Please try another one:',
+        },
+      ])
+
+      inputTypeName = retry
+    }
+
+    const { exposeCrudOps } = await inquirer.prompt<{ exposeCrudOps: boolean }>(
+      [
+        {
+          name: 'exposeCrudOps',
+          message: 'Do you want to expose CRUD operations ?',
+          type: 'confirm',
+        },
+      ],
+    )
+
+    if (exposeCrudOps) {
       const { operations } = await inquirer.prompt<{ operations: string[] }>([
         {
           name: 'operations',
@@ -59,31 +79,51 @@ export default async () => {
 
       crudOperations = operations
     }
-  }
 
-  if (hasDb) {
-    updateDatamodel(typeName, projectDir)
-  }
+    updateDatamodel(datamodelPath, typeName)
 
-  scaffoldType(yogaConfig, typeName, hasDb, crudOperations)
+    console.log(`
+We have added a type '${inputTypeName}' in your \`${relativeDatamodelPath}\` file !
 
-  if (hasDb) {
-    console.log(`\
-- Updated datamodel.prisma
-- Scaffolded new file at ./src/graphql/${typeName}.ts
+Before we continue, please do the following steps:
 
-Next steps:
-1/
-- Go to your datamodel.prisma file
-- Add desired fields to your model
-- Run \`prisma deloy\`
-
-2/
-- Go to ./src/graphql/${typeName}.ts
-- Expose/customize your persisted model using \`t.prismaFields([...])\`
+1. Go to your \`${relativeDatamodelPath}\` file
+2. Add the desired fields to your model
+3. Confirm with Y once you're done, we'll run \`prisma deploy\` for you
 `)
-  } else {
-    console.log(`\
+
+    const { allStepsDone } = await inquirer.prompt<{ allStepsDone: boolean }>([
+      {
+        name: 'allStepsDone',
+        message: 'Did you go through all the steps ?',
+        type: 'confirm',
+      },
+    ])
+
+    if (allStepsDone) {
+      await runPrismaDeploy()
+
+      const filePath = scaffoldType(yogaConfig, typeName, hasDb, crudOperations)
+      const relativePath = path.relative(projectDir, filePath)
+
+      console.log(`
+Scaffolding of ${relativePath} succesfuly done !
+  
+A few more optional steps:
+  
+1. Go to ${relativePath}
+2. Expose/customize your persisted model using \`t.prismaFields([...])\`
+  `)
+    } else {
+      console.log('Exiting now.')
+    }
+
+    process.exit(0)
+  }
+
+  scaffoldType(yogaConfig, typeName, hasDb, null)
+
+  console.log(`\
 Scaffolded new file at ./src/graphql/${typeName}.ts
 
 Next steps:
@@ -91,7 +131,6 @@ Next steps:
 - Go to ./src/graphql/${typeName}.ts
 - Expose your persisted fields
     `)
-  }
 }
 
 function scaffoldType(
@@ -99,7 +138,7 @@ function scaffoldType(
   typeName: string,
   hasDb: boolean,
   crudOperations: string[] | null,
-) {
+): string {
   const typePath = path.join(config.resolversPath, `${typeName}.ts`)
 
   if (fs.existsSync(typePath)) {
@@ -115,6 +154,8 @@ function scaffoldType(
   } catch (e) {
     console.error(e)
   }
+
+  return typePath
 }
 
 function scaffoldTypeWithDb(
@@ -128,9 +169,10 @@ import { prismaObjectType${
   
 export const ${typeName} = prismaObjectType({
   name: '${typeName}',
-  /*definition(t) {
-    // To expose your fields, call t.prismaFields([‘fieldName’, …])
-  }*/
+  definition(t) {
+    // All fields exposed by default, uncomment line below to expose specific fields
+    // t.prismaFields(['id'])
+  }
 })
 `
 
@@ -173,13 +215,18 @@ function scaffoldTypeWithoutDb(typeName: string) {
   return `\
 import { objectType } from 'yoga'
 
-export const ${typeName} = objectType('${typeName}', t => {
-  // Expose your fields using t.field()/string()/boolean().. here
+export const ${typeName} = objectType({
+  name: '${typeName}',
+  definition(t) {
+    // Expose your fields using t.field()/string()/boolean().. here
+  }
 })
   `
 }
 
-function updateDatamodel(typeName: string, projectDir: string): void {
+function getPrismaDatamodel(
+  projectDir: string,
+): { datamodelPath: string; datamodelContent: string } {
   const configPath = findPrismaConfigFile(projectDir)
 
   if (!configPath) {
@@ -203,12 +250,14 @@ function updateDatamodel(typeName: string, projectDir: string): void {
     ? definition.datamodel[0]
     : definition.datamodel
   const datamodelPath = path.join(path.dirname(configPath), unresolvedTypesPath)
-  const datamodelContent = fs.readFileSync(datamodelPath).toString()
 
-  if (datamodelContent.includes(`type ${typeName}`)) {
-    throw new Error(`Type ${typeName} is already defined in your datamodel.`)
+  return {
+    datamodelPath,
+    datamodelContent: fs.readFileSync(datamodelPath).toString(),
   }
+}
 
+function updateDatamodel(datamodelPath: string, typeName: string): void {
   const typeToAdd = `\n
 type ${typeName} {
   # Add your fields here
@@ -227,4 +276,65 @@ type ${typeName} {
  */
 function upperFirst(s: string): string {
   return s.replace(/^\w/, c => c.toUpperCase())
+}
+
+function isModelNameAlreadyDefined(modelName: string, datamodelString: string) {
+  return datamodelString.includes(`type ${modelName}`)
+}
+
+async function runPrismaDeploy(): Promise<any> {
+  try {
+    if (isYarnInstalled()) {
+      if (isPrismaInstalledLocally()) {
+        return runCommand('yarn prisma deploy')
+      }
+      if (isPrismaInstalledGlobally()) {
+        return runCommand('prisma deploy')
+      }
+    } else {
+      if (isPrismaInstalledLocally()) {
+        return runCommand('npm run prisma deploy')
+      }
+      if (isPrismaInstalledGlobally()) {
+        await runCommand(`prisma deploy`)
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function isPrismaInstalledGlobally(): Promise<boolean> {
+  try {
+    await execa.shell(`prisma --version`, { stdio: `ignore` })
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+async function isPrismaInstalledLocally(): Promise<boolean> {
+  try {
+    await execa.shell(`yarn prisma --version`, { stdio: `ignore` })
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+async function isYarnInstalled(): Promise<boolean> {
+  try {
+    await execa.shell(`yarnpkg --version`, { stdio: `ignore` })
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+async function runCommand(command: string) {
+  const [cmd, ...rest] = command.split(' ')
+
+  const childProcess = spawnAsync(cmd, rest, { stdio: 'inherit' })
+
+  return childProcess
 }

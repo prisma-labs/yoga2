@@ -1,6 +1,6 @@
 {
   "name": "yoga",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
@@ -8,7 +8,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc --declaration",
-    "watch": "tsc -w"
+    "watch": "tsc -d -w"
   },
   "bin": {
     "yoga": "dist/cli/index.js"
@@ -21,19 +21,21 @@
     "inquirer": "^6.2.1",
     "js-yaml": "^3.12.1",
     "nexus": "0.9.9",
-    "nexus-prisma": "0.1.6",
+    "nexus-prisma": "0.2.0",
     "pluralize": "^7.0.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
+    "@types/chokidar": "^1.7.5",
     "@types/graphql": "^14.0.4",
     "@types/inquirer": "^0.0.43",
     "@types/js-yaml": "^3.12.0",
     "@types/node": "^10.12.18",
     "@types/pluralize": "^0.0.29",
     "@types/yargs": "^12.0.5",
+    "chokidar": "^2.1.1",
     "prettier": "^1.15.3",
-    "ts-node": "^7.0.1",
+    "ts-node": "^8.0.2",
     "typescript": "^3.2.2"
   },
   "prettier": {

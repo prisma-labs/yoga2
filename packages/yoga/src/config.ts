@@ -1,10 +1,9 @@
-import * as path from 'path'
 import * as fs from 'fs'
+import * as path from 'path'
 import * as ts from 'typescript'
-import { Config } from './types'
-import { normalizeConfig } from './yogaDefaults'
-import { importUncached } from './helpers'
-import { tmpdir } from 'os'
+import { transpileAndImportDefault } from './helpers'
+import { Config, InputConfig, InputPrismaConfig } from './types'
+import { normalizeConfig, DEFAULT_META_SCHEMA_PATH } from './yogaDefaults'
 
 /**
  * Find a `prisma.yml` file if it exists
@@ -63,6 +62,14 @@ export function parseTsConfig(tsConfigPath: string): ts.ParsedCommandLine {
   return tsConfig
 }
 
+function getMetaSchemaPath(prismaConfig?: InputPrismaConfig): string {
+  if (!prismaConfig || prismaConfig === true || !prismaConfig.metaSchemaPath) {
+    return DEFAULT_META_SCHEMA_PATH
+  }
+
+  return prismaConfig.metaSchemaPath
+}
+
 /**
  * Dynamically import a `yoga.config.ts` file
  */
@@ -70,14 +77,14 @@ export async function importYogaConfig(): Promise<{
   yogaConfigPath?: string
   yogaConfig: Config
   projectDir: string
+  tsConfigPath: string
+  metaSchemaPath?: string
   rootDir: string
 }> {
   const tsConfigPath = findTsConfigPath()
   const tsConfig = parseTsConfig(tsConfigPath)
-  const yogaConfigOutDir = tmpdir() // Compile the config file in a tmp dir
   const projectDir = path.dirname(tsConfigPath)
   const rootDir = tsConfig.options.rootDir!
-
   const yogaConfigPath = ts.findConfigFile(
     /*searchPath*/ process.cwd(),
     ts.sys.fileExists,
@@ -86,29 +93,28 @@ export async function importYogaConfig(): Promise<{
 
   // If no config file, just use all defaults
   if (!yogaConfigPath) {
+    const yogaConfig = await normalizeConfig(
+      {},
+      projectDir,
+      tsConfig.options.outDir,
+    )
     return {
-      yogaConfig: normalizeConfig({}, projectDir, tsConfig.options.outDir),
+      yogaConfig,
+      metaSchemaPath: yogaConfig.prisma ? DEFAULT_META_SCHEMA_PATH : undefined,
       projectDir,
       rootDir,
+      tsConfigPath,
     }
   }
 
-  ts.createProgram([yogaConfigPath], {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES5,
-    outDir: yogaConfigOutDir,
-  }).emit()
+  const config = (await transpileAndImportDefault(
+    [{ filePath: yogaConfigPath, exportName: 'default' }],
+    projectDir,
+    tsConfig.options.outDir!,
+  )) as [InputConfig]
 
-  const config = await importUncached(
-    path.join(yogaConfigOutDir, 'yoga.config.js'),
-  )
-
-  if (!config.default) {
-    throw new Error('`yoga.config.ts` must default export an object')
-  }
-
-  const yogaConfig = normalizeConfig(
-    config.default,
+  const yogaConfig = await normalizeConfig(
+    config[0],
     projectDir,
     tsConfig.options.outDir!,
   )
@@ -118,5 +124,7 @@ export async function importYogaConfig(): Promise<{
     yogaConfigPath,
     projectDir,
     rootDir,
+    tsConfigPath,
+    metaSchemaPath: getMetaSchemaPath(config[0].prisma),
   }
 }
