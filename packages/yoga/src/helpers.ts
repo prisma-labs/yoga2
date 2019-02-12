@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
 import { EOL } from 'os'
+import decache from 'decache'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -82,9 +83,18 @@ export async function transpileAndImportDefault(
   }).emit()
 
   const importedFiles = await Promise.all(
-    files.map(file =>
-      importUncached(getTranspiledPath(projectDir, file.filePath, outDir)),
-    ),
+    files.map(file => {
+      const transpiledPath = getTranspiledPath(
+        projectDir,
+        file.filePath,
+        outDir,
+      )
+
+      // Invalidate cache and all dependencies of this file
+      decache(transpiledPath)
+
+      return import(transpiledPath)
+    }),
   )
 
   const wrongImports = files.filter(
