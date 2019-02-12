@@ -6,7 +6,7 @@ import { makePrismaSchema } from 'nexus-prisma'
 import { dirname } from 'path'
 import { CompilerOptions } from 'typescript'
 import { watch as watchFiles } from './compiler'
-import { findTsConfigPath, importYogaConfig } from './config'
+import { importYogaConfig } from './config'
 import {
   findFileByExtension,
   getTranspiledPath,
@@ -21,8 +21,12 @@ import { Config, Yoga } from './types'
  * - Run a GraphQL Server based on these types
  */
 export async function watch(): Promise<void> {
-  const tsConfigPath = findTsConfigPath()
-  const { yogaConfig, rootDir } = await importYogaConfig()
+  let {
+    yogaConfig,
+    rootDir,
+    tsConfigPath,
+    metaSchemaPath,
+  } = await importYogaConfig()
 
   const compilerOptions: CompilerOptions = {
     noUnusedLocals: false,
@@ -35,21 +39,32 @@ export async function watch(): Promise<void> {
 
   let oldServer: any | undefined = undefined
 
-  watchFiles(tsConfigPath, compilerOptions, async () => {
-    const yogaServer = await getYogaServer(rootDir, yogaConfig)
+  watchFiles(
+    tsConfigPath,
+    compilerOptions,
+    metaSchemaPath,
+    async updatedConfig => {
+      if (updatedConfig) {
+        yogaConfig = updatedConfig
+      }
 
-    if (oldServer !== undefined) {
-      yogaServer.stopServer(oldServer)
-    }
+      const yogaServer = await getYogaServer(rootDir, yogaConfig)
 
-    const serverInstance = await yogaServer.server(
-      yogaConfig.ejectFilePath ? dirname(yogaConfig.ejectFilePath) : __dirname,
-    )
+      if (oldServer !== undefined) {
+        yogaServer.stopServer(oldServer)
+      }
 
-    oldServer = serverInstance
+      const serverInstance = await yogaServer.server(
+        yogaConfig.ejectFilePath
+          ? dirname(yogaConfig.ejectFilePath)
+          : __dirname,
+      )
 
-    yogaServer.startServer(serverInstance)
-  })
+      oldServer = serverInstance
+
+      yogaServer.startServer(serverInstance)
+    },
+  )
 }
 
 /**
@@ -114,26 +129,30 @@ async function getYogaServer(rootDir: string, config: Config): Promise<Yoga> {
   if (!config.ejectFilePath) {
     return {
       async server() {
-        const { types, context } = await importGraphqlTypesAndContext(
-          rootDir,
-          config.resolversPath,
-          config.contextPath,
-          config.output.buildPath,
-        )
+        try {
+          const { types, context } = await importGraphqlTypesAndContext(
+            rootDir,
+            config.resolversPath,
+            config.contextPath,
+            config.output.buildPath,
+          )
 
-        const makeSchemaOptions = makeSchemaDefaults(config, types)
+          const makeSchemaOptions = makeSchemaDefaults(config, types)
 
-        const schema = config.prisma
-          ? makePrismaSchema({
-              ...makeSchemaOptions,
-              prisma: config.prisma,
-            })
-          : makeSchema(makeSchemaOptions)
+          const schema = config.prisma
+            ? makePrismaSchema({
+                ...makeSchemaOptions,
+                prisma: config.prisma,
+              })
+            : makeSchema(makeSchemaOptions)
 
-        return new ApolloServer({
-          schema,
-          context,
-        })
+          return new ApolloServer({
+            schema,
+            context,
+          })
+        } catch (e) {
+          console.error(e)
+        }
       },
       startServer(server) {
         return server

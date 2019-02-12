@@ -1,11 +1,15 @@
 // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#writing-an-incremental-program-watcher
 // Slightly modified version
 import ts from 'typescript'
+import { Config } from './types'
+import { watch as nativeWatch } from 'chokidar'
+import { importYogaConfig } from './config'
 
 export function watch(
   configPath: string,
   optionsToExtend: ts.CompilerOptions,
-  onCompileFinished: () => void,
+  metaSchemaPath: string | undefined,
+  onFileChanged: (updatedConfig: Config | undefined) => void,
 ) {
   // TypeScript can use several different program creation "strategies":
   //  * ts.createEmitAndSemanticDiagnosticsBuilderProgram,
@@ -62,12 +66,20 @@ export function watch(
   host.afterProgramCreate = program => {
     // console.log('** We finished making the program! **')
     origPostProgramCreate!(program)
-    onCompileFinished()
+    onFileChanged(undefined)
   }
 
   // `createWatchProgram` creates an initial program, watches files, and updates
   // the program over time.
   ts.createWatchProgram(host)
+
+  if (metaSchemaPath) {
+    nativeWatch(metaSchemaPath).on('change', async () => {
+      console.log('** Reloading meta schema **')
+      const config = await importYogaConfig()
+      onFileChanged(config.yogaConfig)
+    })
+  }
 }
 
 function reportDiagnostic(diagnostic: ts.Diagnostic) {
