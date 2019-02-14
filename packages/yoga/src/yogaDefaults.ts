@@ -114,11 +114,11 @@ function requiredPath(path: string, errorMessage: string) {
   return path
 }
 
-async function importMetaSchemaAndClient(opts: {
+async function importDatamodelInfoAndClient(opts: {
   projectDir: string
   outDir: string
   client: PrismaClientInput | undefined
-  metaSchema: string | undefined
+  datamodelInfo: string | undefined
 }): Promise<[PrismaClientInput, DatamodelInfo]> {
   const filesToTranspile: { filePath: string; exportName: string }[] = []
   const output: any[] = []
@@ -134,14 +134,14 @@ async function importMetaSchemaAndClient(opts: {
 
   const datamodelInfoPath = inputOrDefaultPath(
     opts.projectDir,
-    opts.metaSchema,
+    opts.datamodelInfo,
     DEFAULT_META_SCHEMA_PATH,
   )
 
   filesToTranspile.push({
     filePath: requiredPath(
       datamodelInfoPath,
-      `Could not find a valid \`prisma.metaSchema\` at ${datamodelInfoPath}`,
+      `Could not find a valid \`prisma.datamodelInfo\` at ${datamodelInfoPath}`,
     ),
     exportName: 'default',
   })
@@ -253,15 +253,15 @@ async function prisma(
     input = {}
   }
 
-  const [client, metaSchema] = await importMetaSchemaAndClient({
-    metaSchema: input!.datamodelInfoPath,
+  const [client, datamodelInfo] = await importDatamodelInfoAndClient({
+    datamodelInfo: input!.datamodelInfoPath,
     client: input!.client,
     outDir,
     projectDir,
   })
 
   return {
-    datamodelInfo: metaSchema,
+    datamodelInfo,
     client,
   }
 }
