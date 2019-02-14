@@ -170,8 +170,9 @@ import { prismaObjectType${
 export const ${typeName} = prismaObjectType({
   name: '${typeName}',
   definition(t) {
-    // All fields exposed by default, uncomment line below to expose specific fields
-    // t.prismaFields(['id'])
+    // All fields exposed thanks the to wildcard operator
+    // Expose, hide or customize specific fields with t.prismaFields(['id', 'otherField', ...])
+    t.prismaFields(['*'])
   }
 })
 `
