@@ -8,7 +8,7 @@ import {
   InputConfig,
   InputOutputFilesConfig,
   InputPrismaConfig,
-  NexusPrismaSchema,
+  DatamodelInfo,
 } from './types'
 
 const DEFAULTS: Config = {
@@ -23,9 +23,9 @@ const DEFAULTS: Config = {
   prisma: {
     /**
      * Do not use that as a default value, this is just a placeholder
-     * When `metaSchema` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     * When `datamodelInfo` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
      */
-    metaSchema: { schema: { __schema: null }, uniqueFieldsByModel: {} },
+    datamodelInfo: { schema: { __schema: null }, uniqueFieldsByModel: {} },
     /**
      * Do not use that as a default value, this is just a placeholder
      * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
@@ -37,7 +37,7 @@ const DEFAULTS: Config = {
   },
 }
 
-export const DEFAULT_META_SCHEMA_PATH = './yoga/nexus-prisma/meta-schema.ts'
+export const DEFAULT_META_SCHEMA_PATH = './yoga/nexus-prisma/datamodel-info.ts'
 const DEFAULT_PRISMA_CLIENT_PATH = './yoga/prisma-client/index.ts'
 
 /**
@@ -119,7 +119,7 @@ async function importMetaSchemaAndClient(opts: {
   outDir: string
   client: PrismaClientInput | undefined
   metaSchema: string | undefined
-}): Promise<[PrismaClientInput, NexusPrismaSchema]> {
+}): Promise<[PrismaClientInput, DatamodelInfo]> {
   const filesToTranspile: { filePath: string; exportName: string }[] = []
   const output: any[] = []
 
@@ -132,7 +132,7 @@ async function importMetaSchemaAndClient(opts: {
     output.push(opts.client)
   }
 
-  const metaSchemaPath = inputOrDefaultPath(
+  const datamodelInfoPath = inputOrDefaultPath(
     opts.projectDir,
     opts.metaSchema,
     DEFAULT_META_SCHEMA_PATH,
@@ -140,8 +140,8 @@ async function importMetaSchemaAndClient(opts: {
 
   filesToTranspile.push({
     filePath: requiredPath(
-      metaSchemaPath,
-      `Could not find a valid \`prisma.metaSchema\` at ${metaSchemaPath}`,
+      datamodelInfoPath,
+      `Could not find a valid \`prisma.metaSchema\` at ${datamodelInfoPath}`,
     ),
     exportName: 'default',
   })
@@ -152,7 +152,7 @@ async function importMetaSchemaAndClient(opts: {
     opts.outDir,
   )
 
-  return [...output, ...importedFiles] as [PrismaClientInput, NexusPrismaSchema]
+  return [...output, ...importedFiles] as [PrismaClientInput, DatamodelInfo]
 }
 
 function contextPath(
@@ -235,7 +235,7 @@ async function prisma(
   outDir: string,
 ): Promise<
   | {
-      metaSchema: NexusPrismaSchema
+      datamodelInfo: DatamodelInfo
       client: PrismaClientInput
     }
   | undefined
@@ -254,14 +254,14 @@ async function prisma(
   }
 
   const [client, metaSchema] = await importMetaSchemaAndClient({
-    metaSchema: input!.metaSchemaPath,
+    metaSchema: input!.datamodelInfoPath,
     client: input!.client,
     outDir,
     projectDir,
   })
 
   return {
-    metaSchema,
+    datamodelInfo: metaSchema,
     client,
   }
 }

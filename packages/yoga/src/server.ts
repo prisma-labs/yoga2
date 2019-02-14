@@ -25,7 +25,7 @@ export async function watch(): Promise<void> {
     yogaConfig,
     rootDir,
     tsConfigPath,
-    metaSchemaPath,
+    datamodelInfoPath,
   } = await importYogaConfig()
 
   const compilerOptions: CompilerOptions = {
@@ -42,7 +42,7 @@ export async function watch(): Promise<void> {
   watchFiles(
     tsConfigPath,
     compilerOptions,
-    metaSchemaPath,
+    datamodelInfoPath,
     async updatedConfig => {
       if (updatedConfig) {
         yogaConfig = updatedConfig

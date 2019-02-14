@@ -8,7 +8,7 @@ import { importYogaConfig } from './config'
 export function watch(
   configPath: string,
   optionsToExtend: ts.CompilerOptions,
-  metaSchemaPath: string | undefined,
+  datamodelInfoPath: string | undefined,
   onFileChanged: (updatedConfig: Config | undefined) => void,
 ) {
   // TypeScript can use several different program creation "strategies":
@@ -73,8 +73,8 @@ export function watch(
   // the program over time.
   ts.createWatchProgram(host)
 
-  if (metaSchemaPath) {
-    nativeWatch(metaSchemaPath).on('change', async () => {
+  if (datamodelInfoPath) {
+    nativeWatch(datamodelInfoPath).on('change', async () => {
       console.log('** Reloading meta schema **')
       const config = await importYogaConfig()
       onFileChanged(config.yogaConfig)

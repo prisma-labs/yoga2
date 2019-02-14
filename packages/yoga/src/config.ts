@@ -62,12 +62,16 @@ export function parseTsConfig(tsConfigPath: string): ts.ParsedCommandLine {
   return tsConfig
 }
 
-function getMetaSchemaPath(prismaConfig?: InputPrismaConfig): string {
-  if (!prismaConfig || prismaConfig === true || !prismaConfig.metaSchemaPath) {
+function getDatamodelInfoPath(prismaConfig?: InputPrismaConfig): string {
+  if (
+    !prismaConfig ||
+    prismaConfig === true ||
+    !prismaConfig.datamodelInfoPath
+  ) {
     return DEFAULT_META_SCHEMA_PATH
   }
 
-  return prismaConfig.metaSchemaPath
+  return prismaConfig.datamodelInfoPath
 }
 
 /**
@@ -78,7 +82,7 @@ export async function importYogaConfig(): Promise<{
   yogaConfig: Config
   projectDir: string
   tsConfigPath: string
-  metaSchemaPath?: string
+  datamodelInfoPath?: string
   rootDir: string
 }> {
   const tsConfigPath = findTsConfigPath()
@@ -100,7 +104,7 @@ export async function importYogaConfig(): Promise<{
     )
     return {
       yogaConfig,
-      metaSchemaPath: yogaConfig.prisma ? DEFAULT_META_SCHEMA_PATH : undefined,
+      datamodelInfoPath: yogaConfig.prisma ? DEFAULT_META_SCHEMA_PATH : undefined,
       projectDir,
       rootDir,
       tsConfigPath,
@@ -125,6 +129,6 @@ export async function importYogaConfig(): Promise<{
     projectDir,
     rootDir,
     tsConfigPath,
-    metaSchemaPath: getMetaSchemaPath(config[0].prisma),
+    datamodelInfoPath: getDatamodelInfoPath(config[0].prisma),
   }
 }

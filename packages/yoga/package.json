@@ -1,6 +1,6 @@
 {
   "name": "yoga",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
@@ -22,7 +22,7 @@
     "inquirer": "^6.2.1",
     "js-yaml": "^3.12.1",
     "nexus": "0.9.11",
-    "nexus-prisma": "0.2.0",
+    "nexus-prisma": "0.3.1",
     "pluralize": "^7.0.0",
     "yargs": "^12.0.5"
   },
