@@ -6,7 +6,7 @@
     "start": "yoga start"
   },
   "dependencies": {
-    "yoga": "0.0.7"
+    "yoga": "0.0.8"
   },
   "devDependencies": {
     "@types/graphql": "^14.0.4",
