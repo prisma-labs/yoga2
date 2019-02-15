@@ -11,6 +11,6 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "lerna": "^3.8.4"
+    "lerna": "3.13.0"
   }
 }
