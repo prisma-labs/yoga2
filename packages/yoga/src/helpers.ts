@@ -1,8 +1,5 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as ts from 'typescript'
-import { EOL } from 'os'
-import decache from 'decache'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -53,61 +50,24 @@ export function getTranspiledPath(
 /**
  * Un-cache a module and import it
  */
-export function importUncached(mod: string): Promise<any> {
+export function importUncached<T extends any = any>(mod: string): T {
   delete require.cache[require.resolve(mod)]
 
-  return import(mod)
+  return require(mod)
 }
 
 /**
- * Transpile a single file and return the default exported item
+ * Import a file (transpiled on-the-fly thanks to ts-node)
  */
-export async function transpileAndImportDefault(
-  files: { filePath: string; exportName: string }[],
-  projectDir: string,
-  outDir: string,
-): Promise<any[]> {
-  const resolvedFilesPath = files.map(file => {
-    if (file.filePath.startsWith('/')) {
-      return file.filePath
-    }
+export function importFile<T extends any = any>(
+  filePath: string,
+  exportName: string,
+): T {
+  const importedModule = importUncached(filePath)
 
-    return path.join(projectDir, file.filePath)
-  })
-
-  ts.createProgram(resolvedFilesPath, {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES5,
-    outDir,
-    rootDir: projectDir, // /!\ rootDir is needed in order to keep to folder structure in outDir
-  }).emit()
-
-  const importedFiles = await Promise.all(
-    files.map(file => {
-      const transpiledPath = getTranspiledPath(
-        projectDir,
-        file.filePath,
-        outDir,
-      )
-
-      // Invalidate cache and all dependencies of this file
-      decache(transpiledPath)
-
-      return import(transpiledPath)
-    }),
-  )
-
-  const wrongImports = files.filter(
-    (file, i) => importedFiles[i][file.exportName] === undefined,
-  )
-
-  if (wrongImports.length > 0) {
-    const errorString = wrongImports
-      .map(file => `\`${file.filePath}\` must have a ${file.exportName} export`)
-      .join(EOL)
-
-    throw new Error(errorString)
+  if (importedModule[exportName] === undefined) {
+    throw new Error(`\`${filePath}\` must have a '${exportName}' export`)
   }
 
-  return files.map((file, i) => importedFiles[i][file.exportName])
+  return importedModule[exportName]
 }

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { transpileAndImportDefault } from './helpers'
+import { importFile } from './helpers'
 import { Config, InputConfig, InputPrismaConfig } from './types'
 import { normalizeConfig, DEFAULT_META_SCHEMA_PATH } from './yogaDefaults'
 
@@ -77,14 +77,16 @@ function getDatamodelInfoPath(prismaConfig?: InputPrismaConfig): string {
 /**
  * Dynamically import a `yoga.config.ts` file
  */
-export async function importYogaConfig(): Promise<{
+export function importYogaConfig(): {
   yogaConfigPath?: string
   yogaConfig: Config
+  inputConfig: InputConfig
   projectDir: string
   tsConfigPath: string
+  tsConfig: ts.ParsedCommandLine
   datamodelInfoPath?: string
   rootDir: string
-}> {
+} {
   const tsConfigPath = findTsConfigPath()
   const tsConfig = parseTsConfig(tsConfigPath)
   const projectDir = path.dirname(tsConfigPath)
@@ -97,28 +99,24 @@ export async function importYogaConfig(): Promise<{
 
   // If no config file, just use all defaults
   if (!yogaConfigPath) {
-    const yogaConfig = await normalizeConfig(
-      {},
-      projectDir,
-      tsConfig.options.outDir,
-    )
+    const yogaConfig = normalizeConfig({}, projectDir, tsConfig.options.outDir)
     return {
       yogaConfig,
-      datamodelInfoPath: yogaConfig.prisma ? DEFAULT_META_SCHEMA_PATH : undefined,
+      datamodelInfoPath: yogaConfig.prisma
+        ? DEFAULT_META_SCHEMA_PATH
+        : undefined,
       projectDir,
       rootDir,
       tsConfigPath,
+      tsConfig,
+      inputConfig: {},
     }
   }
 
-  const config = (await transpileAndImportDefault(
-    [{ filePath: yogaConfigPath, exportName: 'default' }],
-    projectDir,
-    tsConfig.options.outDir!,
-  )) as [InputConfig]
+  const inputConfig = importFile<InputConfig>(yogaConfigPath, 'default')
 
-  const yogaConfig = await normalizeConfig(
-    config[0],
+  const yogaConfig = normalizeConfig(
+    inputConfig,
     projectDir,
     tsConfig.options.outDir!,
   )
@@ -129,6 +127,8 @@ export async function importYogaConfig(): Promise<{
     projectDir,
     rootDir,
     tsConfigPath,
-    datamodelInfoPath: getDatamodelInfoPath(config[0].prisma),
+    tsConfig,
+    datamodelInfoPath: getDatamodelInfoPath(inputConfig.prisma),
+    inputConfig,
   }
 }
