@@ -37,7 +37,6 @@ export async function watch(): Promise<void> {
       info.prismaClientDir,
     ),
   }).on('change', async fileName => {
-    console.log('** Restarting ***')
     try {
       if (
         info.yogaConfig.prisma &&
@@ -54,6 +53,8 @@ export async function watch(): Promise<void> {
           return Promise.resolve(true)
         }
       }
+      console.clear()
+      console.log('** Restarting ***')
 
       const yogaServer = getYogaServer(info.yogaConfig)
 
