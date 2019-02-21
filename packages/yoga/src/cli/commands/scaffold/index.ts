@@ -9,7 +9,7 @@ import { spawnAsync } from '../../spawnAsync'
 import execa = require('execa')
 
 export default async () => {
-  const { yogaConfig, projectDir } = await importYogaConfig()
+  const { yogaConfig, projectDir } = importYogaConfig()
   const hasDb = !!yogaConfig.prisma
   const inputTypeQuestion: inquirer.Question<{ inputTypeName: string }> = {
     name: 'inputTypeName',

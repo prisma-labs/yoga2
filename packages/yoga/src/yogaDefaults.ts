@@ -2,13 +2,13 @@ import { existsSync } from 'fs'
 import { PrismaClientInput } from 'nexus-prisma/dist/types'
 import { join } from 'path'
 import { findPrismaConfigFile } from './config'
-import { transpileAndImportDefault as transpileAndImport } from './helpers'
+import { importFile } from './helpers'
 import {
   Config,
+  DatamodelInfo,
   InputConfig,
   InputOutputFilesConfig,
   InputPrismaConfig,
-  DatamodelInfo,
 } from './types'
 
 const DEFAULTS: Config = {
@@ -18,14 +18,17 @@ const DEFAULTS: Config = {
   output: {
     typegenPath: './.yoga/nexus.ts',
     schemaPath: './src/schema.graphql',
-    buildPath: './dist',
   },
   prisma: {
     /**
      * Do not use that as a default value, this is just a placeholder
      * When `datamodelInfo` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
      */
-    datamodelInfo: { schema: { __schema: null }, uniqueFieldsByModel: {} },
+    datamodelInfo: {
+      schema: { __schema: null },
+      uniqueFieldsByModel: {},
+      clientPath: '',
+    },
     /**
      * Do not use that as a default value, this is just a placeholder
      * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
@@ -37,25 +40,22 @@ const DEFAULTS: Config = {
   },
 }
 
-export const DEFAULT_META_SCHEMA_PATH = './.yoga/nexus-prisma/datamodel-info.ts'
-const DEFAULT_PRISMA_CLIENT_PATH = './.yoga/prisma-client/index.ts'
+export const DEFAULT_META_SCHEMA_DIR = './.yoga/nexus-prisma/'
 
 /**
  * - Compute paths relative to the root of the project
  * - Set defaults when needed
  */
-export async function normalizeConfig(
+export function normalizeConfig(
   config: InputConfig,
   projectDir: string,
-  outDir: string | undefined,
-): Promise<Config> {
-  const outputProperty = output(projectDir, config.output, outDir)
+): Config {
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
-    output: outputProperty,
-    prisma: await prisma(projectDir, config.prisma, outputProperty.buildPath),
+    output: output(projectDir, config.output),
+    prisma: prisma(projectDir, config.prisma),
   }
 
   return outputConfig
@@ -114,47 +114,6 @@ function requiredPath(path: string, errorMessage: string) {
   return path
 }
 
-async function importDatamodelInfoAndClient(opts: {
-  projectDir: string
-  outDir: string
-  client: PrismaClientInput | undefined
-  datamodelInfo: string | undefined
-}): Promise<[PrismaClientInput, DatamodelInfo]> {
-  const filesToTranspile: { filePath: string; exportName: string }[] = []
-  const output: any[] = []
-
-  if (opts.client === undefined) {
-    filesToTranspile.push({
-      filePath: requiredPath(DEFAULT_PRISMA_CLIENT_PATH, ''),
-      exportName: 'prisma',
-    })
-  } else {
-    output.push(opts.client)
-  }
-
-  const datamodelInfoPath = inputOrDefaultPath(
-    opts.projectDir,
-    opts.datamodelInfo,
-    DEFAULT_META_SCHEMA_PATH,
-  )
-
-  filesToTranspile.push({
-    filePath: requiredPath(
-      datamodelInfoPath,
-      `Could not find a valid \`prisma.datamodelInfo\` at ${datamodelInfoPath}`,
-    ),
-    exportName: 'default',
-  })
-
-  const importedFiles = await transpileAndImport(
-    filesToTranspile,
-    opts.projectDir,
-    opts.outDir,
-  )
-
-  return [...output, ...importedFiles] as [PrismaClientInput, DatamodelInfo]
-}
-
 function contextPath(
   projectDir: string,
   input: string | undefined,
@@ -193,11 +152,9 @@ function ejectFilePath(
 function output(
   projectDir: string,
   input: InputOutputFilesConfig | undefined,
-  outDir: string | undefined,
 ): {
   typegenPath: string
   schemaPath: string
-  buildPath: string
 } {
   if (!input) {
     input = {}
@@ -213,55 +170,82 @@ function output(
     input.schemaPath,
     DEFAULTS.output.schemaPath,
   )
-  /**
-   * `outDir` is inputted from `tsconfig.json` It should therefore not be joined with `projectDir`
-   * as typescript already resolve the path when parsing it
-   */
-  const buildPath = inputOrDefaultValue(
-    outDir,
-    join(projectDir, DEFAULTS.output.buildPath),
-  )
 
   return {
     typegenPath,
     schemaPath,
-    buildPath,
   }
 }
 
-async function prisma(
+export function client(
+  projectDir: string,
+  input: PrismaClientInput | undefined,
+  datamodelInfo: DatamodelInfo,
+): PrismaClientInput {
+  if (input === undefined) {
+    const clientPath = requiredPath(
+      join(projectDir, datamodelInfo.clientPath),
+      `Could not find a valid \`prisma.client\` at ${datamodelInfo.clientPath}`,
+    )
+
+    return importFile<PrismaClientInput>(clientPath, 'prisma', true)
+  }
+
+  return input
+}
+
+export function datamodelInfo(
+  projectDir: string,
+  input: string | undefined,
+): DatamodelInfo {
+  const datamodelInfoPath = inputOrDefaultPath(
+    projectDir,
+    input,
+    join(DEFAULT_META_SCHEMA_DIR, 'datamodel-info.ts'),
+  )
+  return importFile<DatamodelInfo>(
+    requiredPath(
+      datamodelInfoPath,
+      `Could not find a valid \`prisma.datamodelInfoPath\ at ${datamodelInfoPath}`,
+    ),
+    'default',
+  )
+}
+
+function prisma(
   projectDir: string,
   input: InputPrismaConfig | undefined,
-  outDir: string,
-): Promise<
+):
   | {
       datamodelInfo: DatamodelInfo
       client: PrismaClientInput
     }
-  | undefined
-> {
+  | undefined {
   const hasPrisma = !!findPrismaConfigFile(projectDir)
 
   // If `prisma` undefined and no prisma.yml file, prisma isn't used
   if (input === undefined && !hasPrisma) {
-    return Promise.resolve(undefined)
+    return undefined
   }
 
   // If `prisma` === true or `prisma` === undefined but a prisma.yml file is found
   // Use all the defaults
-  if (input === true || (input === undefined && hasPrisma)) {
+  if (input === undefined && hasPrisma) {
     input = {}
   }
 
-  const [client, datamodelInfo] = await importDatamodelInfoAndClient({
-    datamodelInfo: input!.datamodelInfoPath,
-    client: input!.client,
-    outDir,
+  const importedDatamodelInfo = datamodelInfo(
     projectDir,
-  })
+    input!.datamodelInfoPath,
+  )
+  const importedClient = client(
+    projectDir,
+    input!.client,
+    importedDatamodelInfo,
+  )
 
   return {
-    datamodelInfo,
-    client,
+    datamodelInfo: importedDatamodelInfo,
+    client: importedClient,
   }
 }
