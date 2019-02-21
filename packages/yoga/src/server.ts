@@ -1,6 +1,7 @@
 import { ApolloServer } from 'apollo-server'
 import { watch as nativeWatch } from 'chokidar'
 import { existsSync } from 'fs'
+import * as glob from 'glob'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
 import * as path from 'path'
@@ -23,7 +24,9 @@ export async function watch(): Promise<void> {
   console.clear()
   console.log('Starting server in watch mode...')
   let info = importYogaConfig()
-  const filesToWatch = path.join(info.projectDir, '**', '*.ts')
+  const filesToWatch = glob.sync(path.join(info.projectDir, '**', '*.ts'), {
+    dot: true,
+  })
 
   let oldServer: any | undefined = await start(info.yogaConfig)
   let batchedGeneratedFiles = [] as string[]
