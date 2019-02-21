@@ -3,14 +3,13 @@ import { watch as nativeWatch } from 'chokidar'
 import { existsSync } from 'fs'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
-import { dirname, join } from 'path'
+import * as path from 'path'
 import PrettyError from 'pretty-error'
 import { register } from 'ts-node'
 import { importYogaConfig } from './config'
 import { findFileByExtension, importFile, importUncached } from './helpers'
 import { makeSchemaDefaults } from './nexusDefaults'
-import { Config, Yoga, InputConfig } from './types'
-import { datamodelInfo } from './yogaDefaults'
+import { Config, Yoga } from './types'
 
 const pe = new PrettyError()
 
@@ -22,34 +21,49 @@ register({
 
 export async function watch(): Promise<void> {
   console.clear()
-  console.log('LOCAL')
   console.log('Starting server in watch mode...')
-  let { yogaConfig, projectDir, inputConfig } = importYogaConfig()
-  let oldServer: any | undefined = await start(yogaConfig)
+  let info = importYogaConfig()
+  const filesToWatch = path.join(info.projectDir, '**', '*.ts')
 
-  const filesToWatch = join(projectDir, '**', '*.ts')
+  let oldServer: any | undefined = await start(info.yogaConfig)
+  let batchedGeneratedFiles = [] as string[]
 
   nativeWatch(filesToWatch, {
-    ignored: [
-      yogaConfig.output.schemaPath,
-      yogaConfig.output.typegenPath,
-      join(projectDir, 'node_modules'),
-    ],
-    usePolling: true,
-  }).on('change', async () => {
-    console.clear()
+    usePolling: true, // fsEvents randomly triggers twice on OSX
+    ignored: getIgnoredFiles(
+      info.projectDir,
+      info.yogaConfig,
+      info.datamodelInfoDir,
+      info.prismaClientDir,
+    ),
+  }).on('change', async fileName => {
     console.log('** Restarting ***')
     try {
-      yogaConfig = withFreshDatamodel(projectDir, inputConfig, yogaConfig)
-      const yogaServer = getYogaServer(yogaConfig)
+      if (
+        info.yogaConfig.prisma &&
+        (fileName === path.join(info.prismaClientDir!, 'index.ts') ||
+          fileName === path.join(info.datamodelInfoDir!, 'datamodel-info.ts'))
+      ) {
+        batchedGeneratedFiles.push(fileName)
+
+        if (batchedGeneratedFiles.length === 2) {
+          // TODO: Do not invalidate everything, only the necessary stuff
+          info = importYogaConfig({ invalidate: true })
+          batchedGeneratedFiles = []
+        } else {
+          return Promise.resolve(true)
+        }
+      }
+
+      const yogaServer = getYogaServer(info.yogaConfig)
 
       if (oldServer !== undefined) {
         await yogaServer.stopServer(oldServer)
       }
 
       const serverInstance = await yogaServer.server(
-        yogaConfig.ejectFilePath
-          ? dirname(yogaConfig.ejectFilePath)
+        info.yogaConfig.ejectFilePath
+          ? path.dirname(info.yogaConfig.ejectFilePath)
           : __dirname,
       )
 
@@ -62,28 +76,37 @@ export async function watch(): Promise<void> {
   })
 }
 
-function withFreshDatamodel(
+function getIgnoredFiles(
   projectDir: string,
-  inputConfig: InputConfig,
   yogaConfig: Config,
+  datamodelInfoDir: string | undefined,
+  prismaClientDir: string | undefined,
 ) {
-  const datamodelInfoConfig =
-    inputConfig.prisma !== undefined
-      ? inputConfig.prisma.datamodelInfoPath
-      : undefined
-  const freshDatamodelInfo = datamodelInfo(projectDir, datamodelInfoConfig)
-  if (yogaConfig.prisma) {
-    yogaConfig.prisma.datamodelInfo = freshDatamodelInfo
+  const ignoredFiles = [
+    yogaConfig.output.schemaPath,
+    yogaConfig.output.typegenPath,
+    path.join(projectDir, 'node_modules'),
+  ]
+
+  if (datamodelInfoDir) {
+    ignoredFiles.push(path.join(datamodelInfoDir, 'nexus-prisma.ts'))
+    ignoredFiles.push(path.join(datamodelInfoDir, 'index.ts'))
   }
 
-  return yogaConfig
+  if (prismaClientDir) {
+    ignoredFiles.push(path.join(prismaClientDir, 'prisma-schema.ts'))
+  }
+
+  return ignoredFiles
 }
 
 export async function start(yogaConfig: Config): Promise<any> {
   try {
     const yogaServer = await getYogaServer(yogaConfig)
     const serverInstance = await yogaServer.server(
-      yogaConfig.ejectFilePath ? dirname(yogaConfig.ejectFilePath) : __dirname,
+      yogaConfig.ejectFilePath
+        ? path.dirname(yogaConfig.ejectFilePath)
+        : __dirname,
     )
 
     await yogaServer.startServer(serverInstance)
@@ -98,10 +121,8 @@ export async function start(yogaConfig: Config): Promise<any> {
  * Dynamically import GraphQL types from the ./src/graphql folder
  * and also from the context file
  *
- * @param rootDir The `rootDir` property from the `tsconfig.json` file
  * @param resolversPath The `resolversPath` property from the `yoga.config.ts` file
  * @param contextPath The `contextPath` property from the `yoga.config.ts` file
- * @param outDir The `outDir` property from the `tsconfig.json` file
  */
 function importGraphqlTypesAndContext(
   resolversPath: string,
@@ -135,7 +156,6 @@ function importGraphqlTypesAndContext(
 
 /**
  *
- * @param rootDir The `rootDir` property from a `tsconfig.json` file
  * @param config The yoga config object
  */
 function getYogaServer(config: Config): Yoga {

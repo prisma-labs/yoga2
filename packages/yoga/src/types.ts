@@ -2,6 +2,7 @@ import { PrismaClientInput } from 'nexus-prisma/dist/types'
 
 export interface DatamodelInfo {
   uniqueFieldsByModel: Record<string, string[]>
+  clientPath: string
   schema: { __schema: any }
 }
 
@@ -72,7 +73,7 @@ export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
   contextPath?: RequiredProperty<'contextPath'>
   ejectFilePath?: RequiredProperty<'ejectFilePath'>
-  output: RequiredProperty<'output'> & { buildPath: string }
+  output: RequiredProperty<'output'>
   prisma?: {
     datamodelInfo: DatamodelInfo
     client: PrismaClientInput

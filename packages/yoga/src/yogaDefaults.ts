@@ -18,14 +18,17 @@ const DEFAULTS: Config = {
   output: {
     typegenPath: './.yoga/nexus.ts',
     schemaPath: './src/schema.graphql',
-    buildPath: './dist',
   },
   prisma: {
     /**
      * Do not use that as a default value, this is just a placeholder
      * When `datamodelInfo` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
      */
-    datamodelInfo: { schema: { __schema: null }, uniqueFieldsByModel: {} },
+    datamodelInfo: {
+      schema: { __schema: null },
+      uniqueFieldsByModel: {},
+      clientPath: '',
+    },
     /**
      * Do not use that as a default value, this is just a placeholder
      * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
@@ -37,8 +40,7 @@ const DEFAULTS: Config = {
   },
 }
 
-export const DEFAULT_META_SCHEMA_PATH = './.yoga/nexus-prisma/datamodel-info.ts'
-export const DEFAULT_PRISMA_CLIENT_PATH = './.yoga/prisma-client/index.ts'
+export const DEFAULT_META_SCHEMA_DIR = './.yoga/nexus-prisma/'
 
 /**
  * - Compute paths relative to the root of the project
@@ -47,13 +49,12 @@ export const DEFAULT_PRISMA_CLIENT_PATH = './.yoga/prisma-client/index.ts'
 export function normalizeConfig(
   config: InputConfig,
   projectDir: string,
-  outDir: string | undefined,
 ): Config {
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
-    output: output(projectDir, config.output, outDir),
+    output: output(projectDir, config.output),
     prisma: prisma(projectDir, config.prisma),
   }
 
@@ -151,11 +152,9 @@ function ejectFilePath(
 function output(
   projectDir: string,
   input: InputOutputFilesConfig | undefined,
-  outDir: string | undefined,
 ): {
   typegenPath: string
   schemaPath: string
-  buildPath: string
 } {
   if (!input) {
     input = {}
@@ -171,34 +170,25 @@ function output(
     input.schemaPath,
     DEFAULTS.output.schemaPath,
   )
-  /**
-   * `outDir` is inputted from `tsconfig.json` It should therefore not be joined with `projectDir`
-   * as typescript already resolve the path when parsing it
-   */
-  const buildPath = inputOrDefaultValue(
-    outDir,
-    join(projectDir, DEFAULTS.output.buildPath),
-  )
 
   return {
     typegenPath,
     schemaPath,
-    buildPath,
   }
 }
 
-function client(
+export function client(
   projectDir: string,
   input: PrismaClientInput | undefined,
+  datamodelInfo: DatamodelInfo,
 ): PrismaClientInput {
   if (input === undefined) {
     const clientPath = requiredPath(
-      join(projectDir, DEFAULT_PRISMA_CLIENT_PATH),
-      `Could not find a valid \`prisma.client\` at ${DEFAULT_PRISMA_CLIENT_PATH}`,
+      join(projectDir, datamodelInfo.clientPath),
+      `Could not find a valid \`prisma.client\` at ${datamodelInfo.clientPath}`,
     )
-    const client = importFile<PrismaClientInput>(clientPath, 'prisma')
 
-    return client
+    return importFile<PrismaClientInput>(clientPath, 'prisma', true)
   }
 
   return input
@@ -211,17 +201,15 @@ export function datamodelInfo(
   const datamodelInfoPath = inputOrDefaultPath(
     projectDir,
     input,
-    DEFAULT_META_SCHEMA_PATH,
+    join(DEFAULT_META_SCHEMA_DIR, 'datamodel-info.ts'),
   )
-  const datamodelInfo = importFile<DatamodelInfo>(
+  return importFile<DatamodelInfo>(
     requiredPath(
       datamodelInfoPath,
       `Could not find a valid \`prisma.datamodelInfoPath\ at ${datamodelInfoPath}`,
     ),
     'default',
   )
-
-  return datamodelInfo
 }
 
 function prisma(
@@ -246,18 +234,18 @@ function prisma(
     input = {}
   }
 
-  try {
-    const importedDatamodelInfo = datamodelInfo(
-      projectDir,
-      input!.datamodelInfoPath,
-    )
-    const importedClient = client(projectDir, input!.client)
+  const importedDatamodelInfo = datamodelInfo(
+    projectDir,
+    input!.datamodelInfoPath,
+  )
+  const importedClient = client(
+    projectDir,
+    input!.client,
+    importedDatamodelInfo,
+  )
 
-    return {
-      datamodelInfo: importedDatamodelInfo,
-      client: importedClient,
-    }
-  } catch (e) {
-    console.error(e)
+  return {
+    datamodelInfo: importedDatamodelInfo,
+    client: importedClient,
   }
 }

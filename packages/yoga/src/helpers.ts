@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import decache from 'decache'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -33,25 +34,17 @@ export function findFileByExtension(
 }
 
 /**
- * Returns the path to a transpiled file
- */
-export function getTranspiledPath(
-  projectDir: string,
-  filePath: string,
-  outDir: string,
-) {
-  const pathFromRootToFile = path.relative(projectDir, filePath)
-  const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
-  const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
-
-  return path.join(outDir, pathToJsFile)
-}
-
-/**
  * Un-cache a module and import it
  */
-export function importUncached<T extends any = any>(mod: string): T {
-  delete require.cache[require.resolve(mod)]
+export function importUncached<T extends any = any>(
+  mod: string,
+  invalidateModule: boolean = false,
+): T {
+  if (invalidateModule) {
+    decache(mod)
+  } else {
+    delete require.cache[require.resolve(mod)]
+  }
 
   return require(mod)
 }
@@ -62,8 +55,9 @@ export function importUncached<T extends any = any>(mod: string): T {
 export function importFile<T extends any = any>(
   filePath: string,
   exportName: string,
+  invalidateModule: boolean = false,
 ): T {
-  const importedModule = importUncached(filePath)
+  const importedModule = importUncached(filePath, invalidateModule)
 
   if (importedModule[exportName] === undefined) {
     throw new Error(`\`${filePath}\` must have a '${exportName}' export`)
