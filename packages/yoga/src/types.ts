@@ -26,7 +26,7 @@ export type InputPrismaConfig = true | PrismaConfig
 export type InputOutputFilesConfig = {
   /**
    * Path to the generated typings
-   * @default ./.yoga//nexus.ts
+   * @default ./.yoga/nexus.ts
    */
   typegenPath?: string
   /**

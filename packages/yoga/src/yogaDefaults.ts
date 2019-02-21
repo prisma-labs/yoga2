@@ -16,7 +16,7 @@ const DEFAULTS: Config = {
   resolversPath: './src/graphql/',
   ejectFilePath: './src/index.ts',
   output: {
-    typegenPath: './yoga/nexus.ts',
+    typegenPath: './.yoga/nexus.ts',
     schemaPath: './src/schema.graphql',
     buildPath: './dist',
   },
@@ -37,8 +37,8 @@ const DEFAULTS: Config = {
   },
 }
 
-export const DEFAULT_META_SCHEMA_PATH = './yoga/nexus-prisma/datamodel-info.ts'
-const DEFAULT_PRISMA_CLIENT_PATH = './yoga/prisma-client/index.ts'
+export const DEFAULT_META_SCHEMA_PATH = './.yoga/nexus-prisma/datamodel-info.ts'
+const DEFAULT_PRISMA_CLIENT_PATH = './.yoga/prisma-client/index.ts'
 
 /**
  * - Compute paths relative to the root of the project
