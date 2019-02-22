@@ -28,7 +28,10 @@ export async function watch(): Promise<void> {
     dot: true,
   })
 
-  let oldServer: any | undefined = await start(info.yogaConfig)
+  let oldServer: any | undefined = await start(
+    info.yogaConfig,
+    info.prismaClientDir,
+  )
   let batchedGeneratedFiles = [] as string[]
 
   nativeWatch(filesToWatch, {
@@ -59,7 +62,7 @@ export async function watch(): Promise<void> {
       console.clear()
       console.log('** Restarting ***')
 
-      const yogaServer = getYogaServer(info.yogaConfig)
+      const yogaServer = getYogaServer(info.yogaConfig, info.prismaClientDir)
 
       if (oldServer !== undefined) {
         await yogaServer.stopServer(oldServer)
@@ -104,9 +107,12 @@ function getIgnoredFiles(
   return ignoredFiles
 }
 
-export async function start(yogaConfig: Config): Promise<any> {
+export async function start(
+  yogaConfig: Config,
+  prismaClientDir: string | undefined,
+): Promise<any> {
   try {
-    const yogaServer = await getYogaServer(yogaConfig)
+    const yogaServer = await getYogaServer(yogaConfig, prismaClientDir)
     const serverInstance = await yogaServer.server(
       yogaConfig.ejectFilePath
         ? path.dirname(yogaConfig.ejectFilePath)
@@ -162,7 +168,10 @@ function importGraphqlTypesAndContext(
  *
  * @param config The yoga config object
  */
-function getYogaServer(config: Config): Yoga {
+function getYogaServer(
+  config: Config,
+  prismaClientDir: string | undefined,
+): Yoga {
   if (!config.ejectFilePath) {
     return {
       async server() {
@@ -170,7 +179,11 @@ function getYogaServer(config: Config): Yoga {
           config.resolversPath,
           config.contextPath,
         )
-        const makeSchemaOptions = makeSchemaDefaults(config, types)
+        const makeSchemaOptions = makeSchemaDefaults(
+          config,
+          types,
+          prismaClientDir,
+        )
         const schema = config.prisma
           ? makePrismaSchema({
               ...makeSchemaOptions,

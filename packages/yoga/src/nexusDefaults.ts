@@ -1,10 +1,12 @@
 import { Config } from './types'
 import { core } from 'nexus'
+import { join } from 'path'
 
 // TODO: shouldGenerateArtifacts should use process.env.NODE_ENV of the app using yoga, and not yoga process itself
 export function makeSchemaDefaults(
   config: Config,
   types: any,
+  prismaClientDir: string | undefined,
 ): core.SchemaConfig {
   return {
     types,
@@ -24,6 +26,14 @@ export function makeSchemaDefaults(
               {
                 source: config.contextPath,
                 alias: 'ctx',
+              },
+            ]
+          : []),
+        ...(prismaClientDir
+          ? [
+              {
+                source: join(prismaClientDir, 'index.ts'),
+                alias: 'prisma',
               },
             ]
           : []),

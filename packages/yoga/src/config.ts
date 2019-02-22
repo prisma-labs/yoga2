@@ -54,9 +54,14 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 function getDatamodelInfoDir(
+  yogaConfig: Config,
   inputConfig: InputConfig,
   projectDir: string,
-): string {
+): string | undefined {
+  if (!yogaConfig.prisma) {
+    return undefined
+  }
+
   if (inputConfig.prisma && inputConfig.prisma.datamodelInfoPath) {
     return inputConfig.prisma.datamodelInfoPath
   }
@@ -110,7 +115,7 @@ export function importYogaConfig(
     yogaConfigPath,
     inputConfig,
     projectDir,
-    datamodelInfoDir: getDatamodelInfoDir(inputConfig, projectDir),
+    datamodelInfoDir: getDatamodelInfoDir(yogaConfig, inputConfig, projectDir),
     prismaClientDir: getPrismaClientDir(yogaConfig, projectDir),
   }
 }
