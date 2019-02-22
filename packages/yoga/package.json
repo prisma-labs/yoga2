@@ -35,7 +35,7 @@
     "@types/graphql": "14.0.7",
     "@types/inquirer": "0.0.43",
     "@types/js-yaml": "3.12.0",
-    "@types/node": "10.12.26",
+    "@types/node": "10.12.27",
     "@types/pluralize": "0.0.29",
     "@types/yargs": "12.0.9",
     "prettier": "1.16.4",
