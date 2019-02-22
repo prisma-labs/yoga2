@@ -38,7 +38,7 @@
     "@types/parse-github-url": "1.0.0",
     "@types/request": "2.48.1",
     "@types/tar": "4.0.0",
-    "@types/tmp": "0.0.33",
+    "@types/tmp": "0.0.34",
     "@types/update-notifier": "2.5.0",
     "prettier": "1.16.4",
     "rimraf": "2.6.3",
