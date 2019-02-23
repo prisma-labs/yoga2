@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
 import { importFile } from './helpers'
-import { Config, InputConfig } from './types'
+import { Config, InputConfig, ConfigWithInfo } from './types'
 import { DEFAULT_META_SCHEMA_DIR, normalizeConfig } from './yogaDefaults'
 
 /**
@@ -91,14 +91,7 @@ function getPrismaClientDir(
  */
 export function importYogaConfig(
   opts: { invalidate: boolean } = { invalidate: false },
-): {
-  yogaConfigPath?: string
-  yogaConfig: Config
-  projectDir: string
-  inputConfig: InputConfig
-  datamodelInfoDir?: string
-  prismaClientDir?: string
-} {
+): ConfigWithInfo {
   const yogaConfigPath = findConfigFile('yoga.config.ts', { required: false })
   const projectDir = path.dirname(
     yogaConfigPath

@@ -6,16 +6,16 @@ import decache from 'decache'
  * Find all files recursively in a directory based on an extension
  */
 export function findFileByExtension(
-  base: string,
+  basePath: string,
   ext: string,
   files?: string[],
   result?: string[],
-) {
-  files = files || fs.readdirSync(base)
+): string[] {
+  files = files || fs.readdirSync(basePath)
   result = result || []
 
   files.forEach(file => {
-    const newbase = path.join(base, file)
+    const newbase = path.join(basePath, file)
 
     if (fs.statSync(newbase).isDirectory()) {
       result = findFileByExtension(

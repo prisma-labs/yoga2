@@ -48,10 +48,10 @@ export type InputConfig = {
    */
   contextPath?: string
   /**
-   * Path to an `index.ts` file to eject from default configuration file `yoga.config.ts`.
+   * Path to an `server.ts` file to eject from default configuration file `yoga.config.ts`.
    * When provided, all other configuration properties are ignored and should be configured programatically.
    * **If provided, path has to exist**
-   * @default ./src/index.ts
+   * @default ./src/server.ts
    */
   ejectFilePath?: string
   /**
@@ -78,6 +78,15 @@ export type Config = {
     datamodelInfo: DatamodelInfo
     client: PrismaClientInput
   }
+}
+
+export type ConfigWithInfo = {
+  yogaConfigPath?: string
+  yogaConfig: Config
+  projectDir: string
+  inputConfig: InputConfig
+  datamodelInfoDir?: string
+  prismaClientDir?: string
 }
 
 export interface Yoga<Server = any> {
