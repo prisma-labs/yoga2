@@ -126,14 +126,18 @@ export default () => ({ something });
 `yoga` ships itself with a CLI.
 
 ```
-Usage: yoga [cmd] (start/build/dev)
+Usage: yoga <command> [options]
 
 Commands:
-  yoga dev  Start the server in dev mode
+  yoga new       Create new yoga project from template
+  yoga start     Start the server
+  yoga dev       Start the server in dev mode
+  yoga scaffold  Scaffold a new GraphQL type
+  yoga build     Build a yoga server
 
 Options:
-  --help         Show help
-  -v, --version  Show version number
+  --version   Show version number                                      [boolean]
+  -h, --help  Show help                                                [boolean]
 ```
 
 `yoga dev` will run a GraphQL server in watch mode, updating your server whenever a file change.
@@ -146,7 +150,7 @@ Options:
 | --------------------------- | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resolversPath`                  | `string` | `./src/graphql/`  | Path to the directory where your resolvers are defined. **If provided, path has to exist.** |
 | `contextPath` | `string` | `./src/context.ts` | Path to your `context.ts` file. **If provided, path has to exist.** |
-| `ejectFilePath` | `string` | `./src/index.ts` | Path to an `indext.ts` file to eject from default configuration `yoga.config.ts`. When provided, all other configuration properties are ignored and should be configured programatically. **If provided, path has to exist.** |
+| `ejectFilePath` | `string` | `./src/server.ts` | Path to an `server.ts` file to eject from default configuration `yoga.config.ts`. When provided, all other configuration properties are ignored and should be configured programatically. **If provided, path has to exist.** |
 | `output` | [`InputOutputFilesConfig`](/packages/yoga/src/types.ts#L25) | See below. | Configuration for the outputted files (schema, typings, etc). |
 | `prisma` | [`InputPrismaConfig`](/packages/yoga/src/types.ts#L9) | See below. | Configuration for the Prisma integration. |
 
