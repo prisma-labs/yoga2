@@ -1,18 +1,27 @@
 import { ApolloServer } from 'apollo-server'
 import { watch as nativeWatch } from 'chokidar'
-import { existsSync } from 'fs'
 import * as glob from 'glob'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
 import * as path from 'path'
-import PrettyError from 'pretty-error'
 import { register } from 'ts-node'
 import { importYogaConfig } from './config'
 import { findFileByExtension, importFile, importUncached } from './helpers'
+import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
 import { Config, Yoga } from './types'
+import PrettyError from 'pretty-error'
 
-const pe = new PrettyError()
+const pe = new PrettyError().appendStyle({
+  'pretty-error': {
+    marginLeft: '0',
+  },
+  'pretty-error > header > title > kind': {
+    background: 'red',
+    color: 'bright-white',
+    padding: '1',
+  },
+})
 
 // Provide on-the-fly ts transpilation when requiring .ts files
 register({
@@ -21,8 +30,8 @@ register({
 })
 
 export async function watch(): Promise<void> {
-  console.clear()
-  console.log('Starting server in watch mode...')
+  logger.clearConsole()
+  logger.info('Starting development server...')
   let info = importYogaConfig()
   const filesToWatch = glob.sync(path.join(info.projectDir, '**', '*.ts'), {
     dot: true,
@@ -31,6 +40,7 @@ export async function watch(): Promise<void> {
   let oldServer: any | undefined = await start(
     info.yogaConfig,
     info.prismaClientDir,
+    true,
   )
   let batchedGeneratedFiles = [] as string[]
 
@@ -60,7 +70,7 @@ export async function watch(): Promise<void> {
         }
       }
       console.clear()
-      console.log('** Restarting ***')
+      logger.info('Compiling')
 
       const yogaServer = getYogaServer(info.yogaConfig, info.prismaClientDir)
 
@@ -76,7 +86,10 @@ export async function watch(): Promise<void> {
 
       oldServer = serverInstance
 
-      yogaServer.startServer(serverInstance)
+      logger.clearConsole()
+      logger.done('Compiled succesfully')
+
+      await yogaServer.startServer(serverInstance)
     } catch (e) {
       console.error(pe.render(e))
     }
@@ -110,6 +123,7 @@ function getIgnoredFiles(
 export async function start(
   yogaConfig: Config,
   prismaClientDir: string | undefined,
+  withLog: boolean = false,
 ): Promise<any> {
   try {
     const yogaServer = await getYogaServer(yogaConfig, prismaClientDir)
@@ -118,6 +132,11 @@ export async function start(
         ? path.dirname(yogaConfig.ejectFilePath)
         : __dirname,
     )
+
+    if (withLog) {
+      logger.clearConsole()
+      logger.done('Compiled successfully')
+    }
 
     await yogaServer.startServer(serverInstance)
 
@@ -145,10 +164,6 @@ function importGraphqlTypesAndContext(
   let context = undefined
 
   if (contextPath !== undefined) {
-    if (!existsSync(contextPath)) {
-      throw new Error("Could not find a valid 'context.ts' file")
-    }
-
     context = importFile(contextPath, 'default')
 
     if (typeof context !== 'function') {

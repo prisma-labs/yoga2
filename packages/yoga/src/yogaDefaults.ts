@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { PrismaClientInput } from 'nexus-prisma/dist/types'
-import { join } from 'path'
+import { join, relative } from 'path'
 import { findPrismaConfigFile } from './config'
 import { importFile } from './helpers'
 import {
@@ -10,6 +10,8 @@ import {
   InputOutputFilesConfig,
   InputPrismaConfig,
 } from './types'
+import chalk from 'chalk'
+import * as logger from './logger'
 
 export const DEFAULTS: Config = {
   contextPath: './src/context.ts',
@@ -93,7 +95,8 @@ function optional(
 ) {
   if (!existsSync(path)) {
     if (input) {
-      throw new Error(errorMessage)
+      logger.error(errorMessage)
+      process.exit(1)
     }
 
     return undefined
@@ -108,10 +111,25 @@ function optional(
  */
 function requiredPath(path: string, errorMessage: string) {
   if (!existsSync(path)) {
-    throw new Error(errorMessage)
+    logger.error(errorMessage)
+    process.exit(1)
   }
 
   return path
+}
+
+function buildError(
+  projectDir: string,
+  filePath: string,
+  propertyName: string,
+) {
+  const resolvedPath = filePath.startsWith('.')
+    ? filePath
+    : relative(projectDir, filePath)
+
+  return `Could not a find a valid \`${chalk.yellow(
+    propertyName,
+  )}\` at \`${chalk.yellow(resolvedPath)}\``
 }
 
 function contextPath(
@@ -120,20 +138,13 @@ function contextPath(
 ): string | undefined {
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.contextPath!)
 
-  return optional(
-    path,
-    input,
-    `Could not find a valid \`contextPath\` at ${path}`,
-  )
+  return optional(path, input, buildError(projectDir, path, 'contextPath'))
 }
 
 function resolversPath(projectDir: string, input: string | undefined): string {
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.resolversPath)
 
-  return requiredPath(
-    path,
-    `Could not find a valid \`resolversPath\` at ${path}`,
-  )
+  return requiredPath(path, buildError(projectDir, path, 'resolversPath'))
 }
 
 function ejectFilePath(
@@ -142,11 +153,7 @@ function ejectFilePath(
 ): string | undefined {
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.ejectFilePath!)
 
-  return optional(
-    path,
-    input,
-    `Could not find a valid \`ejectFilePath\` at ${path}`,
-  )
+  return optional(path, input, buildError(projectDir, path, 'ejectFilePath'))
 }
 
 function output(
@@ -185,7 +192,7 @@ export function client(
   if (input === undefined) {
     const clientPath = requiredPath(
       join(projectDir, datamodelInfo.clientPath),
-      `Could not find a valid \`prisma.client\` at ${datamodelInfo.clientPath}`,
+      buildError(projectDir, datamodelInfo.clientPath, 'prisma.client'),
     )
 
     return importFile<PrismaClientInput>(clientPath, 'prisma', true)
@@ -206,7 +213,7 @@ export function datamodelInfo(
   return importFile<DatamodelInfo>(
     requiredPath(
       datamodelInfoPath,
-      `Could not find a valid \`prisma.datamodelInfoPath\ at ${datamodelInfoPath}`,
+      buildError(projectDir, datamodelInfoPath, 'prisma.datamodelInfoPath'),
     ),
     'default',
   )
