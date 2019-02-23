@@ -39,7 +39,7 @@
     "@types/pluralize": "0.0.29",
     "@types/yargs": "12.0.9",
     "prettier": "1.16.4",
-    "typescript": "3.3.3"
+    "typescript": "3.3.3333"
   },
   "prettier": {
     "semi": false,
