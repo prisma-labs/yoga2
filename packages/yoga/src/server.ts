@@ -213,5 +213,5 @@ function getYogaServer(
     return yogaServer
   }
 
-  throw new Error("Invalid 'src/index.ts' file")
+  throw new Error("Invalid 'src/server.ts' file")
 }

@@ -11,10 +11,10 @@ import {
   InputPrismaConfig,
 } from './types'
 
-const DEFAULTS: Config = {
+export const DEFAULTS: Config = {
   contextPath: './src/context.ts',
   resolversPath: './src/graphql/',
-  ejectFilePath: './src/index.ts',
+  ejectFilePath: './src/server.ts',
   output: {
     typegenPath: './.yoga/nexus.ts',
     schemaPath: './src/schema.graphql',
