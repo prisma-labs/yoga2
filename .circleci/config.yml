@@ -14,17 +14,17 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: install-dependencies
-          command: yarn install
+          command: npm install
       - run:
           name: install-package-dependencies
-          command: yarn run bootstrap
+          command: npm run bootstrap
       - run:
           name: run-build
-          command: yarn run build
+          command: npm run build
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
           name: run lint
-          command: yarn run lint
+          command: npm run lint

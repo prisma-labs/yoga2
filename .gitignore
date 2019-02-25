@@ -3,5 +3,6 @@ dist
 .yalc
 yalc.lock
 yarn.lock
-package-lock.json
+packages/**/package-lock.json
+examples/**/package-lock.json
 .idea

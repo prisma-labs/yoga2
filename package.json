@@ -2,11 +2,11 @@
   "name": "yoga2",
   "private": true,
   "scripts": {
-    "bootstrap": "yarn install && lerna bootstrap",
-    "clean": "lerna clean -y && yarn clean:packages && yarn clean:root",
+    "bootstrap": "npm install && lerna bootstrap",
+    "clean": "lerna clean -y && npm run clean:packages && npm run clean:root",
     "clean:packages": "lerna exec -- rm -rf node_modules yarn.lock package-lock.json dist",
     "clean:root": "rm -rf node_modules yarn.lock package-lock.json",
-    "reset": "yarn clean && yarn bootstrap",
+    "reset": "npm run clean && npm run bootstrap",
     "build": "lerna run build",
     "lint": "lerna exec -- npm run lint"
   },
