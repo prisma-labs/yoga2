@@ -8,6 +8,7 @@ import start from './commands/start'
 import watch from './commands/watch'
 
 function run() {
+  // tslint:disable-next-line:no-unused-expression
   yargs
     .usage('Usage: $0 <command> [options]')
     .command('new', 'Create new yoga project from template', {}, createTemplate)
