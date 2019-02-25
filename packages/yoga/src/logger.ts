@@ -1,7 +1,6 @@
 // Borrowed from vue-cli
 import chalk from 'chalk'
 import readline from 'readline'
-import createRecord from 'callsite-record'
 
 function format(label: string, msg: string) {
   return msg
@@ -59,16 +58,4 @@ export function clearConsole(title?: string) {
       console.log(title)
     }
   }
-}
-
-export function cleanStackTrace(reason: string | Error) {
-  const error = typeof reason === 'string' ? new Error(reason) : reason
-
-  return createRecord({
-    forError: error,
-  })!.renderSync({
-    stackFilter(frame) {
-      return !frame.fileName!.includes('node_modules')
-    },
-  })
 }
