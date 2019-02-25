@@ -8,6 +8,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc --declaration",
+    "build:ci": "yarn build",
     "watch": "tsc -d -w",
     "lint": "tslint {src,test}/**/*.ts"
   },

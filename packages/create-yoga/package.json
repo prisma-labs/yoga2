@@ -6,6 +6,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "rimraf dist && tsc -d",
+    "build:ci": "yarn build",
     "pretest": "npm run build && npm run lint",
     "lint": "tslint {src,test}/**/*.ts",
     "start": "ts-node src/bin.ts"
