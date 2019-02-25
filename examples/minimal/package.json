@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",
-    "start": "yoga start"
+    "start": "yoga start",
+    "lint": "echo linting disabled"
   },
   "dependencies": {
     "yoga": "0.0.13"
