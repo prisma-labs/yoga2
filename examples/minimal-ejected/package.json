@@ -1,8 +1,10 @@
 {
   "name": "minimal-ejected",
+  "version": "0.0.0",
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",
+    "build:ci": "yarn build",
     "start": "yoga start",
     "lint": "echo linting disabled"
   },
