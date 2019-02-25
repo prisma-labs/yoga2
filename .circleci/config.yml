@@ -9,24 +9,22 @@ jobs:
       - checkout
       - run:
           name: update-npm
-          command: 'sudo npm install -g npm@latest'
+          command: sudo yarn add global npm@latest
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: install-dependencies
-          command: npm install
+          command: yarn install
       - run:
           name: install-package-dependencies
-          command: npm run bootstrap
+          command: yarn run bootstrap
       - run:
           name: run-build
-          command: npm run build
+          command: yarn run build
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
           name: run lint
-          command: npm run lint
-  
-
+          command: yarn run lint
