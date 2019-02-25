@@ -10,9 +10,6 @@
     "build": "lerna run build",
     "lint": "lerna exec -- npm run lint"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "license": "MIT",
   "devDependencies": {
     "lerna": "3.13.0"
