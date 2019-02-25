@@ -1,6 +1,6 @@
 {
   "name": "yoga",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
@@ -41,9 +41,9 @@
     "@types/pluralize": "0.0.29",
     "@types/yargs": "12.0.9",
     "prettier": "1.16.4",
-    "typescript": "3.3.3333",
+    "tslint-config-prettier": "1.17.0",
     "tslint-config-standard": "8.0.1",
-    "tslint-config-prettier": "1.17.0"
+    "typescript": "3.3.3333"
   },
   "prettier": {
     "semi": false,
