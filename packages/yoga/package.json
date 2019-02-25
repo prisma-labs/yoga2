@@ -8,7 +8,8 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc --declaration",
-    "watch": "tsc -d -w"
+    "watch": "tsc -d -w",
+    "lint": "tslint {src,test}/**/*.ts"
   },
   "bin": {
     "yoga": "dist/cli/index.js"
@@ -40,7 +41,9 @@
     "@types/pluralize": "0.0.29",
     "@types/yargs": "12.0.9",
     "prettier": "1.16.4",
-    "typescript": "3.3.3333"
+    "typescript": "3.3.3333",
+    "tslint-config-standard": "8.0.1",
+    "tslint-config-prettier": "1.17.0"
   },
   "prettier": {
     "semi": false,

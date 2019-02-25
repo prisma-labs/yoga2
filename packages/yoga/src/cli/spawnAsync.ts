@@ -1,7 +1,6 @@
 // Borrowed from https://github.com/expo/spawn-async/blob/master/src/spawnAsync.ts
 
-import { ChildProcess, SpawnOptions as NodeSpawnOptions } from 'child_process'
-import { spawn } from 'child_process'
+import { ChildProcess, SpawnOptions as NodeSpawnOptions, spawn } from 'child_process'
 
 interface SpawnOptions extends NodeSpawnOptions {
   ignoreStdio?: boolean
