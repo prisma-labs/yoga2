@@ -8,8 +8,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: update-npm
-          command: sudo yarn add global npm@latest
+          name: update-yarn
+          command: sudo yarn add global yarn@latest
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
