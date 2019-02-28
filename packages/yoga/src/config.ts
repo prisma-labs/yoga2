@@ -77,13 +77,13 @@ function getPrismaClientDir(
     return undefined
   }
 
-  if (!yogaConfig.prisma!.datamodelInfo.clientPath) {
+  if (!yogaConfig.prisma.datamodelInfo.clientPath) {
     throw new Error(
       'Missing `clientPath` in generated `datamodelInfo`. Make sure to re-run nexus-prisma-generate@>=0.3.2',
     )
   }
 
-  return path.join(projectDir, yogaConfig.prisma!.datamodelInfo.clientPath)
+  return path.join(projectDir, yogaConfig.prisma.datamodelInfo.clientPath)
 }
 
 /**
