@@ -1,16 +1,15 @@
 import { ApolloServer } from 'apollo-server'
 import { watch as nativeWatch } from 'chokidar'
-import * as glob from 'glob'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
 import * as path from 'path'
+import PrettyError from 'pretty-error'
 import { register } from 'ts-node'
 import { importYogaConfig } from './config'
 import { findFileByExtension, importFile, importUncached } from './helpers'
 import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
 import { Config, Yoga } from './types'
-import PrettyError from 'pretty-error'
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -33,16 +32,19 @@ export async function watch(): Promise<void> {
   logger.clearConsole()
   logger.info('Starting development server...')
   let info = importYogaConfig()
-  const filesToWatch = glob.sync(path.join(info.projectDir, '**', '*.ts'), {
-    dot: true,
-  })
+  let filesToWatch = [path.join(info.projectDir, '**', '*.ts')]
+
+  if (info.prismaClientDir && info.datamodelInfoDir) {
+    filesToWatch.push(info.prismaClientDir)
+    filesToWatch.push(info.datamodelInfoDir)
+  }
 
   let oldServer: any | undefined = await start(
     info.yogaConfig,
     info.prismaClientDir,
     true,
   )
-  let batchedGeneratedFiles = [] as string[]
+  let filesToReloadBatched = [] as string[]
 
   nativeWatch(filesToWatch, {
     usePolling: true, // fsEvents randomly triggers twice on OSX
@@ -59,12 +61,12 @@ export async function watch(): Promise<void> {
         (fileName === path.join(info.prismaClientDir!, 'index.ts') ||
           fileName === path.join(info.datamodelInfoDir!, 'datamodel-info.ts'))
       ) {
-        batchedGeneratedFiles.push(fileName)
+        filesToReloadBatched.push(fileName)
 
-        if (batchedGeneratedFiles.length === 2) {
+        if (filesToReloadBatched.length === 2) {
           // TODO: Do not invalidate everything, only the necessary stuff
           info = importYogaConfig({ invalidate: true })
-          batchedGeneratedFiles = []
+          filesToReloadBatched = []
         } else {
           return Promise.resolve(true)
         }
@@ -126,7 +128,7 @@ export async function start(
   withLog: boolean = false,
 ): Promise<any> {
   try {
-    const yogaServer = await getYogaServer(yogaConfig, prismaClientDir)
+    const yogaServer = getYogaServer(yogaConfig, prismaClientDir)
     const serverInstance = await yogaServer.server(
       yogaConfig.ejectFilePath
         ? path.dirname(yogaConfig.ejectFilePath)
