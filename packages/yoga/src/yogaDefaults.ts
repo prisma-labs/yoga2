@@ -40,6 +40,7 @@ export const DEFAULTS: Config = {
       $graphql: null as any, // FIXME
     },
   },
+  expressPath: './src/express.ts',
 }
 
 export const DEFAULT_META_SCHEMA_DIR = './.yoga/nexus-prisma/'
@@ -56,6 +57,7 @@ export function normalizeConfig(
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
+    expressPath: expressPath(projectDir, config.expressPath),
     output: output(projectDir, config.output),
     prisma: prisma(projectDir, config.prisma),
   }
@@ -154,6 +156,15 @@ function ejectFilePath(
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.ejectFilePath!)
 
   return optional(path, input, buildError(projectDir, path, 'ejectFilePath'))
+}
+
+function expressPath(
+  projectDir: string,
+  input: string | undefined,
+): string | undefined {
+  const path = inputOrDefaultPath(projectDir, input, DEFAULTS.expressPath!)
+
+  return optional(path, input, buildError(projectDir, path, 'expressPath'))
 }
 
 function output(
