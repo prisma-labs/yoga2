@@ -20,8 +20,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "lerna": "3.13.1",
     "docz": "latest",
-    "docz-theme-default": "latest"
+    "docz-theme-default": "latest",
+    "lerna": "3.13.1",
+    "webpack": "4.28.4"
   }
 }
