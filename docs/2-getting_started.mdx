@@ -5,46 +5,28 @@ route: /getting-started
 
 # Getting started
 
-## From scratch
+Yoga comes with a tool to bootsrap a ready-to-use project. **No need to install anything**
 
-- Install `yoga` as a dependency
-
-```bash
-yarn add yoga
-```
-
-- Init a `yoga` project
-
-```bash
-yarn yoga init
-```
-
-- The following folder structure will be created for you
-
-```bash
-src
-├── context.ts (optional)
-└── graphql
-    └── Query.ts
-```
-
-- Run `yarn yoga dev`. You're ready to start 🚀
-
-## Bootstrap a ready-to-use project
-
-- Start the bootstrapper
+- Start the tool with one of the following commands
 
 ```bash
 yarn create yoga
+```
+
+or
+
+```bash
+npm init yoga
 ```
 
 - Choose the template you want to start with:
 
 ```bash
 ? Choose a GraphQL server template? (Use arrow keys)
-❯ minimal-yoga (Basic starter template )
+❯ minimal-yoga (Basic starter template)
   db-yoga (Template with Prisma database support)
 ```
 
 - Follow the CLI intructions
+- Run `yarn dev`
 - You're ready to start 🚀
