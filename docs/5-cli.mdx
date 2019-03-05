@@ -1,0 +1,205 @@
+---
+name: Command Line Interface
+route: /cli
+---
+
+# CLI
+
+Yoga is both shipped as a library and as a CLI. Below are the details for all commands
+
+```bash
+Usage: yoga <command> [options]
+
+Commands:
+  yoga new       Create new yoga project from template
+  yoga start     Start the server
+  yoga dev       Start the server in dev mode
+  yoga scaffold  Scaffold a new GraphQL type
+  yoga build     Build a yoga server
+
+Options:
+  --version   Show version number                                      [boolean]
+  -h, --help  Show help                                                [boolean]
+```
+
+## `yoga start`
+
+Starts your GraphQL server
+
+## `yoga dev`
+
+Starts your GraphQL server and watch all changes for quick live reload
+
+## `yoga build`
+
+Builds your server for production
+
+## `yoga eject`
+
+Eject from conventions
+
+The following files will be added to your projects
+
+- `src/server.ts`: Exposes the underlying GraphQL Server for you to tweak the params if needed. It wires up all the files and removes most of the convention magic.
+- `src/graphql/index.ts` Exports all the GraphQL types defined in `src/graphql/**` so that `src/server.ts` can import them
+
+## `yoga scaffold`
+
+Scaffolds a new GraphQL type
+
+### With Prisma
+
+The `scaffold` command will prompt you into a workflow to
+
+1. Choose your new type name
+2. Let you decide what CRUD operations you want to expose
+3. Update your datamodel
+4. Migrate your database (optional)
+5. Generate a file exposing your changes through your GraphQL server
+
+#### **Example**
+
+- Choose your type name
+
+```bash
+$ yoga scaffold customer
+```
+
+- Decice what CRUD operations you want to expose
+
+```bash
+? Do you want to expose CRUD operations ? Yes
+? Select the operations you would like to expose
+ Queries
+ ◉ Query.customer (Find one)
+ ◉ Query.customers (Find many)
+ Mutations
+ ◉ Mutation.createCustomer
+❯◉ Mutation.deleteCustomer
+ ◯ Mutation.updateCustomer
+```
+
+- Update your datamodel
+
+```bash
+We have added a type 'Customer' in your `prisma/datamodel.prisma` file !
+
+Before we continue, please do the following steps:
+
+1. Go to your `prisma/datamodel.prisma` file
+2. Add the desired fields to your model
+3. Confirm with Y once you're done, we'll run `prisma deploy` for you
+```
+
+- Add your fields to the `datamodel.prisma` file
+
+```graphql
+...
+
+type Customer {
+  # Add your fields here
+  id: ID! @unique
+  name: String!
+}
+```
+
+- Press `Y` to migrate your database and generate the needed files
+
+```bash
+? Did you go through all the steps ? Yes
+$ node_modules/.bin/prisma deploy
+Deploying service `<service>` to stage `<stage>` to server `<server>` 415ms
+
+Changes:
+
+  Customer (Type)
+  + Created type `Customer`
+  + Created field `id` of type `ID!`
+  + Created field `updatedAt` of type `DateTime!`
+  + Created field `createdAt` of type `DateTime!`
+  + Created field `name` of type `String!`
+
+Applying changes 1.3s
+
+Your Prisma GraphQL database endpoint is live:
+
+  HTTP:  https://eu1.prisma.sh/<user>/<service>/<stage>
+  WS:    wss://eu1.prisma.sh/<user>/<service>/<stage>
+
+Scaffolding of src/graphql/Customer.ts succesfuly done !
+
+A few more optional steps:
+
+1. Go to src/graphql/Customer.ts
+2. Expose/customize your persisted model using `t.prismaFields([...])`
+```
+
+Given the options selected in the workflow above, the scaffolded `${resolversPath}/Customer.ts` file would look like this
+
+```ts
+import { prismaObjectType, prismaExtendType } from "yoga";
+
+export const Customer = prismaObjectType({
+  name: "Customer",
+  definition(t) {
+    // All fields exposed thanks the to wildcard operator
+    // Expose, hide or customize specific fields with t.prismaFields(['id', 'otherField', ...])
+    t.prismaFields(["*"]);
+  }
+});
+
+export const CustomerQuery = prismaExtendType({
+  type: "Query",
+  definition(t) {
+    t.prismaFields(["customer", "customers"]);
+  }
+});
+
+export const CustomerMutation = prismaExtendType({
+  type: "Mutation",
+  definition(t) {
+    t.prismaFields(["createCustomer", "deleteCustomer"]);
+  }
+});
+```
+
+And the addition to your GraphQL schema would look like this
+
+```graphql
+type Query {
+  ...
+  customer(...): Customer
+  customers(...): [Customer!]!
+}
+
+type Mutation {
+  ...
+  createCustomer(...): Customer!
+  deleteCustomer(...): Customer
+}
+
+type Customer {
+  id: ID!
+  name: string!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+```
+
+### Without Prisma
+
+The `scaffold` command will simply generate a new file in your `resolversPath`
+
+`yarn scaffold user` will generate the following
+
+```ts
+//src/graphql/User.ts
+import { objectType } from "yoga";
+
+export const User = objectType({
+  name: "User",
+  definition(t) {
+    // Expose your fields using t.field()/string()/boolean().. here
+  }
+});
+```
