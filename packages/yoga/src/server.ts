@@ -11,6 +11,7 @@ import { findFileByExtension, importFile } from './helpers'
 import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
 import { Config, ConfigWithInfo, Yoga } from './types'
+import { addSDLComments } from './comments'
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -149,10 +150,10 @@ function importTypesContextExpressMiddleware(
   types: Record<string, any>
   context?: any /** Context<any> | ContextFunction<any> */
   expressMiddleware?: (app: Express.Application) => Promise<void> | void
+  typesPath: string[]
 } {
-  const types = findFileByExtension(resolversPath, '.ts').map(file =>
-    importFile(file),
-  )
+  const typesPath = findFileByExtension(resolversPath, '.ts')
+  const types = typesPath.map(file => importFile(file))
   let context = undefined
   let express = undefined
 
@@ -176,6 +177,7 @@ function importTypesContextExpressMiddleware(
     context,
     expressMiddleware: express,
     types,
+    typesPath,
   }
 }
 
@@ -192,6 +194,7 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
         const app = express()
         const {
           types,
+          typesPath,
           context,
           expressMiddleware,
         } = importTypesContextExpressMiddleware(
@@ -212,6 +215,11 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
               prisma: config.prisma,
             })
           : makeSchema(makeSchemaOptions)
+
+        typesPath.forEach(path => {
+          addSDLComments(path, schema)
+        })
+
         const server = new ApolloServer({
           schema,
           context,
