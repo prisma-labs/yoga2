@@ -142,7 +142,7 @@ export async function start(
  * @param contextPath The `contextPath` property from the `yoga.config.ts` file
  * @param expressPath The `expressPath` property from the `yoga.config.ts` file
  */
-function importTypesContextExpressMiddleware(
+function importArtifacts(
   resolversPath: string,
   contextPath: string | undefined,
   expressPath: string | undefined,
@@ -191,11 +191,7 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
     return {
       async server() {
         const app = express()
-        const {
-          types,
-          context,
-          expressMiddleware,
-        } = importTypesContextExpressMiddleware(
+        const { types, context, expressMiddleware } = importArtifacts(
           config.resolversPath,
           config.contextPath,
           config.expressPath,

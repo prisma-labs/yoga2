@@ -43,10 +43,15 @@ export type InputConfig = {
    */
   resolversPath?: string
   /**
-   * Path to the context.ts file. **If provided, path has to exist**
+   * Path to the `context.ts` file to inject a context into your graphql resolvers. **If provided, path has to exist**
    * @default ./src/context.ts
    */
   contextPath?: string
+  /**
+   * Path to the `types.ts` file to override nexus default types **If provided, path has to exist**
+   * @default ./src/types.ts
+   */
+  typesPath?: string
   /**
    * Path to the `server.ts` file to eject from default configuration file `yoga.config.ts`.
    * When provided, all other configuration properties are ignored and should be configured programatically.
@@ -80,6 +85,7 @@ export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
   contextPath?: RequiredProperty<'contextPath'>
   ejectFilePath?: RequiredProperty<'ejectFilePath'>
+  typesPath?: RequiredProperty<'typesPath'>
   output: RequiredProperty<'output'>
   prisma?: PrismaSchemaConfig['prisma']
   expressPath?: RequiredProperty<'expressPath'>

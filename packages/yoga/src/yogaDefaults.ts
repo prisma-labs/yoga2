@@ -16,6 +16,7 @@ import * as logger from './logger'
 export const DEFAULTS: Config = {
   contextPath: './src/context.ts',
   resolversPath: './src/graphql/',
+  typesPath: './src/types.ts',
   ejectFilePath: './src/server.ts',
   output: {
     typegenPath: './.yoga/nexus.ts',
@@ -56,6 +57,7 @@ export function normalizeConfig(
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
+    typesPath: typesPath(projectDir, config.typesPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
     expressPath: expressPath(projectDir, config.expressPath),
     output: output(projectDir, config.output),
@@ -147,6 +149,15 @@ function resolversPath(projectDir: string, input: string | undefined): string {
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.resolversPath)
 
   return requiredPath(path, buildError(projectDir, path, 'resolversPath'))
+}
+
+function typesPath(
+  projectDir: string,
+  input: string | undefined,
+): string | undefined {
+  const path = inputOrDefaultPath(projectDir, input, DEFAULTS.typesPath!)
+
+  return optional(path, input, buildError(projectDir, path, 'typesPath'))
 }
 
 function ejectFilePath(
