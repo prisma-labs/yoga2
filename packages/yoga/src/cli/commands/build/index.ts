@@ -35,9 +35,8 @@ export default () => {
     tsConfigPath,
   )
   const config = fixConfig(inputConfig, info.projectDir)
-  const rootNames = getRootNames(info)
 
-  compile(rootNames, config.options)
+  compile(config.fileNames, config.options)
 
   if (!info.yogaConfig.ejectFilePath) {
     const ejectFilePath = path.join(
@@ -67,25 +66,6 @@ function compile(rootNames: string[], options: ts.CompilerOptions) {
       ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost),
     )
   }
-}
-
-function getRootNames(info: ConfigWithInfo) {
-  const rootNames = findFileByExtension(info.yogaConfig.resolversPath, '.ts')
-
-  if (info.yogaConfig.contextPath) {
-    rootNames.push(info.yogaConfig.contextPath)
-  }
-
-  if (info.yogaConfig.ejectFilePath) {
-    rootNames.push(info.yogaConfig.ejectFilePath)
-  }
-
-  if (info.yogaConfig.prisma) {
-    rootNames.push(...findFileByExtension(info.prismaClientDir!, '.ts'))
-    rootNames.push(...findFileByExtension(info.datamodelInfoDir!, '.ts'))
-  }
-
-  return rootNames
 }
 
 /**

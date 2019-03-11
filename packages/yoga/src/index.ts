@@ -2,7 +2,7 @@ import * as ApolloServer from 'apollo-server-express'
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer'
 import express from 'express'
 import * as Http from 'http'
-import { InputConfig as YogaConfig, Yoga, MaybePromise } from './types'
+import { InputConfig as YogaConfig, MaybePromise, Yoga } from './types'
 
 export * from 'nexus'
 export * from 'nexus-prisma'

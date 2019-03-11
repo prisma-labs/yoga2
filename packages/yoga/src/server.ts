@@ -195,11 +195,9 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
           config.contextPath,
           config.expressPath,
         )
-        const allTypes: any[] = [types]
-
         const makeSchemaOptions = makeSchemaDefaults(
           config,
-          allTypes,
+          types,
           info.prismaClientDir,
         )
         const schema = config.prisma
