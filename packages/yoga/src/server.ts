@@ -33,7 +33,6 @@ register({
 export async function watch(): Promise<void> {
   logger.clearConsole()
   logger.info('Starting development server...')
-  logger.warn('DEV')
   let info = importYogaConfig()
   let filesToWatch = [path.join(info.projectDir, '**', '*.ts')]
 
