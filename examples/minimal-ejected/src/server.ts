@@ -1,10 +1,10 @@
-import * as path from 'path'
 import { Server } from 'http'
-import { ApolloServer, makeSchema, eject, express } from 'yoga'
+import * as path from 'path'
+import { ApolloServer, express, makeSchema, yogaEject } from 'yoga'
 import context from './context'
 import * as types from './graphql'
 
-export default eject({
+export default yogaEject({
   async server() {
     const app = express()
 

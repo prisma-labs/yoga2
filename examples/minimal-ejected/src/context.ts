@@ -1,3 +1,5 @@
+import { yogaContext } from 'yoga'
+
 interface UserModel {
   id: string
   name: string
@@ -22,6 +24,6 @@ export interface Context {
   users: UserModel[]
 }
 
-export default () => ({
+export default yogaContext(() => ({
   users,
-})
+}))
