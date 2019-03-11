@@ -10,8 +10,6 @@ jobs:
       - run:
           name: update-npm
           command: sudo npm install -g npm@latest
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: install-package-dependencies
           command: yarn run bootstrap:ci
@@ -22,10 +20,6 @@ jobs:
       - run:
           name: run-build
           command: sudo yarn run build:ci
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
       - run:
           name: run lint
           command: yarn run lint
