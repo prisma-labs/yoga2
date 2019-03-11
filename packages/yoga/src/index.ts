@@ -8,22 +8,22 @@ export * from 'nexus'
 export * from 'nexus-prisma'
 export { ApolloServer, express }
 
-export function config(opts: YogaConfig) {
+export function yogaConfig(opts: YogaConfig) {
   return opts
 }
 
-export function eject<T = express.Application, U = Http.Server>(
+export function yogaEject<T = express.Application, U = Http.Server>(
   opts: Yoga<T, U>,
 ) {
   return opts
 }
 
-export function useExpress(
+export function yogaExpress(
   fn: (app: express.Application) => MaybePromise<void>,
 ) {
   return fn
 }
 
-export function context<T>(ctx: ((ctx: ExpressContext) => T) | T) {
+export function yogaContext(ctx: ((ctx: ExpressContext) => object) | object) {
   return ctx
 }
