@@ -1,6 +1,7 @@
 import { ApolloServer } from 'apollo-server-express'
 import { watch as nativeWatch } from 'chokidar'
 import express from 'express'
+import { Server } from 'http'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
 import * as path from 'path'
@@ -223,19 +224,21 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
 
         server.applyMiddleware({ app, path: '/' })
 
-        return { express: app, server }
+        return app
       },
-      async startServer({ express, server }) {
-        const httpServer = await express.listen({ port: 4000 }, () => {
-          console.log(
-            `🚀  Server ready at http://localhost:4000${server.graphqlPath}`,
-          )
-        })
+      async startServer(express) {
+        return new Promise<Server>((resolve, reject) => {
+          const httpServer = express
+            .listen({ port: 4000 }, () => {
+              console.log(`🚀  Server ready at http://localhost:4000/`)
 
-        return { express: httpServer, server }
+              resolve(httpServer)
+            })
+            .on('error', err => reject(err))
+        })
       },
-      stopServer({ express }) {
-        return express.close()
+      stopServer(httpServer) {
+        return httpServer.close()
       },
     }
   }

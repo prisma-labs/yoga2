@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as ts from 'typescript'
 import { findConfigFile, importYogaConfig } from '../../../config'
 import { findFileByExtension } from '../../../helpers'
-import { Config, ConfigWithInfo } from '../../../types'
+import { ConfigWithInfo } from '../../../types'
 import { DEFAULTS } from '../../../yogaDefaults'
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
@@ -46,7 +46,7 @@ export default () => {
       'index.ts',
     )
 
-    writeEntryPoint(info, ejectFilePath!, config)
+    writeEntryPoint(info, ejectFilePath, config)
   } else {
     useEntryPoint(info, info.yogaConfig.ejectFilePath, config)
   }
@@ -117,14 +117,18 @@ function useEntryPoint(
   config: ts.ParsedCommandLine,
 ) {
   const indexFile = `
-  import yogaServer from '${getRelativePath(
+  import yoga from '${getRelativePath(
     path.dirname(ejectFilePath),
     ejectFilePath,
   )}'
 
-  const serverInstance = yogaServer.server(__dirname)
+  async function main() {
+    const serverInstance = await yoga.server()
 
-  yogaServer.startServer(serverInstance)
+    return yoga.startServer(serverInstance)
+  }
+
+  main()
   `
   const indexFilePath = path.join(path.dirname(ejectFilePath), 'index.ts')
 
@@ -138,7 +142,7 @@ function writeEntryPoint(
 ) {
   const ejectFile = info.yogaConfig.prisma
     ? prismaIndexFile(path.dirname(ejectFilePath), info)
-    : simpleIndexfile(path.dirname(ejectFilePath), info.yogaConfig)
+    : simpleIndexfile(path.dirname(ejectFilePath), info)
 
   outputFile(ejectFile, ejectFilePath, config.options, info)
 
@@ -151,7 +155,7 @@ function writeEntryPoint(
 
 function prismaIndexFile(filePath: string, info: ConfigWithInfo) {
   return `
-  import { ApolloServer, makePrismaSchema } from 'yoga'
+  import { ApolloServer, makePrismaSchema, express } from 'yoga'
   import datamodelInfo from '${getRelativePath(
     filePath,
     info.datamodelInfoDir!,
@@ -170,6 +174,7 @@ function prismaIndexFile(filePath: string, info: ConfigWithInfo) {
     info.yogaConfig.resolversPath,
   )}'
 
+  
   const schema = makePrismaSchema({
     types,
     prisma: {
@@ -179,35 +184,57 @@ function prismaIndexFile(filePath: string, info: ConfigWithInfo) {
     outputs: false
   })
 
-  new ApolloServer({
+  const apolloServer = new ApolloServer.ApolloServer({
     schema,
     ${info.yogaConfig.contextPath ? 'context' : ''}
-  }).listen().then(s => console.log(\`🚀  Server listening at \${s.url}\`))
+  })
+  const app = express()
+
+  apolloServer.applyMiddleware({ app, path: '/' })
+
+  app.listen({ port: 4000 }, () => {
+    console.log(
+      \`🚀  Server ready at http://localhost:4000/\`,
+    )
+  })
   `
 }
 
-function simpleIndexfile(filePath: string, yogaConfig: Config) {
+function simpleIndexfile(filePath: string, info: ConfigWithInfo) {
   return `\
-import { ApolloServer, makeSchema } from 'yoga'
+import { ApolloServer, makeSchema, express } from 'yoga'
 ${
-  yogaConfig.contextPath
+  info.yogaConfig.contextPath
     ? `import context from '${getRelativePath(
         filePath,
-        yogaConfig.contextPath,
+        info.yogaConfig.contextPath,
       )}'`
     : ''
 }
-import * as types from '${getRelativePath(filePath, yogaConfig.resolversPath)}'
+import * as types from '${getRelativePath(
+    filePath,
+    info.yogaConfig.resolversPath,
+  )}'
 
 const schema = makeSchema({
   types,
   outputs: false
 })
 
-new ApolloServer({
+const apolloServer = new ApolloServer.ApolloServer({
   schema,
-  context,
-}).listen().then(s => console.log(\`🚀  Server listening at \${s.url}\`)),
+  ${info.yogaConfig.contextPath ? 'context' : ''}
+})
+
+const app = express()
+
+apolloServer.applyMiddleware({ app, path: '/' })
+
+app.listen({ port: 4000 }, () => {
+  console.log(
+    \`🚀  Server ready at http://localhost:4000/\`,
+  )
+})
 `
 }
 

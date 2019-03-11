@@ -1,4 +1,8 @@
 import { PrismaClientInput, PrismaSchemaConfig } from 'nexus-prisma/dist/types'
+import Express from 'express'
+import { Server as HttpServer } from 'http'
+
+export type MaybePromise<T> = Promise<T> | T
 
 export type DatamodelInfo = PrismaSchemaConfig['prisma']['datamodelInfo']
 
@@ -90,8 +94,8 @@ export type ConfigWithInfo = {
   prismaClientDir?: string
 }
 
-export interface Yoga<Server = any> {
-  server: () => Server | Promise<Server>
-  startServer: (server: Server) => any | Promise<any>
-  stopServer: (server: Server) => any | Promise<any>
+export interface Yoga<T = Express.Application, U = HttpServer> {
+  server: () => MaybePromise<T>
+  startServer: (params: T) => MaybePromise<U>
+  stopServer: (params: U) => any
 }
