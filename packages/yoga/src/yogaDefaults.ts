@@ -213,7 +213,7 @@ export function client(
 ): PrismaClientInput {
   if (input === undefined) {
     const clientPath = requiredPath(
-      join(projectDir, datamodelInfo.clientPath),
+      join(projectDir, datamodelInfo.clientPath, 'index.ts'),
       `${buildError(
         projectDir,
         datamodelInfo.clientPath,
