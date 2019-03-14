@@ -22,7 +22,6 @@
   "devDependencies": {
     "docz": "latest",
     "docz-theme-default": "latest",
-    "lerna": "3.13.1",
-    "webpack": "4.28.4"
+    "lerna": "3.13.1"
   }
 }
