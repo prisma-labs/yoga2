@@ -3,6 +3,7 @@ import * as inquirer from 'inquirer'
 import yaml from 'js-yaml'
 import * as path from 'path'
 import pluralize from 'pluralize'
+import * as prettier from 'prettier'
 import { findPrismaConfigFile, importYogaConfig } from '../../../config'
 import { Config } from '../../../types'
 import { spawnAsync } from '../../spawnAsync'
@@ -16,7 +17,7 @@ export default async () => {
     message: 'Input the name of your type',
     type: 'input',
     validate(input: string) {
-      if (input === undefined || input.length === 0) {
+      if (!input || input.length === 0) {
         return 'Type name should be at least one character'
       }
 
@@ -103,7 +104,12 @@ Before we continue, please do the following steps:
     if (allStepsDone) {
       await runPrismaDeploy()
 
-      const filePath = scaffoldType(yogaConfig, typeName, hasDb, crudOperations)
+      const filePath = await scaffoldType(
+        yogaConfig,
+        typeName,
+        hasDb,
+        crudOperations,
+      )
       const relativePath = path.relative(projectDir, filePath)
 
       console.log(`
@@ -121,10 +127,11 @@ A few more optional steps:
     process.exit(0)
   }
 
-  scaffoldType(yogaConfig, typeName, hasDb, null)
+  const filePath = await scaffoldType(yogaConfig, typeName, hasDb, null)
+  const relativePath = path.relative(projectDir, filePath)
 
   console.log(`\
-Scaffolded new file at ./src/graphql/${typeName}.ts
+Scaffolded new file at ${relativePath}
 
 Next steps:
 
@@ -133,12 +140,12 @@ Next steps:
     `)
 }
 
-function scaffoldType(
+async function scaffoldType(
   config: Config,
   typeName: string,
   hasDb: boolean,
   crudOperations: string[] | null,
-): string {
+): Promise<string> {
   const typePath = path.join(config.resolversPath, `${typeName}.ts`)
 
   if (fs.existsSync(typePath)) {
@@ -148,9 +155,10 @@ function scaffoldType(
   const content = hasDb
     ? scaffoldTypeWithDb(typeName, crudOperations)
     : scaffoldTypeWithoutDb(typeName)
+  const prettierOptions = await resolvePrettierOptions(process.cwd())
 
   try {
-    fs.writeFileSync(typePath, content)
+    fs.writeFileSync(typePath, format(content, prettierOptions))
   } catch (e) {
     console.error(e)
   }
@@ -338,4 +346,30 @@ async function runCommand(command: string) {
   const childProcess = spawnAsync(cmd, rest, { stdio: 'inherit' })
 
   return childProcess
+}
+
+async function resolvePrettierOptions(path: string): Promise<prettier.Options> {
+  const options = (await prettier.resolveConfig(path)) || {}
+
+  return options
+}
+
+function format(
+  code: string,
+  options: prettier.Options = {},
+  parser: prettier.BuiltInParserName = 'typescript',
+) {
+  try {
+    return prettier.format(code, {
+      ...options,
+      parser,
+    })
+  } catch (e) {
+    console.log(
+      `There is a syntax error in generated code, unformatted code printed, error: ${JSON.stringify(
+        e,
+      )}`,
+    )
+    return code
+  }
 }

@@ -192,7 +192,13 @@ export function client(
   if (input === undefined) {
     const clientPath = requiredPath(
       join(projectDir, datamodelInfo.clientPath),
-      buildError(projectDir, datamodelInfo.clientPath, 'prisma.client'),
+      `${buildError(
+        projectDir,
+        datamodelInfo.clientPath,
+        'prisma.client',
+      )}. Try running ${chalk.yellow(
+        'prisma deploy',
+      )} to generate the needed files.`,
     )
 
     return importFile<PrismaClientInput>(clientPath, 'prisma', true)
@@ -213,7 +219,13 @@ export function datamodelInfo(
   return importFile<DatamodelInfo>(
     requiredPath(
       datamodelInfoPath,
-      buildError(projectDir, datamodelInfoPath, 'prisma.datamodelInfoPath'),
+      `${buildError(
+        projectDir,
+        datamodelInfoPath,
+        'prisma.datamodelInfoPath',
+      )}. Try running ${chalk.yellow(
+        'prisma deploy',
+      )} to generate the needed files.`,
     ),
     'default',
   )

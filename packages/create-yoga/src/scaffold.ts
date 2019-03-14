@@ -384,7 +384,7 @@ function computeISDL(
   }
 }
 
-export function format(
+function format(
   code: string,
   options: prettier.Options = {},
   parser: prettier.BuiltInParserName = 'typescript',
