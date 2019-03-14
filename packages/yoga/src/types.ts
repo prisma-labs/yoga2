@@ -1,10 +1,10 @@
-import { PrismaClientInput } from 'nexus-prisma/dist/types'
+import { PrismaClientInput, PrismaSchemaConfig } from 'nexus-prisma/dist/types'
+import Express from 'express'
+import { Server as HttpServer } from 'http'
 
-export interface DatamodelInfo {
-  uniqueFieldsByModel: Record<string, string[]>
-  clientPath: string
-  schema: { __schema: any }
-}
+export type MaybePromise<T> = Promise<T> | T
+
+export type DatamodelInfo = PrismaSchemaConfig['prisma']['datamodelInfo']
 
 export type InputPrismaConfig = {
   /**
@@ -37,23 +37,35 @@ export type InputOutputFilesConfig = {
 
 export type InputConfig = {
   /**
-   * Path to the directory where your resolvers are defined.
+   * Path to the resolvers directory.
    * **Path has to exist**
    * @default ./src/graphql/
    */
   resolversPath?: string
   /**
-   * Path to your context.ts file. **If provided, path has to exist**
+   * Path to the `context.ts` file to inject a context into your graphql resolvers. **If provided, path has to exist**
    * @default ./src/context.ts
    */
   contextPath?: string
   /**
-   * Path to an `server.ts` file to eject from default configuration file `yoga.config.ts`.
+   * Path to the `types.ts` file to override nexus default types **If provided, path has to exist**
+   * @default ./src/types.ts
+   */
+  typesPath?: string
+  /**
+   * Path to the `server.ts` file to eject from default configuration file `yoga.config.ts`.
    * When provided, all other configuration properties are ignored and should be configured programatically.
    * **If provided, path has to exist**
    * @default ./src/server.ts
    */
   ejectFilePath?: string
+  /**
+   * Path to the `express.ts` file.
+   * This file gets injected the underlying express instance (to add routes, or middlewares etc...)
+   * **If provided, path has to exist**
+   * @default ./src/express.ts
+   */
+  expressPath?: string
   /**
    * Config for the outputted files (schema, typings ..)
    */
@@ -73,11 +85,10 @@ export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
   contextPath?: RequiredProperty<'contextPath'>
   ejectFilePath?: RequiredProperty<'ejectFilePath'>
+  typesPath?: RequiredProperty<'typesPath'>
   output: RequiredProperty<'output'>
-  prisma?: {
-    datamodelInfo: DatamodelInfo
-    client: PrismaClientInput
-  }
+  prisma?: PrismaSchemaConfig['prisma']
+  expressPath?: RequiredProperty<'expressPath'>
 }
 
 export type ConfigWithInfo = {
@@ -89,8 +100,8 @@ export type ConfigWithInfo = {
   prismaClientDir?: string
 }
 
-export interface Yoga<Server = any> {
-  server: (dirname: string) => Server | Promise<Server>
-  startServer: (server: Server) => any | Promise<any>
-  stopServer: (server: Server) => any | Promise<any>
+export interface Yoga<T = Express.Application, U = HttpServer> {
+  server: () => MaybePromise<T>
+  startServer: (params: T) => MaybePromise<U>
+  stopServer: (params: U) => any
 }

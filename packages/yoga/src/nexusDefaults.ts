@@ -37,6 +37,14 @@ export function makeSchemaDefaults(
               },
             ]
           : []),
+        ...(config.typesPath
+          ? [
+              {
+                source: config.typesPath,
+                alias: 'types',
+              },
+            ]
+          : []),
       ],
       ...(config.contextPath ? { contextType: 'ctx.Context' } : {}),
     },

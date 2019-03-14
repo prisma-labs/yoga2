@@ -16,6 +16,7 @@ import * as logger from './logger'
 export const DEFAULTS: Config = {
   contextPath: './src/context.ts',
   resolversPath: './src/graphql/',
+  typesPath: './src/types.ts',
   ejectFilePath: './src/server.ts',
   output: {
     typegenPath: './.yoga/nexus.ts',
@@ -33,13 +34,14 @@ export const DEFAULTS: Config = {
     },
     /**
      * Do not use that as a default value, this is just a placeholder
-     * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     * When `client` isn't provided, we're importing it from `datamodel.clientPath`
      */
     client: {
       $exists: null,
       $graphql: null as any, // FIXME
     },
   },
+  expressPath: './src/express.ts',
 }
 
 export const DEFAULT_META_SCHEMA_DIR = './.yoga/nexus-prisma/'
@@ -55,7 +57,9 @@ export function normalizeConfig(
   const outputConfig: Config = {
     contextPath: contextPath(projectDir, config.contextPath),
     resolversPath: resolversPath(projectDir, config.resolversPath),
+    typesPath: typesPath(projectDir, config.typesPath),
     ejectFilePath: ejectFilePath(projectDir, config.ejectFilePath),
+    expressPath: expressPath(projectDir, config.expressPath),
     output: output(projectDir, config.output),
     prisma: prisma(projectDir, config.prisma),
   }
@@ -147,6 +151,15 @@ function resolversPath(projectDir: string, input: string | undefined): string {
   return requiredPath(path, buildError(projectDir, path, 'resolversPath'))
 }
 
+function typesPath(
+  projectDir: string,
+  input: string | undefined,
+): string | undefined {
+  const path = inputOrDefaultPath(projectDir, input, DEFAULTS.typesPath!)
+
+  return optional(path, input, buildError(projectDir, path, 'typesPath'))
+}
+
 function ejectFilePath(
   projectDir: string,
   input: string | undefined,
@@ -154,6 +167,15 @@ function ejectFilePath(
   const path = inputOrDefaultPath(projectDir, input, DEFAULTS.ejectFilePath!)
 
   return optional(path, input, buildError(projectDir, path, 'ejectFilePath'))
+}
+
+function expressPath(
+  projectDir: string,
+  input: string | undefined,
+): string | undefined {
+  const path = inputOrDefaultPath(projectDir, input, DEFAULTS.expressPath!)
+
+  return optional(path, input, buildError(projectDir, path, 'expressPath'))
 }
 
 function output(
@@ -191,7 +213,7 @@ export function client(
 ): PrismaClientInput {
   if (input === undefined) {
     const clientPath = requiredPath(
-      join(projectDir, datamodelInfo.clientPath),
+      join(projectDir, datamodelInfo.clientPath, 'index.ts'),
       `${buildError(
         projectDir,
         datamodelInfo.clientPath,

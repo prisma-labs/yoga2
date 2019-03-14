@@ -63,7 +63,7 @@ function getDatamodelInfoDir(
   }
 
   if (inputConfig.prisma && inputConfig.prisma.datamodelInfoPath) {
-    return inputConfig.prisma.datamodelInfoPath
+    return path.join(projectDir, inputConfig.prisma.datamodelInfoPath)
   }
 
   return path.join(projectDir, DEFAULT_META_SCHEMA_DIR)

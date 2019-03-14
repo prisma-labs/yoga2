@@ -1,15 +1,17 @@
-import { ApolloServer } from 'apollo-server'
+import { ApolloServer } from 'apollo-server-express'
 import { watch as nativeWatch } from 'chokidar'
+import express from 'express'
+import { Server } from 'http'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
 import * as path from 'path'
 import PrettyError from 'pretty-error'
 import { register } from 'ts-node'
 import { importYogaConfig } from './config'
-import { findFileByExtension, importFile, importUncached } from './helpers'
+import { findFileByExtension, importFile } from './helpers'
 import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
-import { Config, Yoga } from './types'
+import { Config, ConfigWithInfo, Yoga } from './types'
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -39,11 +41,7 @@ export async function watch(): Promise<void> {
     filesToWatch.push(info.datamodelInfoDir)
   }
 
-  let oldServer: any | undefined = await start(
-    info.yogaConfig,
-    info.prismaClientDir,
-    true,
-  )
+  let oldServer: any | undefined = await start(info, true)
   let filesToReloadBatched = [] as string[]
 
   nativeWatch(filesToWatch, {
@@ -71,27 +69,21 @@ export async function watch(): Promise<void> {
           return Promise.resolve(true)
         }
       }
-      console.clear()
+      logger.clearConsole()
       logger.info('Compiling')
 
-      const yogaServer = getYogaServer(info.yogaConfig, info.prismaClientDir)
+      const { server, startServer, stopServer } = getYogaServer(info)
 
       if (oldServer !== undefined) {
-        await yogaServer.stopServer(oldServer)
+        await stopServer(oldServer)
       }
 
-      const serverInstance = await yogaServer.server(
-        info.yogaConfig.ejectFilePath
-          ? path.dirname(info.yogaConfig.ejectFilePath)
-          : __dirname,
-      )
-
-      oldServer = serverInstance
+      const serverInstance = await server()
 
       logger.clearConsole()
       logger.done('Compiled succesfully')
 
-      await yogaServer.startServer(serverInstance)
+      oldServer = await startServer(serverInstance)
     } catch (e) {
       console.error(pe.render(e))
     }
@@ -123,26 +115,19 @@ function getIgnoredFiles(
 }
 
 export async function start(
-  yogaConfig: Config,
-  prismaClientDir: string | undefined,
+  info: ConfigWithInfo,
   withLog: boolean = false,
 ): Promise<any> {
   try {
-    const yogaServer = getYogaServer(yogaConfig, prismaClientDir)
-    const serverInstance = await yogaServer.server(
-      yogaConfig.ejectFilePath
-        ? path.dirname(yogaConfig.ejectFilePath)
-        : __dirname,
-    )
+    const { server, startServer } = getYogaServer(info)
+    const serverInstance = await server()
 
     if (withLog) {
       logger.clearConsole()
       logger.done('Compiled successfully')
     }
 
-    await yogaServer.startServer(serverInstance)
-
-    return serverInstance
+    return startServer(serverInstance)
   } catch (e) {
     console.error(pe.render(e))
   }
@@ -154,30 +139,43 @@ export async function start(
  *
  * @param resolversPath The `resolversPath` property from the `yoga.config.ts` file
  * @param contextPath The `contextPath` property from the `yoga.config.ts` file
+ * @param expressPath The `expressPath` property from the `yoga.config.ts` file
  */
-function importGraphqlTypesAndContext(
+function importArtifacts(
   resolversPath: string,
   contextPath: string | undefined,
+  expressPath: string | undefined,
 ): {
   types: Record<string, any>
   context?: any /** Context<any> | ContextFunction<any> */
+  expressMiddleware?: (app: Express.Application) => Promise<void> | void
 } {
-  const tsFiles = findFileByExtension(resolversPath, '.ts')
+  const types = findFileByExtension(resolversPath, '.ts').map(file =>
+    importFile(file),
+  )
   let context = undefined
+  let express = undefined
 
   if (contextPath !== undefined) {
     context = importFile(contextPath, 'default')
 
     if (typeof context !== 'function') {
-      throw new Error('Context must be a default exported function')
+      throw new Error(`${contextPath} must default export a function`)
     }
   }
 
-  const types = tsFiles.map(file => importUncached(file))
+  if (expressPath !== undefined) {
+    express = importFile(expressPath, 'default')
+
+    if (typeof express !== 'function') {
+      throw new Error(`${expressPath} must default export a function`)
+    }
+  }
 
   return {
     context,
-    types: types.reduce((a, b) => ({ ...a, ...b }), {}),
+    expressMiddleware: express,
+    types,
   }
 }
 
@@ -185,21 +183,22 @@ function importGraphqlTypesAndContext(
  *
  * @param config The yoga config object
  */
-function getYogaServer(
-  config: Config,
-  prismaClientDir: string | undefined,
-): Yoga {
+function getYogaServer(info: ConfigWithInfo): Yoga {
+  const { yogaConfig: config } = info
+
   if (!config.ejectFilePath) {
     return {
       async server() {
-        const { types, context } = importGraphqlTypesAndContext(
+        const app = express()
+        const { types, context, expressMiddleware } = importArtifacts(
           config.resolversPath,
           config.contextPath,
+          config.expressPath,
         )
         const makeSchemaOptions = makeSchemaDefaults(
           config,
           types,
-          prismaClientDir,
+          info.prismaClientDir,
         )
         const schema = config.prisma
           ? makePrismaSchema({
@@ -207,21 +206,34 @@ function getYogaServer(
               prisma: config.prisma,
             })
           : makeSchema(makeSchemaOptions)
-
-        return new ApolloServer({
+        const server = new ApolloServer({
           schema,
           context,
         })
+
+        if (expressMiddleware) {
+          await expressMiddleware(app)
+        }
+
+        server.applyMiddleware({ app, path: '/' })
+
+        return app
       },
-      startServer(server) {
-        return server
-          .listen()
-          .then(({ url }) => console.log(`🚀  Server ready at ${url}`))
+      async startServer(express) {
+        return new Promise<Server>((resolve, reject) => {
+          const httpServer = express
+            .listen({ port: 4000 }, () => {
+              console.log(`🚀  Server ready at http://localhost:4000/`)
+
+              resolve(httpServer)
+            })
+            .on('error', err => reject(err))
+        })
       },
-      stopServer(server) {
-        return server.stop()
+      stopServer(httpServer) {
+        return httpServer.close()
       },
-    } as Yoga<ApolloServer>
+    }
   }
 
   const yogaServer = importFile<Yoga>(config.ejectFilePath, 'default')
