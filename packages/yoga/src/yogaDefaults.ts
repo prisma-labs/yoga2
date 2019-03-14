@@ -34,7 +34,7 @@ export const DEFAULTS: Config = {
     },
     /**
      * Do not use that as a default value, this is just a placeholder
-     * When `client` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     * When `client` isn't provided, we're importing it from `datamodel.clientPath`
      */
     client: {
       $exists: null,
