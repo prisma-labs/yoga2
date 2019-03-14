@@ -52,11 +52,11 @@ A file to define the context of your GraphQL server. It must default export a fu
 
 ```ts
 // src/context.ts
-import { context } from "yoga";
+import { yogaContext } from "yoga";
 import { orm } from "./my-orm";
 
 // `context` is an optional helper to provide type-safety and autocompletion
-export default context(({ req }) => ({ req, orm }));
+export default yogaContext(({ req }) => ({ req, orm }));
 ```
 
 **`express.ts` (optional)**
@@ -65,11 +65,11 @@ A file to access the underlying express instance (and use middlewares, expose we
 
 ```ts
 // src/express.ts
-import { express } from "yoga";
+import { yogaExpress } from "yoga";
 import { middleware } from "my-express-middleware";
 
 // `express` is an optional helper to provide type-safety and autocompletion
-export default express(app => {
+export default yogaExpress(app => {
   // Define any express related logic using the injected `app` express instance
   app.use(middleware);
   // app.get('/login', ...)
