@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
-import {createTemplate} from './index'
+import { createTemplate } from './index'
 
-createTemplate();
+// tslint:disable-next-line: no-floating-promises
+createTemplate()

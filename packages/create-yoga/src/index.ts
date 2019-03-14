@@ -1,15 +1,10 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import * as meow from 'meow'
 import * as inquirer from 'inquirer'
+import * as meow from 'meow'
+import { bootstrap, templateFromFlags } from './bootstrap'
+import { initScaffold } from './scaffold'
+import { defaultTemplate, Template, templatesNames } from './templates'
 
-import { loadYogaStarter } from './loader'
-import {
-  defaultTemplate,
-  Template,
-  availableTemplates,
-  templatesNames,
-} from './templates'
+inquirer.registerPrompt('path', require('inquirer-path').PathPrompt)
 
 const cli = meow(
   `
@@ -43,76 +38,40 @@ const cli = meow(
 )
 
 // Main
-async function main(cli: meow.Result) {
+async function main(cli: meow.Result): Promise<void> {
   let template: Template = defaultTemplate
+  let newOrExisting = null
 
   if (cli.flags['template']) {
-    const selectedTemplate = availableTemplates.find(
-      t => t.name === cli.flags['template'],
-    )
-
-    if (selectedTemplate) {
-      template = selectedTemplate
-    } else {
-      console.log(`Unknown template. Available templates: ${templatesNames}`)
-      return
-    }
+    template = templateFromFlags(cli)
   } else {
-    const res = await inquirer.prompt<{ templateName: string }>([
+    const result = await inquirer.prompt<{
+      newOrExisting: 'new' | 'database'
+    }>([
       {
-        name: 'templateName',
-        message: 'Choose a GraphQL server template?',
+        name: 'newOrExisting',
+        message: 'Start from scratch or from an existing database?',
         type: 'list',
-        choices: availableTemplates.map(t => ({
-          name: `${t.name} (${t.description})`,
-          value: t.name,
-        })),
+        choices: [
+          { name: 'Start from scratch', value: 'new' },
+          { name: 'Start from an existing database', value: 'database' },
+        ],
       },
     ])
 
-    template = availableTemplates.find(t => t.name === res.templateName)
+    newOrExisting = result.newOrExisting
   }
 
-  let [output] = cli.input
-
-  interface PathResponse {
-    path: string
-  }
-
-  if (!output) {
-    const res = await inquirer.prompt<PathResponse>([
-      {
-        name: 'path',
-        message: 'Where should we scaffold graphql server?',
-        type: 'input',
-        default: '.',
-      },
-    ])
-
-    output = res.path
-  }
-
-  if (fs.existsSync(output)) {
-    const allowedFiles = ['.git', '.gitignore']
-    const conflictingFiles = fs
-      .readdirSync(output)
-      .filter(f => !allowedFiles.includes(f))
-
-    if (conflictingFiles.length > 0 && !cli.flags.force) {
-      console.log(`Directory ${output} must be empty.`)
-      return
-    }
+  if (newOrExisting === 'new') {
+    return bootstrap(cli, template)
   } else {
-    fs.mkdirSync(output)
+    return initScaffold()
   }
-  loadYogaStarter(template, path.resolve(output), {
-    installDependencies: !cli.flags['no-install'],
-  })
 }
 
 /**
  * Imports one of the preconfigured yoga templates
  */
-export const createTemplate = () => {
-  main(cli);
+export async function createTemplate(): Promise<void> {
+  return main(cli)
 }

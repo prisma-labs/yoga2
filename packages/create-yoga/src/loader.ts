@@ -2,7 +2,7 @@ import * as tar from 'tar'
 import * as tmp from 'tmp'
 import * as github from 'parse-github-url'
 import * as fs from 'fs'
-import * as ora from 'ora'
+import ora from 'ora'
 import * as request from 'request'
 import * as execa from 'execa'
 import chalk from 'chalk'
@@ -39,7 +39,6 @@ function getYogaTemplateRepositoryTarInformation(
   template: Template,
 ): TemplateRepositoryTarInformation {
   const meta = github(template.repo.uri)
-
   const uri = [
     `https://api.github.com/repos`,
     meta.repo,
@@ -54,7 +53,6 @@ async function downloadRepository(
   tar: TemplateRepositoryTarInformation,
 ): Promise<string> {
   const spinner = ora(`Downloading starter from ${chalk.cyan(tar.uri)}`).start()
-
   const tmpPath = tmp.fileSync({
     postfix: '.tar.gz',
   })
@@ -93,16 +91,16 @@ async function extractYogaStarterFromRepository(
   return
 }
 
-async function installYogaStarter(path: string): Promise<void> {
+export async function installYogaStarter(path: string): Promise<void> {
   const spinner = ora(`Installing dependencies 👩‍🚀`).start()
 
   process.chdir(path)
 
   try {
     if (await isYarnInstalled()) {
-      await execa.shellSync('yarnpkg install', { stdio: `ignore` })
+      await execa.shell('yarnpkg install', { stdio: `ignore` })
     } else {
-      await execa.shellSync('npm install', { stdio: `ignore` })
+      await execa.shell('npm install', { stdio: `ignore` })
     }
 
     spinner.succeed()
