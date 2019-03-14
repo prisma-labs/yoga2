@@ -25,6 +25,7 @@ Here's the exhaustive list of files that are supported by Yoga:
 - `src/graphql/*` (required): The folder in which you define all your resolvers
 - `src/context.ts` (optional): A file to define the context of your GraphQL server.
 - `src/express.ts` (optional): A file to access the underlying express instance (and use middlewares, expose webhooks etc..)
+- `src/types.ts` (optional): A file to overrride the generated nexus TypeScript types used to annotate GraphQL types
 - `src/yoga.config.ts` (optional): [See configuration here](../configuration)
 - `src/server.ts` (optional): Where you define your own GraphQL server if needed. (**Adding this file ejects you from the conventions**)
 
@@ -76,6 +77,43 @@ export default yogaExpress(app => {
   // app.get('/logout', ...)
 });
 ```
+
+**`types.ts` (optional)**
+
+A file to overrride the generated nexus TypeScript types used to annotate GraphQL types
+
+**Example**
+
+Let's say you have the following GraphQL type:
+
+```graphql
+type User {
+  id: ID!
+  name: String!
+}
+```
+
+Nexus will generate the following TypeScript type to type the `root` property of your `User` resolvers
+
+```ts
+interface User {
+  id: string
+  name: string
+}
+```
+
+If you are querying more fields than what Nexus can infer, simply declare a `User` interface in your `src/types.ts` file to override it
+
+```ts
+//src/types.ts
+
+interface User {
+  id: string
+  name: string
+  age: int // new field queried from an external source
+}
+```
+
 
 ## Eject from conventions
 
