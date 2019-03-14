@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import decache from 'decache'
+import * as prettier from 'prettier'
 
 /**
  * Find all files recursively in a directory based on an extension
@@ -64,4 +65,32 @@ export function importFile<T extends any = any>(
   }
 
   return exportName ? importedModule[exportName] : importedModule
+}
+
+export async function resolvePrettierOptions(
+  path: string,
+): Promise<prettier.Options> {
+  const options = (await prettier.resolveConfig(path)) || {}
+
+  return options
+}
+
+export function prettify(
+  code: string,
+  options: prettier.Options = {},
+  parser: prettier.BuiltInParserName = 'typescript',
+) {
+  try {
+    return prettier.format(code, {
+      ...options,
+      parser,
+    })
+  } catch (e) {
+    console.log(
+      `There is a syntax error in generated code, unformatted code printed, error: ${JSON.stringify(
+        e,
+      )}`,
+    )
+    return code
+  }
 }
