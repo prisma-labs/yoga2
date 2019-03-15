@@ -3,8 +3,8 @@ import * as inquirer from 'inquirer'
 import yaml from 'js-yaml'
 import * as path from 'path'
 import pluralize from 'pluralize'
-import * as prettier from 'prettier'
 import { findPrismaConfigFile, importYogaConfig } from '../../../config'
+import { prettify, resolvePrettierOptions } from '../../../helpers'
 import { Config } from '../../../types'
 import { spawnAsync } from '../../spawnAsync'
 import execa = require('execa')
@@ -158,7 +158,7 @@ async function scaffoldType(
   const prettierOptions = await resolvePrettierOptions(process.cwd())
 
   try {
-    fs.writeFileSync(typePath, format(content, prettierOptions))
+    fs.writeFileSync(typePath, prettify(content, prettierOptions))
   } catch (e) {
     console.error(e)
   }
@@ -346,30 +346,4 @@ async function runCommand(command: string) {
   const childProcess = spawnAsync(cmd, rest, { stdio: 'inherit' })
 
   return childProcess
-}
-
-async function resolvePrettierOptions(path: string): Promise<prettier.Options> {
-  const options = (await prettier.resolveConfig(path)) || {}
-
-  return options
-}
-
-function format(
-  code: string,
-  options: prettier.Options = {},
-  parser: prettier.BuiltInParserName = 'typescript',
-) {
-  try {
-    return prettier.format(code, {
-      ...options,
-      parser,
-    })
-  } catch (e) {
-    console.log(
-      `There is a syntax error in generated code, unformatted code printed, error: ${JSON.stringify(
-        e,
-      )}`,
-    )
-    return code
-  }
 }

@@ -6,6 +6,7 @@ import build from './commands/build'
 import scaffold from './commands/scaffold'
 import start from './commands/start'
 import watch from './commands/watch'
+import eject from './commands/eject'
 
 function run() {
   // tslint:disable-next-line:no-unused-expression
@@ -16,6 +17,7 @@ function run() {
     .command('dev', 'Start the server in dev mode', {}, watch)
     .command('scaffold', 'Scaffold a new GraphQL type', {}, scaffold)
     .command('build', 'Build a yoga server', {}, build)
+    .command('eject', 'Eject your project', {}, eject)
     .alias('h', 'help')
     .help('help')
     .showHelpOnFail(true, 'Specify --help for available options')

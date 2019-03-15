@@ -1,6 +1,7 @@
 import { ApolloServer } from 'apollo-server-express'
 import { watch as nativeWatch } from 'chokidar'
 import express from 'express'
+import { existsSync } from 'fs'
 import { Server } from 'http'
 import { makeSchema } from 'nexus'
 import { makePrismaSchema } from 'nexus-prisma'
@@ -150,9 +151,17 @@ function importArtifacts(
   context?: any /** Context<any> | ContextFunction<any> */
   expressMiddleware?: (app: Express.Application) => Promise<void> | void
 } {
-  const types = findFileByExtension(resolversPath, '.ts').map(file =>
-    importFile(file),
-  )
+  const resolversIndexPath = path.join(resolversPath, 'index.ts')
+  let types: any = null
+
+  if (existsSync(resolversIndexPath)) {
+    types = importFile(resolversIndexPath)
+  } else {
+    types = findFileByExtension(resolversPath, '.ts').map(file =>
+      importFile(file),
+    )
+  }
+
   let context = undefined
   let express = undefined
 
