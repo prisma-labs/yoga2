@@ -2,7 +2,7 @@ import * as inquirer from 'inquirer'
 import * as meow from 'meow'
 import { bootstrap, templateFromFlags } from './bootstrap'
 import { initScaffold } from './scaffold'
-import { defaultTemplate, Template, templatesNames } from './templates'
+import { Template, templatesNames } from './templates'
 
 inquirer.registerPrompt('path', require('inquirer-path').PathPrompt)
 
@@ -39,7 +39,7 @@ const cli = meow(
 
 // Main
 async function main(cli: meow.Result): Promise<void> {
-  let template: Template = defaultTemplate
+  let template: Template | undefined = undefined
   let newOrExisting = null
 
   if (cli.flags['template']) {
