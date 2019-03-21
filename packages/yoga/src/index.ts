@@ -3,10 +3,13 @@ import { ExpressContext } from 'apollo-server-express/dist/ApolloServer'
 import express from 'express'
 import * as Http from 'http'
 import { InputConfig as YogaConfig, MaybePromise, Yoga } from './types'
+import { injectCustomEnvironmentVariables } from './config'
 
 export * from 'nexus'
 export * from 'nexus-prisma'
 export { ApolloServer, express }
+
+injectCustomEnvironmentVariables()
 
 export function yogaConfig(opts: YogaConfig) {
   return opts

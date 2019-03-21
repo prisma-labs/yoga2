@@ -5,8 +5,8 @@ import { writeEjectFiles } from '../build'
 import { relative } from 'path'
 import { resolvePrettierOptions, prettify } from '../../../helpers'
 
-export default async () => {
-  const info = importYogaConfig()
+export default async (argv: Record<string, string>) => {
+  const info = importYogaConfig({ env: argv.env })
   const prettierOptions = await resolvePrettierOptions(info.projectDir)
 
   if (
@@ -23,5 +23,7 @@ export default async () => {
     process.exit(1)
   }
 
-  writeEjectFiles(info, (filePath, content) => writeFileSync(filePath, prettify(content, prettierOptions)))
+  writeEjectFiles(info, (filePath, content) =>
+    writeFileSync(filePath, prettify(content, prettierOptions)),
+  )
 }
