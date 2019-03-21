@@ -17,8 +17,8 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: path => path,
 }
 
-export default () => {
-  const info = importYogaConfig()
+export default (argv: Record<string, string>) => {
+  const info = importYogaConfig({ env: argv.env })
   const config = readConfigFromTsConfig(info)
 
   compile(config.fileNames, config.options)

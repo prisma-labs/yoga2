@@ -4,6 +4,7 @@ import * as ts from 'typescript'
 import { importFile } from './helpers'
 import { Config, InputConfig, ConfigWithInfo } from './types'
 import { DEFAULT_META_SCHEMA_DIR, normalizeConfig } from './yogaDefaults'
+import * as dotenv from 'dotenv'
 
 /**
  * Find a `prisma.yml` file if it exists
@@ -44,13 +45,34 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 
   if (!configPath) {
     if (opts.required === true) {
-      throw new Error("Could not find a valid 'tsconfig.json'.")
+      throw new Error(`Could not find a valid '${fileName}'.`)
     } else {
       return undefined
     }
   }
 
   return configPath
+}
+
+function findYogaConfigFile() {
+  const nodeEnv = process.env.NODE_ENV || 'dev'
+  let filePath = findConfigFile(`yoga.config.${nodeEnv}.ts`, {
+    required: false,
+  })
+
+  if (!filePath) {
+    filePath = findConfigFile('yoga.config.ts', { required: false })
+  }
+
+  return filePath
+}
+
+export function injectCustomEnvironmentVariables(env?: string) {
+  const nodeEnv = env || process.env.NODE_ENV
+
+  dotenv.config({
+    path: path.join(process.cwd(), nodeEnv ? `.env.${nodeEnv}` : '.env'),
+  })
 }
 
 function getDatamodelInfoDir(
@@ -90,9 +112,13 @@ function getPrismaClientDir(
  * Dynamically imports a `yoga.config.ts` file
  */
 export function importYogaConfig(
-  opts: { invalidate: boolean } = { invalidate: false },
+  opts: { invalidate?: boolean; env?: string } = {
+    invalidate: false,
+    env: undefined,
+  },
 ): ConfigWithInfo {
-  const yogaConfigPath = findConfigFile('yoga.config.ts', { required: false })
+  injectCustomEnvironmentVariables(opts.env)
+  const yogaConfigPath = findYogaConfigFile()
   const projectDir = path.dirname(
     yogaConfigPath
       ? yogaConfigPath

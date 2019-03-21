@@ -31,10 +31,10 @@ register({
   pretty: true,
 })
 
-export async function watch(): Promise<void> {
+export async function watch(env?: string): Promise<void> {
   logger.clearConsole()
   logger.info('Starting development server...')
-  let info = importYogaConfig()
+  let info = importYogaConfig({ env })
   let filesToWatch = [path.join(info.projectDir, '**', '*.ts')]
 
   if (info.prismaClientDir && info.datamodelInfoDir) {
@@ -64,7 +64,7 @@ export async function watch(): Promise<void> {
 
         if (filesToReloadBatched.length === 2) {
           // TODO: Do not invalidate everything, only the necessary stuff
-          info = importYogaConfig({ invalidate: true })
+          info = importYogaConfig({ invalidate: true, env})
           filesToReloadBatched = []
         } else {
           return Promise.resolve(true)

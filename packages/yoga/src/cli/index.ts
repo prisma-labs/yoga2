@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { createTemplate } from 'create-yoga'
 import * as yargs from 'yargs'
 import build from './commands/build'
@@ -18,9 +17,14 @@ function run() {
     .command('scaffold', 'Scaffold a new GraphQL type', {}, scaffold)
     .command('build', 'Build a yoga server', {}, build)
     .command('eject', 'Eject your project', {}, eject)
-    .alias('h', 'help')
+    .strict(true)
+    .demandCommand()
+    .option('env', {
+      alias: 'e',
+      description: 'Pass a custom NODE_ENV variable',
+    })
     .help('help')
-    .showHelpOnFail(true, 'Specify --help for available options')
+    .showHelpOnFail(true)
     .version().argv
 }
 
