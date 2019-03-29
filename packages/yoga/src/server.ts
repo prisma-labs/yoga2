@@ -230,9 +230,11 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
       },
       async startServer(express) {
         return new Promise<Server>((resolve, reject) => {
+          const port = process.env.PORT || 4000
+
           const httpServer = express
-            .listen({ port: 4000 }, () => {
-              console.log(`🚀  Server ready at http://localhost:4000/`)
+            .listen({ port }, () => {
+              console.log(`🚀  Server ready at http://localhost:${port}/`)
 
               resolve(httpServer)
             })
