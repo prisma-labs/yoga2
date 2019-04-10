@@ -77,8 +77,8 @@ export function writeEjectFiles(
 
   if (!existsSync(resolverIndexPath)) {
     const resolverIndexFile = renderResolversIndex(info)
-    
-    writeFile(resolverIndexPath, resolverIndexFile)
+
+    resolverIndexFile && writeFile(resolverIndexPath, resolverIndexFile)
   }
 
   return ejectFilePath
