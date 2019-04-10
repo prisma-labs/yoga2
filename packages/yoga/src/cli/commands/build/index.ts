@@ -73,11 +73,11 @@ export function writeEjectFiles(
 
   writeFile(ejectFilePath, ejectFile)
 
-  const resolverIndexPath = path.join(info.yogaConfig.resolversPath, 'index.ts')
+  const resolverIndexPath = path.join(info.yogaConfig.resolversPath || '', 'index.ts')
 
   if (!existsSync(resolverIndexPath)) {
     const resolverIndexFile = renderResolversIndex(info)
-
+    
     writeFile(resolverIndexPath, resolverIndexFile)
   }
 

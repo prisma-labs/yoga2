@@ -128,8 +128,8 @@ export default yogaEject({
     const schema = makeSchema({
       types,
       outputs: {
-        schema: ${renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
-        typegen: ${renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
+        schema: ${info.yogaConfig.output && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+        typegen: ${info.yogaConfig.output && renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
       },
       nonNullDefaults: {
         input: true,
@@ -193,21 +193,27 @@ function renderPathJoin(sourceDir: string, targetPath: string) {
 }
 
 export function renderResolversIndex(info: ConfigWithInfo) {
-  const resolversFile = findFileByExtension(
-    info.yogaConfig.resolversPath,
-    '.ts',
-  )
-  return `\
-${resolversFile
-  .map(
-    filePath =>
-      `export * from '${getRelativePath(
-        info.yogaConfig.resolversPath,
-        filePath,
-      )}'`,
-  )
-  .join(EOL)}
-    `
+  if(info.yogaConfig.resolversPath){
+
+    const resolversFile = findFileByExtension(
+      info.yogaConfig.resolversPath,
+      '.ts',
+      )
+      return `\
+      ${resolversFile
+        .map(
+          filePath =>
+          `export * from '${getRelativePath(
+            info.yogaConfig.resolversPath,
+            filePath,
+            )}'`,
+            )
+            .join(EOL)}
+            `
+  } else {
+    console.warn("There is no resolver path defined")
+    return ''
+  }
 }
 
 export function renderImportIf(
