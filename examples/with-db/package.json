@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/with-db",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",
