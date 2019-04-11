@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/minimal",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",
