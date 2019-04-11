@@ -35,7 +35,9 @@ export async function watch(env?: string): Promise<void> {
   logger.clearConsole()
   logger.info('Starting development server...')
   let info = importYogaConfig({ env })
+
   let filesToWatch = [path.join(info.projectDir, '**', '*.ts')]
+  logger.info(`Watching ${JSON.stringify(filesToWatch)}`)
 
   if (info.prismaClientDir && info.datamodelInfoDir) {
     filesToWatch.push(info.prismaClientDir)
@@ -70,7 +72,7 @@ export async function watch(env?: string): Promise<void> {
           return Promise.resolve(true)
         }
       }
-      logger.clearConsole()
+      // logger.clearConsole()
       logger.info('Compiling')
 
       const { server, startServer, stopServer } = getYogaServer(info)
@@ -81,7 +83,7 @@ export async function watch(env?: string): Promise<void> {
 
       const serverInstance = await server()
 
-      logger.clearConsole()
+      // logger.clearConsole()
       logger.done('Compiled succesfully')
 
       oldServer = await startServer(serverInstance)
@@ -149,7 +151,7 @@ function importArtifacts(
 ): {
   types: Record<string, any>
   context?: any /** Context<any> | ContextFunction<any> */
-  expressMiddleware?: (app: Express.Application) => Promise<void> | void
+  expressMiddleware?: (app: express.Application) => Promise<void> | void
 } {
   const resolversIndexPath = path.join(resolversPath, 'index.ts')
   let types: any = null
@@ -162,8 +164,8 @@ function importArtifacts(
     )
   }
 
-  let context = undefined
-  let express = undefined
+  let context: (() => void )| undefined = undefined;
+  let express: (() => void) | undefined = undefined;
 
   if (contextPath !== undefined) {
     context = importFile(contextPath, 'default')
@@ -205,7 +207,7 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
           config.expressPath,
         )
         const makeSchemaOptions = makeSchemaDefaults(
-          config,
+          config as any,
           types,
           info.prismaClientDir,
         )
@@ -230,9 +232,8 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
       },
       async startServer(express) {
         return new Promise<Server>((resolve, reject) => {
-          const httpServer = express
-            .listen({ port: 4000 }, () => {
-              console.log(`🚀  Server ready at http://localhost:4000/`)
+          const httpServer = express.listen({ port: 4000 }, () => {
+              logger.info(`🚀  Server ready at http://localhost:4000/`)
 
               resolve(httpServer)
             })
