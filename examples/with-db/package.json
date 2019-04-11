@@ -1,5 +1,5 @@
 {
-  "name": "with-db",
+  "name": "@atto-byte/with-db",
   "version": "0.0.1",
   "scripts": {
     "dev": "yoga dev",
@@ -24,5 +24,6 @@
     "singleQuote": true,
     "trailingComma": "all"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "gitHead": "7760959984c578f2aaec182658f6df5df4b13da9"
 }
