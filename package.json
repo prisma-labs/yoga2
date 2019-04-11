@@ -1,5 +1,5 @@
 {
-  "name": "yoga2",
+  "name": "@atto-byte/yoga2",
   "private": true,
   "scripts": {
     "bootstrap": "yarn install && lerna bootstrap && cd packages/yoga && npm link",
@@ -7,6 +7,7 @@
     "clean": "lerna clean -y && yarn clean:packages && yarn clean:root",
     "clean:packages": "lerna exec -- rm -rf node_modules yarn.lock package-lock.json dist",
     "clean:root": "rm -rf node_modules yarn.lock package-lock.json",
+    "publish": "lerna publish",
     "reset": "yarn clean && yarn bootstrap",
     "build": "lerna run build",
     "build:ci": "lerna run build:ci",

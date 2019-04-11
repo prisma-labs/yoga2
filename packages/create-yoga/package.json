@@ -1,5 +1,5 @@
 {
-  "name": "create-yoga",
+  "name": "@atto-byte/create-yoga",
   "version": "0.0.5",
   "main": "dist/index.js",
   "license": "MIT",

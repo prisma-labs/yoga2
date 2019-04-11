@@ -1,6 +1,6 @@
 {
-  "name": "yoga",
-  "version": "0.0.18",
+  "name": "@atto-byte/yoga",
+  "version": "0.0.19",
   "main": "dist/index.js",
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
@@ -25,7 +25,7 @@
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
     "inquirer": "^6.2.1",
     "js-yaml": "^3.12.1",
-    "nexus": "0.11.3",
+    "nexus": "0.11.6",
     "nexus-prisma": "0.3.5",
     "pluralize": "^7.0.0",
     "prettier": "^1.16.4",
