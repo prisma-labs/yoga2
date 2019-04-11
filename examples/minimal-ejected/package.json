@@ -1,6 +1,6 @@
 {
   "name": "minimal-ejected",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "yoga dev",
     "build": "yoga build",

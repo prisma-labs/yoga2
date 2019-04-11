@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/create-yoga",
-  "version": "0.0.5",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
