@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/yoga2",
-  "private": true,
+  "private": false,
   "scripts": {
     "bootstrap": "yarn install && lerna bootstrap && cd packages/yoga && npm link",
     "bootstrap:ci": "yarn install && lerna bootstrap",
