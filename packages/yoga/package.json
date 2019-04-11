@@ -2,6 +2,8 @@
   "name": "@atto-byte/yoga",
   "version": "0.0.3",
   "main": "dist/index.js",
+  "private": false,
+
   "repository": "https://github.com/prisma/yoga2.git",
   "author": "Flavian DESVERNE <flavian.desverne@epitech.eu>",
   "license": "MIT",

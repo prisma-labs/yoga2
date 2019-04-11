@@ -11,6 +11,8 @@
     "lint": "tslint {src,test}/**/*.ts",
     "start": "ts-node src/bin.ts"
   },
+  "private": false,
+
   "bin": {
     "create-yoga": "dist/bin.js"
   },
