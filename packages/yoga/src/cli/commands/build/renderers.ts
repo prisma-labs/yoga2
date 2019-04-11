@@ -20,7 +20,7 @@ export function renderIndexFile(ejectFilePath: string) {
   main()
   `
 }
-
+// TODO Fix ConfigWithInfo Types
 export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
   const fileDir = path.dirname(filePath)
 
@@ -42,10 +42,10 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
           client: prisma
         },
         outputs: {
-          schema: ${renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+          schema: ${ info.yogaConfig.output.schemaPath && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
           typegen: ${renderPathJoin(
             fileDir,
-            info.yogaConfig.output.typegenPath,
+            info.yogaConfig.output.typegenPath || '',
           )}
         },
         nonNullDefaults: {
@@ -128,8 +128,8 @@ export default yogaEject({
     const schema = makeSchema({
       types,
       outputs: {
-        schema: ${info.yogaConfig.output && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
-        typegen: ${info.yogaConfig.output && renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
+        schema: ${info.yogaConfig.output.schemaPath && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+        typegen: ${info.yogaConfig.output.typegenPath && renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
       },
       nonNullDefaults: {
         input: true,

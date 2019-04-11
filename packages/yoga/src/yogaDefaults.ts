@@ -9,11 +9,12 @@ import {
   InputConfig,
   InputOutputFilesConfig,
   InputPrismaConfig,
+  DefaultConfig,
 } from './types'
 import chalk from 'chalk'
 import * as logger from './logger'
 
-export const DEFAULTS: Config = {
+export const DEFAULTS: DefaultConfig = {
   contextPath: './src/context.ts',
   resolversPath: './src/graphql/',
   typesPath: './src/types.ts',

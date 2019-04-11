@@ -77,9 +77,10 @@ export type InputConfig = {
 }
 
 type RequiredProperty<T extends keyof InputConfig> = Exclude<
-  Required<InputConfig[T]>,
+  InputConfig[T],
   undefined
 >
+
 
 export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
@@ -89,6 +90,18 @@ export type Config = {
   output: RequiredProperty<'output'>
   prisma?: PrismaSchemaConfig['prisma']
   expressPath?: RequiredProperty<'expressPath'>
+}
+export type DefaultConfig = {
+  resolversPath: string
+  contextPath: string
+  ejectFilePath: string
+  typesPath: string
+  output: {
+    typegenPath: string
+    schemaPath: string
+  }
+  prisma: PrismaSchemaConfig['prisma']
+  expressPath: RequiredProperty<'expressPath'>
 }
 
 export type ConfigWithInfo = {
