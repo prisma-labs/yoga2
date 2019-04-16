@@ -48,7 +48,7 @@
     "@types/tmp": "0.0.34",
     "@types/update-notifier": "2.5.0",
     "ts-node": "8.0.3",
-    "tslint": "5.14.0",
+    "tslint": "5.16.0",
     "tslint-config-prettier": "1.18.0",
     "tslint-config-standard": "8.0.1",
     "typescript": "3.3.3333"
