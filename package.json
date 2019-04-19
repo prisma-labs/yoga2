@@ -1,24 +1,78 @@
 {
-  "name": "@atto-byte/yoga2",
+  "name": "@atto-byte/yoga",
+  "version": "0.0.5",
+  "main": "dist/index.js",
   "private": false,
-  "scripts": {
-    "bootstrap": "yarn install && lerna bootstrap && cd packages/yoga && npm link",
-    "bootstrap:ci": "yarn install && lerna bootstrap",
-    "clean": "lerna clean -y && yarn clean:packages && yarn clean:root",
-    "clean:packages": "lerna exec -- rm -rf node_modules yarn.lock package-lock.json dist",
-    "clean:root": "rm -rf node_modules yarn.lock package-lock.json",
-    "publish": "lerna publish",
-    "reset": "yarn clean && yarn bootstrap",
-    "build": "lerna run build",
-    "build:ci": "lerna run build:ci",
-    "lint": "lerna exec -- npm run lint"
-  },
-  "workspaces": [
-    "packages/*",
-    "examples/*"
+  "repository": "https://github.com/atto-byte/yoga2.git",
+  "authors": [
+    "William LUKE <william@atto-byte.com>",
+    "Flavian DESVERNE <flavian.desverne@epitech.eu>"
   ],
   "license": "MIT",
+  "scripts": {
+    "build": "tsc --declaration",
+    "build:ci": "yarn build",
+    "watch": "tsc -d -w",
+    "lint": "tslint {src,test}/**/*.ts",
+    "cli": "ts-node src/cli/index.ts"
+  },
+
+  "dependencies": {
+    "apollo-server-express": "^2.4.8",
+    "chalk": "^2.4.2",
+    "chokidar": "^2.1.1",
+    "decache": "^4.5.1",
+    "dotenv": "^7.0.0",
+    "execa": "^1.0.0",
+    "express": "^4.16.4",
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
+    "inquirer": "^6.2.1",
+    "inquirer-path": "^1.0.0-beta5",
+    "js-yaml": "^3.12.1",
+    "meow": "^5.0.0",
+    "nexus": "0.11.6",
+    "nexus-prisma": "0.3.5",
+    "parse-github-url": "^1.0.2",
+    "pluralize": "^7.0.0",
+    "prettier": "^1.16.4",
+    "pretty-error": "2.2.0-rc.1",
+    "prisma-datamodel": "^1.31.1",
+    "prisma-generate-schema": "^1.31.1",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3333",
+    "yargs": "^12.0.5"
+  },
   "devDependencies": {
-    "lerna": "3.13.1"
-  }
+    "@types/chokidar": "1.7.5",
+    "@types/dotenv": "^6.1.0",
+    "@types/execa": "^0.9.0",
+    "@types/express": "4.16.1",
+    "@types/graphql": "14.0.7",
+    "@types/inquirer": "0.0.44",
+    "@types/js-yaml": "3.12.0",
+    "@types/meow": "^5.0.0",
+    "@types/node": "10.14.1",
+    "@types/parse-github-url": "^1.0.0",
+    "@types/pluralize": "0.0.29",
+    "@types/request": "^2.48.1",
+    "@types/tar": "^4.0.0",
+    "@types/tmp": "^0.1.0",
+    "@types/yargs": "12.0.9",
+    "tslint-config-prettier": "1.17.0",
+    "tslint-config-standard": "8.0.1",
+    "@typescript-eslint/eslint-plugin": "^1.6.0",
+    "@typescript-eslint/parser": "^1.6.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-graphql": "^3.0.3",
+    "eslint-plugin-import": "^2.17.1",
+    "eslint-plugin-prettier": "^3.0.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "gitHead": "28cdc869c914c90e90cce64cd31f3bc055d80336"
 }

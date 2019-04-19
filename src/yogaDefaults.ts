@@ -46,7 +46,7 @@ export const DEFAULTS: DefaultConfig = {
   expressPath: './src/express.ts',
 }
 
-export const DEFAULT_META_SCHEMA_DIR = './.yoga/nexus-prisma/'
+export const DEFAULT_META_SCHEMA_DIR = './generated/nexus-prisma/'
 
 /**
  * - Compute paths relative to the root of the project
