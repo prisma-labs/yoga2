@@ -8,7 +8,7 @@ import execa from 'execa'
 import chalk from 'chalk'
 
 import { Template } from './templates'
-import { error } from '../../../logger'
+import * as logger from '../../../logger'
 
 export interface LoadOptions {
   installDependencies: boolean
@@ -20,7 +20,7 @@ export async function loadYogaStarter(
   options: LoadOptions,
 ): Promise<void> {
   const tar = getYogaTemplateRepositoryTarInformation(template)
-  if (!tar) return error('Could not Load Yoga Template Repo')
+  if (!tar) return logger.error('Could not Load Yoga Template Repo')
   const tmp = await downloadRepository(tar)
 
   await extractYogaStarterFromRepository(tmp, tar, output)

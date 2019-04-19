@@ -8,6 +8,7 @@ import { prettify, resolvePrettierOptions } from '../../../helpers'
 import { Config } from '../../../types'
 import { spawnAsync } from '../../spawnAsync'
 import execa = require('execa')
+import * as logger from '../../../logger'
 
 export default async (argv: Record<string, string>) => {
   const { yogaConfig, projectDir } = importYogaConfig({ env: argv.env })
@@ -83,7 +84,7 @@ export default async (argv: Record<string, string>) => {
 
     updateDatamodel(datamodelPath, typeName)
 
-    console.log(`
+    logger.info(`
 We have added a type '${inputTypeName}' in your \`${relativeDatamodelPath}\` file !
 
 Before we continue, please do the following steps:
@@ -112,7 +113,7 @@ Before we continue, please do the following steps:
       )
       const relativePath = path.relative(projectDir, filePath)
 
-      console.log(`
+     logger.info(`
 Scaffolding of ${relativePath} succesfuly done !
   
 A few more optional steps:
@@ -121,7 +122,7 @@ A few more optional steps:
 2. Expose/customize your persisted model using \`t.prismaFields([...])\`
   `)
     } else {
-      console.log('Exiting now.')
+      logger.info('Exiting now.')
     }
 
     process.exit(0)
@@ -130,7 +131,7 @@ A few more optional steps:
   const filePath = await scaffoldType(yogaConfig, typeName, hasDb, null)
   const relativePath = path.relative(projectDir, filePath)
 
-  console.log(`\
+  logger.info(`\
 Scaffolded new file at ${relativePath}
 
 Next steps:
