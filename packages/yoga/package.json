@@ -41,7 +41,7 @@
     "@types/graphql": "14.0.7",
     "@types/inquirer": "0.0.44",
     "@types/js-yaml": "3.12.0",
-    "@types/node": "10.14.1",
+    "@types/node": "10.14.5",
     "@types/pluralize": "0.0.29",
     "@types/yargs": "12.0.9",
     "tslint-config-prettier": "1.17.0",
