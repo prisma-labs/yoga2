@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/yoga",
-  "version": "0.0.9",
+  "version": "0.0.0-development",
   "main": "dist/index.js",
   "private": false,
   "repository": "https://github.com/atto-byte/yoga2.git",
@@ -16,7 +16,8 @@
     "watch": "tsc -d -w",
     "lint": "eslint {src,test}/**/*.ts",
     "cli": "ts-node src/cli/index.ts",
-    "pretty": "prettier **/*.ts --write"
+    "pretty": "prettier **/*.ts --write",
+    "semantic-release": "semantic-release"
   },
   "bin": {
     "@atto-byte/yoga": "dist/cli/index.js"
@@ -76,6 +77,8 @@
     "eslint-plugin-graphql": "^3.0.3",
     "eslint-plugin-import": "^2.17.2",
     "eslint-plugin-prettier": "^3.0.1",
+    "semantic-release": "^15.13.3",
+    "semantic-release-cli": "^4.1.2",
     "tslint-config-prettier": "1.18.0",
     "tslint-config-standard": "8.0.1"
   },

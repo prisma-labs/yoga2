@@ -12,14 +12,14 @@ jobs:
           command: sudo npm install -g npm@latest
       - run:
           name: install-package-dependencies
-          command: yarn run bootstrap:ci
+          command: sudo npm install
       - run:
           name: link yoga
-          workdir: ./packages/yoga
+          workdir: ./
           command: sudo npm link --unsafe-perm=true
       - run:
           name: run-build
-          command: sudo yarn run build:ci
+          command: sudo npm run build:ci
       - run:
           name: run lint
-          command: yarn run lint
+          command: npm run lint
