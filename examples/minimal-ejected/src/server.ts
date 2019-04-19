@@ -12,7 +12,7 @@ export default yogaEject({
       types,
       outputs: {
         schema: path.join(__dirname, './schema.graphql'),
-        typegen: path.join(__dirname, '../.yoga/nexus.ts'),
+        typegen: path.join(__dirname, './generated/nexus.ts'),
       },
       typegenAutoConfig: {
         sources: [

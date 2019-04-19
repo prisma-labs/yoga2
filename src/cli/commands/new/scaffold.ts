@@ -57,7 +57,7 @@ const TSCONFIG_JSON = `\
     "strict": false,
     "skipLibCheck": true
   },
-  "include": ["./**/*.ts", ".yoga/**/*"],
+  "include": ["./**/*.ts"],
   "exclude": ["node_modules"]
 } 
 `
@@ -92,7 +92,6 @@ const FILES_TO_IGNORE = [
   'tsconfig.json',
   'README.md',
   'generated',
-  '.yoga',
 ]
 const ALL_FILES = [...FILES_REQUIRED, ...FILES_TO_IGNORE]
 
@@ -312,7 +311,7 @@ async function scaffoldContext(
   prettierOptions: prettier.Options,
 ): Promise<void> {
   const contextFile = `\
-import { prisma } from '../.yoga/prisma-client'
+import { prisma } from './generated/prisma-client'
 
 export default () => ({ prisma })
   `
@@ -334,13 +333,13 @@ async function scaffoldPrismaYml(
   # Specifies the language and directory for the generated Prisma client.
   generate:
     - generator: typescript-client
-      output: ../.yoga/prisma-client/
+      output: ./generated/prisma-client/
   
   # Ensures Prisma client is re-generated after a datamodel change.
   hooks:
     post-deploy:
       - prisma generate
-      - npx nexus-prisma-generate --output ./.yoga/nexus-prisma
+      - npx nexus-prisma-generate --output ./generated/nexus-prisma
   endpoint: ${endpoint}
   `
   const prismaYmlPath = join(outputPath, PRISMA_FILES_PATH, 'prisma.yml')
