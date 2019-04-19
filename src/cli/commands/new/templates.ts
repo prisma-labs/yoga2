@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import chalk from 'chalk';
 
 export interface Template {
   name: string
@@ -38,7 +38,26 @@ export const availableTemplates: Template[] = [
     repo: {
       uri: 'https://github.com/atto-byte/yoga2',
       branch: 'master',
-      path: '/examples/with-db',
+      path: '/examples/with-prisma',
+    },
+    postIntallMessage: `
+Your template has been successfully set up!
+  
+Here are the next steps to get you started:
+  1. Run ${chalk.yellow(
+    `yarn prisma deploy`,
+  )} (choose a Demo server for a quicker startup)
+  2. Run ${chalk.yellow(`yarn dev`)} (Starts the GraphQL server)
+  3. That's it !
+  `,
+  },
+  {
+    name: 'with-prisma-ejected',
+    description: 'Template with Prisma database support',
+    repo: {
+      uri: 'https://github.com/atto-byte/yoga2',
+      branch: 'master',
+      path: '/examples/with-prisma-ejected',
     },
     postIntallMessage: `
 Your template has been successfully set up!

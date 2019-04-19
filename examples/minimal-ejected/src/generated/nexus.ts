@@ -3,7 +3,7 @@
  * Do not make changes to this file directly
  */
 
-import * as ctx from "../src/context"
+import * as ctx from "../context"
 
 
 declare global {
