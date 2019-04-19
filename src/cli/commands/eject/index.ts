@@ -10,7 +10,8 @@ export default async (argv: Record<string, string>) => {
   const prettierOptions = await resolvePrettierOptions(config.projectDir)
 
   if (
-    config.yogaConfig.ejectedFilePath && existsSync(config.yogaConfig.ejectedFilePath)
+    config.yogaConfig.ejectedFilePath &&
+    existsSync(config.yogaConfig.ejectedFilePath)
   ) {
     console.log(
       `${chalk.yellow(

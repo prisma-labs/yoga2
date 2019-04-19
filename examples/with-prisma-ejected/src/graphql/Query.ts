@@ -1,4 +1,4 @@
-import { prismaObjectType, stringArg } from '@atto-byte/yoga';
+import { prismaObjectType, stringArg } from '@atto-byte/yoga'
 
 /*
 type Query {

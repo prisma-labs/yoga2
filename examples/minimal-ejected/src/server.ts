@@ -1,8 +1,8 @@
-import { ApolloServer, express, makeSchema, yogaEject } from '@atto-byte/yoga';
-import { Server } from 'http';
-import * as path from 'path';
-import context from './context';
-import * as types from './graphql';
+import { ApolloServer, express, makeSchema, yogaEject } from '@atto-byte/yoga'
+import { Server } from 'http'
+import * as path from 'path'
+import context from './context'
+import * as types from './graphql'
 
 export default yogaEject({
   async server() {

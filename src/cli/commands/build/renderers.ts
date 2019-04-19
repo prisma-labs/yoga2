@@ -1,8 +1,8 @@
-import { EOL } from 'os';
-import * as path from 'path';
-import { findFileByExtension } from '../../../helpers';
-import { ConfigWithInfo } from '../../../types';
-import { getRelativePath } from '../build';
+import { EOL } from 'os'
+import * as path from 'path'
+import { findFileByExtension } from '../../../helpers'
+import { ConfigWithInfo } from '../../../types'
+import { getRelativePath } from '../build'
 
 export function renderIndexFile(ejectFilePath: string) {
   return `
@@ -42,7 +42,8 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
           client: prisma
         },
         outputs: {
-          schema: ${ info.yogaConfig.output.schemaPath && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+          schema: ${info.yogaConfig.output.schemaPath &&
+            renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
           typegen: ${renderPathJoin(
             fileDir,
             info.yogaConfig.output.typegenPath || '',
@@ -128,8 +129,10 @@ export default yogaEject({
     const schema = makeSchema({
       types,
       outputs: {
-        schema: ${info.yogaConfig.output.schemaPath && renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
-        typegen: ${info.yogaConfig.output.typegenPath && renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
+        schema: ${info.yogaConfig.output.schemaPath &&
+          renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+        typegen: ${info.yogaConfig.output.typegenPath &&
+          renderPathJoin(fileDir, info.yogaConfig.output.typegenPath)}
       },
       nonNullDefaults: {
         input: true,
@@ -193,25 +196,24 @@ function renderPathJoin(sourceDir: string, targetPath: string) {
 }
 
 export function renderResolversIndex(info: ConfigWithInfo) {
-  if(info.yogaConfig.resolversPath){
-
+  if (info.yogaConfig.resolversPath) {
     const resolversFile = findFileByExtension(
       info.yogaConfig.resolversPath,
       '.ts',
-      )
-      return `\
+    )
+    return `\
       ${resolversFile
         .map(
           filePath =>
-          `export * from '${getRelativePath(
-            info.yogaConfig.resolversPath,
-            filePath,
+            `export * from '${getRelativePath(
+              info.yogaConfig.resolversPath,
+              filePath,
             )}'`,
-            )
-            .join(EOL)}
+        )
+        .join(EOL)}
             `
   } else {
-    console.warn("There is no resolver path defined")
+    console.warn('There is no resolver path defined')
     return ''
   }
 }

@@ -81,7 +81,6 @@ type RequiredProperty<T extends keyof InputConfig> = Exclude<
   undefined
 >
 
-
 export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
   contextPath?: RequiredProperty<'contextPath'>

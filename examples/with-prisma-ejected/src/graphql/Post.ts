@@ -1,4 +1,4 @@
-import { prismaObjectType } from '@atto-byte/yoga';
+import { prismaObjectType } from '@atto-byte/yoga'
 
 export const Post = prismaObjectType({
   name: 'Post',

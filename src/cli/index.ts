@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import newProject from './commands/new';
+import newProject from './commands/new'
 import * as yargs from 'yargs'
 import build from './commands/build'
 import scaffold from './commands/scaffold'

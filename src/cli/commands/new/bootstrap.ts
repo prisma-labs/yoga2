@@ -4,7 +4,7 @@ import * as meow from 'meow'
 import * as path from 'path'
 import { loadYogaStarter } from './loader'
 import { availableTemplates, Template, templatesNames } from './templates'
-import { error } from '../../../logger';
+import { error } from '../../../logger'
 
 export function templateFromFlags(cli: meow.Result): Template | void {
   const selectedTemplate = availableTemplates.find(
@@ -15,7 +15,7 @@ export function templateFromFlags(cli: meow.Result): Template | void {
     return selectedTemplate
   } else {
     console.log(`Unknown template. Available templates: ${templatesNames}`)
-    return 
+    return
   }
 }
 
@@ -35,13 +35,10 @@ async function askTemplate(): Promise<Template | void> {
   return availableTemplates.find(t => t.name === templateName)
 }
 
-export async function bootstrap(
-  cli: meow.Result,
-  template: Template | void,
-) {
+export async function bootstrap(cli: meow.Result, template: Template | void) {
   if (!template) {
     template = await askTemplate()
-    if(!template) return error("Selected Template Not Found")
+    if (!template) return error('Selected Template Not Found')
   }
 
   let output = cli.input[1]

@@ -1,10 +1,15 @@
-import { ApolloServer, express, makePrismaSchema, yogaEject } from '@atto-byte/yoga';
-import { Server } from 'http';
-import * as path from 'path';
-import context from './context';
-import * as types from './graphql';
-import datamodelInfo from './generated/nexus-prisma';
-import { prisma } from './generated/prisma-client';
+import {
+  ApolloServer,
+  express,
+  makePrismaSchema,
+  yogaEject,
+} from '@atto-byte/yoga'
+import { Server } from 'http'
+import * as path from 'path'
+import context from './context'
+import * as types from './graphql'
+import datamodelInfo from './generated/nexus-prisma'
+import { prisma } from './generated/prisma-client'
 export default yogaEject({
   async server() {
     const app = express()

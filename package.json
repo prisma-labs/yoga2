@@ -14,8 +14,9 @@
     "build": "tsc --declaration",
     "build:ci": "yarn build",
     "watch": "tsc -d -w",
-    "lint": "tslint {src,test}/**/*.ts",
-    "cli": "ts-node src/cli/index.ts"
+    "lint": "eslint {src,test}/**/*.ts",
+    "cli": "ts-node src/cli/index.ts",
+    "pretty": "prettier **/*.ts --write"
   },
   "bin": {
     "@atto-byte/yoga": "dist/cli/index.js"

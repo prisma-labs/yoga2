@@ -1,9 +1,9 @@
 import * as inquirer from 'inquirer'
-import meow from 'meow';
+import meow from 'meow'
 import { bootstrap, templateFromFlags } from './bootstrap'
 import { initScaffold } from './scaffold'
 import { Template, templatesNames } from './templates'
-import chalk from 'chalk';
+import chalk from 'chalk'
 
 inquirer.registerPrompt('path', require('inquirer-path').PathPrompt)
 
@@ -46,7 +46,7 @@ async function main(cli: meow.Result): Promise<void> {
   if (cli.flags['template']) {
     template = templateFromFlags(cli)
 
-    template && console.log(chalk.red("Error Template Not Found"))
+    template && console.log(chalk.red('Error Template Not Found'))
   } else {
     const result = await inquirer.prompt<{
       newOrExisting: 'new' | 'database'

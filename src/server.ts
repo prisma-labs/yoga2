@@ -12,7 +12,7 @@ import { findFileByExtension, importFile } from './helpers'
 import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
 import { ConfigWithInfo, Yoga } from './types'
-import nodeWatch from 'node-watch';
+import nodeWatch from 'node-watch'
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -46,10 +46,13 @@ export async function watch(env?: string): Promise<void> {
 
   let oldServer: any | undefined = await start(info, true)
   let filesToReloadBatched = [] as string[]
-  const options =  {
-    delay: 1000
+  const options = {
+    delay: 1000,
   }
-  const watcherCallback = async (_evt: "update" | "remove", fileName: string | Buffer) => {
+  const watcherCallback = async (
+    _evt: 'update' | 'remove',
+    fileName: string | Buffer,
+  ) => {
     logger.info(`Detected Change in ${fileName}`)
     try {
       if (
@@ -61,7 +64,7 @@ export async function watch(env?: string): Promise<void> {
 
         if (filesToReloadBatched.length === 2) {
           // TODO: Do not invalidate everything, only the necessary stuff
-          info = importYogaConfig({ invalidate: true, env})
+          info = importYogaConfig({ invalidate: true, env })
           filesToReloadBatched = []
         } else {
           return Promise.resolve(true)
@@ -85,8 +88,8 @@ export async function watch(env?: string): Promise<void> {
     } catch (e) {
       logger.error(pe.render(e))
     }
-  };
-  const watcher = nodeWatch('./src/', options, watcherCallback);
+  }
+  const watcher = nodeWatch('./src/', options, watcherCallback)
   watcher.on('error', logger.error)
 }
 
@@ -161,8 +164,8 @@ function importArtifacts(
     )
   }
 
-  let context: (() => void )| undefined = undefined;
-  let express: (() => void) | undefined = undefined;
+  let context: (() => void) | undefined = undefined
+  let express: (() => void) | undefined = undefined
 
   if (contextPath !== undefined) {
     context = importFile(contextPath, 'default')
@@ -229,7 +232,8 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
       },
       async startServer(express) {
         return new Promise<Server>((resolve, reject) => {
-          const httpServer = express.listen({ port: 4000 }, () => {
+          const httpServer = express
+            .listen({ port: 4000 }, () => {
               logger.info(`🚀  Server ready at http://localhost:4000/`)
 
               resolve(httpServer)

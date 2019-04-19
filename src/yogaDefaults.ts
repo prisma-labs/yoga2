@@ -32,7 +32,7 @@ export const DEFAULTS: DefaultConfig = {
       schema: { __schema: null },
       uniqueFieldsByModel: {},
       clientPath: '',
-      embeddedTypes: []
+      embeddedTypes: [],
     },
     /**
      * Do not use that as a default value, this is just a placeholder

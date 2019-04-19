@@ -1,16 +1,16 @@
-import chalk from 'chalk';
-import * as fs from 'fs';
-import { GraphQLObjectType, GraphQLSchema, isObjectType } from 'graphql';
-import * as inquirer from 'inquirer';
-import * as yaml from 'js-yaml';
-import { join } from 'path';
-import * as prettier from 'prettier';
-import { DatabaseType, DefaultParser, ISDL } from 'prisma-datamodel';
-import { generateCRUDSchemaFromInternalISDL } from 'prisma-generate-schema';
-import { PrismaDefinition } from 'prisma-json-schema';
-import * as rimraf from 'rimraf';
-import { promisify } from 'util';
-import { installYogaStarter } from './loader';
+import chalk from 'chalk'
+import * as fs from 'fs'
+import { GraphQLObjectType, GraphQLSchema, isObjectType } from 'graphql'
+import * as inquirer from 'inquirer'
+import * as yaml from 'js-yaml'
+import { join } from 'path'
+import * as prettier from 'prettier'
+import { DatabaseType, DefaultParser, ISDL } from 'prisma-datamodel'
+import { generateCRUDSchemaFromInternalISDL } from 'prisma-generate-schema'
+import { PrismaDefinition } from 'prisma-json-schema'
+import * as rimraf from 'rimraf'
+import { promisify } from 'util'
+import { installYogaStarter } from './loader'
 
 const writeFileAsync = promisify(fs.writeFile)
 const mkdirAsync = promisify(fs.mkdir)

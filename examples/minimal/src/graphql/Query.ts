@@ -1,4 +1,4 @@
-import { queryType, stringArg } from '@atto-byte/yoga';
+import { queryType, stringArg } from '@atto-byte/yoga'
 
 /*
 type Query {

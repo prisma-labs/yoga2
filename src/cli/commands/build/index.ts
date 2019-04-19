@@ -66,14 +66,20 @@ export function writeEjectFiles(
     return config.yogaConfig.ejectedFilePath
   }
 
-  const ejectedFilePath = path.join(config.projectDir, DEFAULTS.ejectedFilePath!)
+  const ejectedFilePath = path.join(
+    config.projectDir,
+    DEFAULTS.ejectedFilePath!,
+  )
   const ejectFile = config.yogaConfig.prisma
     ? renderPrismaEjectFile(ejectedFilePath, config)
     : renderSimpleIndexFile(ejectedFilePath, config)
 
   writeFile(ejectedFilePath, ejectFile)
 
-  const resolverIndexPath = path.join(config.yogaConfig.resolversPath || '', 'index.ts')
+  const resolverIndexPath = path.join(
+    config.yogaConfig.resolversPath || '',
+    'index.ts',
+  )
 
   if (!existsSync(resolverIndexPath)) {
     const resolverIndexFile = renderResolversIndex(config)

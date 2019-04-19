@@ -3,12 +3,12 @@ import * as tmp from 'tmp'
 import github from 'parse-github-url'
 import * as fs from 'fs'
 import ora from 'ora'
-import request from 'request';
+import request from 'request'
 import execa from 'execa'
 import chalk from 'chalk'
 
 import { Template } from './templates'
-import { error } from '../../../logger';
+import { error } from '../../../logger'
 
 export interface LoadOptions {
   installDependencies: boolean
@@ -20,7 +20,7 @@ export async function loadYogaStarter(
   options: LoadOptions,
 ): Promise<void> {
   const tar = getYogaTemplateRepositoryTarInformation(template)
-  if(!tar) return error("Could not Load Yoga Template Repo")
+  if (!tar) return error('Could not Load Yoga Template Repo')
   const tmp = await downloadRepository(tar)
 
   await extractYogaStarterFromRepository(tmp, tar, output)
@@ -42,7 +42,7 @@ function getYogaTemplateRepositoryTarInformation(
 ): TemplateRepositoryTarInformation | null {
   const meta = github(template.repo.uri)
 
-  if(!meta) return null
+  if (!meta) return null
   const uri = [
     `https://api.github.com/repos`,
     meta.repo,

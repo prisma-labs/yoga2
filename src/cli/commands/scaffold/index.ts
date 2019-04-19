@@ -1,12 +1,12 @@
-import * as fs from 'fs';
-import * as inquirer from 'inquirer';
-import yaml from 'js-yaml';
-import * as path from 'path';
-import pluralize from 'pluralize';
-import { findPrismaConfigFile, importYogaConfig } from '../../../config';
-import { prettify, resolvePrettierOptions } from '../../../helpers';
-import { Config } from '../../../types';
-import { spawnAsync } from '../../spawnAsync';
+import * as fs from 'fs'
+import * as inquirer from 'inquirer'
+import yaml from 'js-yaml'
+import * as path from 'path'
+import pluralize from 'pluralize'
+import { findPrismaConfigFile, importYogaConfig } from '../../../config'
+import { prettify, resolvePrettierOptions } from '../../../helpers'
+import { Config } from '../../../types'
+import { spawnAsync } from '../../spawnAsync'
 import execa = require('execa')
 
 export default async (argv: Record<string, string>) => {

@@ -1,4 +1,4 @@
-import { idArg, prismaObjectType, stringArg } from '@atto-byte/yoga';
+import { idArg, prismaObjectType, stringArg } from '@atto-byte/yoga'
 
 /*
 type Mutation {

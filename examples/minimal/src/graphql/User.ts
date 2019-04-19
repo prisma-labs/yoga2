@@ -1,4 +1,4 @@
-import { objectType } from '@atto-byte/yoga';
+import { objectType } from '@atto-byte/yoga'
 
 /*
 type User {
