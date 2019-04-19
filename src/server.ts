@@ -1,5 +1,4 @@
 import { ApolloServer } from 'apollo-server-express'
-import { watch as nativeWatch } from 'chokidar'
 import express from 'express'
 import { existsSync } from 'fs'
 import { Server } from 'http'
@@ -12,7 +11,8 @@ import { importYogaConfig } from './config'
 import { findFileByExtension, importFile } from './helpers'
 import * as logger from './logger'
 import { makeSchemaDefaults } from './nexusDefaults'
-import { Config, ConfigWithInfo, Yoga } from './types'
+import { ConfigWithInfo, Yoga } from './types'
+import nodeWatch from 'node-watch';
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -36,7 +36,7 @@ export async function watch(env?: string): Promise<void> {
   logger.info('Starting development server...')
   let info = importYogaConfig({ env })
 
-  let filesToWatch = [path.join(info.projectDir, '**', '*.ts')]
+  let filesToWatch = [path.join(info.projectDir, 'src', '*.ts')]
   logger.info(`Watching ${JSON.stringify(filesToWatch)}`)
 
   if (info.prismaClientDir && info.datamodelInfoDir) {
@@ -46,16 +46,11 @@ export async function watch(env?: string): Promise<void> {
 
   let oldServer: any | undefined = await start(info, true)
   let filesToReloadBatched = [] as string[]
-
-  nativeWatch(filesToWatch, {
-    usePolling: true, // fsEvents randomly triggers twice on OSX
-    ignored: getIgnoredFiles(
-      info.projectDir,
-      info.yogaConfig,
-      info.datamodelInfoDir,
-      info.prismaClientDir,
-    ),
-  }).on('change', async (fileName: string) => {
+  const options =  {
+    delay: 1000
+  }
+  const watcherCallback = async (_evt: "update" | "remove", fileName: string | Buffer) => {
+    logger.info(`Detected Change in ${fileName}`)
     try {
       if (
         info.yogaConfig.prisma &&
@@ -84,38 +79,40 @@ export async function watch(env?: string): Promise<void> {
       const serverInstance = await server()
 
       // logger.clearConsole()
-      logger.done('Compiled succesfully')
+      logger.done('Compiled successfully')
 
       oldServer = await startServer(serverInstance)
     } catch (e) {
       logger.error(pe.render(e))
     }
-  })
+  };
+  const watcher = nodeWatch('./src/', options, watcherCallback);
+  watcher.on('error', logger.error)
 }
 
-function getIgnoredFiles(
-  projectDir: string,
-  yogaConfig: Config,
-  datamodelInfoDir: string | undefined,
-  prismaClientDir: string | undefined,
-) {
-  const ignoredFiles = [
-    yogaConfig.output.schemaPath,
-    yogaConfig.output.typegenPath,
-    path.join(projectDir, 'node_modules'),
-  ]
+// function getIgnoredFiles(
+//   projectDir: string,
+//   yogaConfig: Config,
+//   datamodelInfoDir: string | undefined,
+//   prismaClientDir: string | undefined,
+// ) {
+//   const ignoredFiles = [
+//     yogaConfig.output.schemaPath,
+//     yogaConfig.output.typegenPath,
+//     path.join(projectDir, 'node_modules'),
+//   ]
 
-  if (datamodelInfoDir) {
-    ignoredFiles.push(path.join(datamodelInfoDir, 'nexus-prisma.ts'))
-    ignoredFiles.push(path.join(datamodelInfoDir, 'index.ts'))
-  }
+//   if (datamodelInfoDir) {
+//     ignoredFiles.push(path.join(datamodelInfoDir, 'nexus-prisma.ts'))
+//     ignoredFiles.push(path.join(datamodelInfoDir, 'index.ts'))
+//   }
 
-  if (prismaClientDir) {
-    ignoredFiles.push(path.join(prismaClientDir, 'prisma-schema.ts'))
-  }
+//   if (prismaClientDir) {
+//     ignoredFiles.push(path.join(prismaClientDir, 'prisma-schema.ts'))
+//   }
 
-  return ignoredFiles
-}
+//   return ignoredFiles
+// }
 
 export async function start(
   info: ConfigWithInfo,
