@@ -15,7 +15,6 @@
     "build:ci": "yarn build",
     "watch": "tsc -d -w",
     "lint": "eslint {src,test}/**/*.ts",
-    "test": "eslint {src,test}/**/*.ts",
     "cli": "ts-node src/cli/index.ts",
     "pretty": "prettier **/*.ts --write",
     "semantic-release": "semantic-release"

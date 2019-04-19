@@ -1,9 +1,10 @@
-# Yoga 2
+# Yoga 2 - Forked
 
 ![npm](https://img.shields.io/npm/v/@atto-byte/yoga.svg?style=flat-square)
 ![npm](https://img.shields.io/npm/dm/@atto-byte/yoga.svg?style=flat-square)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/atto-byte/yoga2/master.svg?style=flat-square)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Build Status](https://travis-ci.org/atto-byte/yoga2.svg?branch=master)](https://travis-ci.org/atto-byte/yoga2)
 
  Help Wanted
 ## Install
