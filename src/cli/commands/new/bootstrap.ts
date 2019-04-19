@@ -41,10 +41,10 @@ export async function bootstrap(
 ) {
   if (!template) {
     template = await askTemplate()
-    if(!template) return error("No Template Found")
+    if(!template) return error("Selected Template Not Found")
   }
 
-  let [output] = cli.input
+  let output = cli.input[1]
 
   if (!output) {
     const res = await inquirer.prompt<{ path: string }>([
