@@ -4,6 +4,7 @@ import * as meow from 'meow'
 import * as path from 'path'
 import { loadYogaStarter } from './loader'
 import { availableTemplates, Template, templatesNames } from './templates'
+import { error } from '../../../logger';
 
 export function templateFromFlags(cli: meow.Result): Template | void {
   const selectedTemplate = availableTemplates.find(
@@ -40,6 +41,7 @@ export async function bootstrap(
 ) {
   if (!template) {
     template = await askTemplate()
+    if(!template) return error("No Template Found")
   }
 
   let [output] = cli.input

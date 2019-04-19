@@ -1,0 +1,26 @@
+{
+  "name": "minimal-ejected",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "yoga dev",
+    "build": "yoga build",
+    "build:ci": "yarn build",
+    "start": "yoga start",
+    "lint": "echo linting disabled"
+  },
+  "dependencies": {
+    "@atto-byte/yoga": "latest"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.4",
+    "@types/node": "^10.12.11",
+    "@types/ws": "^6.0.1",
+    "typescript": "^3.2.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "license": "MIT"
+}

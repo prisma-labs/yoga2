@@ -1,4 +1,4 @@
-import { yogaContext } from 'yoga'
+import { yogaContext } from '@atto-byte/yoga';
 
 interface UserModel {
   id: string

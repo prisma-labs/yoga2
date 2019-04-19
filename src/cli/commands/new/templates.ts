@@ -17,7 +17,7 @@ export const defaultTemplate: Template = {
   name: 'minimal-yoga',
   description: 'Basic starter template ',
   repo: {
-    uri: 'https://github.com/prisma/yoga2',
+    uri: 'https://github.com/atto-byte/yoga2',
     branch: 'master',
     path: '/examples/minimal',
   },
@@ -33,10 +33,10 @@ Here are the next steps to get you started:
 export const availableTemplates: Template[] = [
   defaultTemplate,
   {
-    name: 'db-yoga',
+    name: 'with-prisma',
     description: 'Template with Prisma database support',
     repo: {
-      uri: 'https://github.com/prisma/yoga2',
+      uri: 'https://github.com/atto-byte/yoga2',
       branch: 'master',
       path: '/examples/with-db',
     },

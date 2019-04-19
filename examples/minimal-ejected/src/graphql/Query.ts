@@ -1,5 +1,5 @@
-import { objectType, stringArg } from 'yoga'
-import { User } from './User'
+import { objectType, stringArg } from '@atto-byte/yoga';
+import { User } from './User';
 
 /*
 type Query {

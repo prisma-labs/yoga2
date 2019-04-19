@@ -1,8 +1,8 @@
-import { EOL } from 'os'
-import * as path from 'path'
-import { getRelativePath } from '../build'
-import { findFileByExtension } from '../../../helpers'
-import { ConfigWithInfo } from '../../../types'
+import { EOL } from 'os';
+import * as path from 'path';
+import { findFileByExtension } from '../../../helpers';
+import { ConfigWithInfo } from '../../../types';
+import { getRelativePath } from '../build';
 
 export function renderIndexFile(ejectFilePath: string) {
   return `
@@ -26,7 +26,7 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
 
   return `
   import * as path from 'path'
-  import { ApolloServer, makePrismaSchema, express, yogaEject } from 'yoga'
+  import { ApolloServer, makePrismaSchema, express, yogaEject } from '@atto-byte/yoga'
   ${renderImportIf('* as types', fileDir, info.yogaConfig.resolversPath)}
   ${renderImportIf('context', fileDir, info.yogaConfig.contextPath)}
   ${renderImportIf('expressMiddleware', fileDir, info.yogaConfig.expressPath)}
@@ -118,7 +118,7 @@ export function renderSimpleIndexFile(filePath: string, info: ConfigWithInfo) {
 
   return `\
 import * as path from 'path'
-import { ApolloServer, makeSchema, express, yogaEject } from 'yoga'
+import { ApolloServer, makeSchema, express, yogaEject } from '@atto-byte/yoga'
 ${renderImportIf('* as types', fileDir, info.yogaConfig.resolversPath)}
 ${renderImportIf('context', fileDir, info.yogaConfig.contextPath)}
 ${renderImportIf('expressMiddleware', fileDir, info.yogaConfig.expressPath)}

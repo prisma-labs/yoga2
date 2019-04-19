@@ -1,16 +1,16 @@
-import chalk from 'chalk'
-import * as fs from 'fs'
-import { GraphQLObjectType, GraphQLSchema, isObjectType } from 'graphql'
-import * as inquirer from 'inquirer'
-import * as yaml from 'js-yaml'
-import { join } from 'path'
-import * as prettier from 'prettier'
-import { DatabaseType, DefaultParser, ISDL } from 'prisma-datamodel'
-import { generateCRUDSchemaFromInternalISDL } from 'prisma-generate-schema'
-import { PrismaDefinition } from 'prisma-json-schema'
-import * as rimraf from 'rimraf'
-import { promisify } from 'util'
-import { installYogaStarter } from './loader'
+import chalk from 'chalk';
+import * as fs from 'fs';
+import { GraphQLObjectType, GraphQLSchema, isObjectType } from 'graphql';
+import * as inquirer from 'inquirer';
+import * as yaml from 'js-yaml';
+import { join } from 'path';
+import * as prettier from 'prettier';
+import { DatabaseType, DefaultParser, ISDL } from 'prisma-datamodel';
+import { generateCRUDSchemaFromInternalISDL } from 'prisma-generate-schema';
+import { PrismaDefinition } from 'prisma-json-schema';
+import * as rimraf from 'rimraf';
+import { promisify } from 'util';
+import { installYogaStarter } from './loader';
 
 const writeFileAsync = promisify(fs.writeFile)
 const mkdirAsync = promisify(fs.mkdir)
@@ -25,7 +25,7 @@ const PACKAGE_JSON = `\
     "scaffold": "yoga scaffold"
   },
   "dependencies": {
-    "yoga": "0.0.18"
+    "@atto-byte/yoga": "0.0.6"
   },
   "devDependencies": {
     "@types/graphql": "^14.0.4",
@@ -61,7 +61,29 @@ const TSCONFIG_JSON = `\
   "exclude": ["node_modules"]
 } 
 `
+const ESLINTRC_JS = `\
+module.exports = {
+  parser: '@typescript-eslint/parser',  // Specifies the ESLint parser
+  extends: [
+    "eslint:recommended",
+    'plugin:@typescript-eslint/recommended',  // Uses the recommended rules from the @typescript-eslint/eslint-plugin
+    'prettier/@typescript-eslint',  // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
+    'plugin:prettier/recommended',  // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+  ],
+  "env": {
+    "node": true,
+    "commonjs": true
+  },
 
+  parserOptions: {
+    ecmaVersion: 2018,  // Allows for the parsing of modern ECMAScript features
+    sourceType: 'module',  // Allows for the use of imports
+  },
+  rules: {
+    "@typescript-eslint/explicit-function-return-type": 0,
+  }
+};
+`
 const FILES_REQUIRED = ['datamodel.prisma', 'docker-compose.yml', 'prisma.yml']
 const FILES_TO_IGNORE = [
   '.git',
@@ -95,7 +117,7 @@ export async function initScaffold() {
       type: 'checkbox',
       choices,
       validate(input) {
-        if (!input.some(t => t.split('.')[0] === 'Query')) {
+        if (!input.some((t: any) => t.split('.')[0] === 'Query')) {
           return 'At least one field from the Query type must be selected'
         }
 
@@ -132,6 +154,7 @@ export async function initScaffold() {
         prettierOptions,
       ),
       writeFileAsync(join(outputPath, 'tsconfig.json'), TSCONFIG_JSON),
+      writeFileAsync(join(outputPath, '.eslintrc.js'), ESLINTRC_JS),
       renameAsync(
         datamodelPath,
         join(outputPath, PRISMA_FILES_PATH, 'datamodel.prisma'),
@@ -273,7 +296,7 @@ async function scaffoldGraphQLTypes(
 
 function renderType(typeName: string, fields: string[]) {
   return `\
-import { prismaObjectType } from 'yoga'
+import { prismaObjectType } from '@atto-byte/yoga'
 
 export const ${typeName} = prismaObjectType({
   name: '${typeName}',

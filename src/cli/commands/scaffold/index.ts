@@ -1,12 +1,12 @@
-import * as fs from 'fs'
-import * as inquirer from 'inquirer'
-import yaml from 'js-yaml'
-import * as path from 'path'
-import pluralize from 'pluralize'
-import { findPrismaConfigFile, importYogaConfig } from '../../../config'
-import { prettify, resolvePrettierOptions } from '../../../helpers'
-import { Config } from '../../../types'
-import { spawnAsync } from '../../spawnAsync'
+import * as fs from 'fs';
+import * as inquirer from 'inquirer';
+import yaml from 'js-yaml';
+import * as path from 'path';
+import pluralize from 'pluralize';
+import { findPrismaConfigFile, importYogaConfig } from '../../../config';
+import { prettify, resolvePrettierOptions } from '../../../helpers';
+import { Config } from '../../../types';
+import { spawnAsync } from '../../spawnAsync';
 import execa = require('execa')
 
 export default async (argv: Record<string, string>) => {
@@ -173,7 +173,7 @@ function scaffoldTypeWithDb(
   let content = `\
 import { prismaObjectType${
     crudOperations && crudOperations.length > 0 ? ', prismaExtendType' : ''
-  } } from 'yoga'
+  } } from '@atto-byte/yoga'
   
 export const ${typeName} = prismaObjectType({
   name: '${typeName}',
@@ -222,7 +222,7 @@ export const ${typeName}Mutation = prismaExtendType({
 
 function scaffoldTypeWithoutDb(typeName: string) {
   return `\
-import { objectType } from 'yoga'
+import { objectType } from '@atto-byte/yoga'
 
 export const ${typeName} = objectType({
   name: '${typeName}',
