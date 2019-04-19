@@ -191,8 +191,8 @@ function renderPathJoin(sourceDir: string, targetPath: string) {
   if (!relativePath.startsWith('.')) {
     relativePath = './' + relativePath
   }
-
-  return `path.join(__dirname, '${relativePath}')`
+  console.log(relativePath);
+  return `path.join(__dirname, '${relativePath.replace(/\\/g,"/")}')`
 }
 
 export function renderResolversIndex(info: ConfigWithInfo) {
