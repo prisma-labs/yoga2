@@ -1,6 +1,6 @@
 {
   "name": "@atto-byte/yoga",
-  "version": "0.0.0-development",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "private": false,
   "repository": "https://github.com/atto-byte/yoga2.git",
@@ -17,7 +17,7 @@
     "lint": "eslint {src,test}/**/*.ts",
     "cli": "ts-node src/cli/index.ts",
     "pretty": "prettier **/*.ts --write",
-    "semantic-release": "semantic-release"
+    "semantic-release": "dotenv semantic-release"
   },
   "bin": {
     "@atto-byte/yoga": "dist/cli/index.js"
@@ -71,6 +71,7 @@
     "@types/yargs": "13.0.0",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
     "@typescript-eslint/parser": "^1.6.0",
+    "dotenv-cli": "^2.0.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.1.0",
