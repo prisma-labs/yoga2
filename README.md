@@ -6,14 +6,15 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Build Status](https://travis-ci.org/atto-byte/yoga2.svg?branch=master)](https://travis-ci.org/atto-byte/yoga2)
 
- Help Wanted
+Help Wanted
+
 ## Install
 
 ```bash
   npm install -g @atto-byte/yoga
 ```
 
-## Usage
+## CLI - Commands
 
 ```
 
@@ -30,6 +31,13 @@ Options:
   --help     Show help
   --version  Show version number
 ```
+
+### Passing ENVs
+
+If you have to following env file `.env.staging` then you can pass it to Yoga using the commands below
+
+- **dev**: `yoga dev -e staging`
+- **start**: `yoga start -e staging`
 
 ## Roadmap
 
