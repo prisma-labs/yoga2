@@ -94,3 +94,6 @@ export function prettify(
     return code
   }
 }
+export function prettyPath(filePath: string): string{
+  return(path.relative(process.cwd(), filePath))
+}
