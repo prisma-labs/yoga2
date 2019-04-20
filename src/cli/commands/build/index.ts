@@ -10,6 +10,8 @@ import {
   renderSimpleIndexFile,
   renderResolversIndex,
 } from './renderers'
+import * as logger from '../../../logger';
+import { prettyPath } from '../../../helpers';
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -18,16 +20,17 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
 }
 
 export default (argv: Record<string, string>) => {
-  const info = importYogaConfig({ env: argv.env })
-  const config = readConfigFromTsConfig(info)
+  const yogaConfig = importYogaConfig({ env: argv.env })
+  const tsConfig = readConfigFromTsConfig(yogaConfig)
 
-  compile(config.fileNames, config.options)
-
-  const ejectedFilePath = writeEjectFiles(info, (filePath, content) => {
-    outputFile(filePath, content, config.options, info)
+  compile(tsConfig.fileNames, tsConfig.options)
+  
+  
+  const ejectedFilePath = writeEjectFiles(yogaConfig, (filePath, content) => {
+    logger.info(`Generating Eject Files`)
+    outputFile(filePath, content, tsConfig.options, yogaConfig)
   })
-
-  useEntryPoint(info, ejectedFilePath, config)
+  useEntryPoint(yogaConfig, ejectedFilePath, tsConfig)
 }
 
 function compile(rootNames: string[], options: ts.CompilerOptions) {
@@ -48,33 +51,36 @@ function compile(rootNames: string[], options: ts.CompilerOptions) {
 }
 
 function useEntryPoint(
-  info: ConfigWithInfo,
+  yogaConfig: ConfigWithInfo,
   ejectedFilePath: string,
   config: ts.ParsedCommandLine,
 ) {
   const indexFile = renderIndexFile(ejectedFilePath)
   const indexFilePath = path.join(path.dirname(ejectedFilePath), 'index.ts')
-
-  outputFile(indexFilePath, indexFile, config.options, info)
+  if(!existsSync(indexFilePath)){
+    logger.info(`Generating Entry Point`)
+    outputFile(indexFilePath, indexFile, config.options, yogaConfig)
+  }
 }
 
 export function writeEjectFiles(
   config: ConfigWithInfo,
   writeFile: (filePath: string, content: string) => void,
 ) {
-  if (config.yogaConfig.ejectedFilePath) {
-    return config.yogaConfig.ejectedFilePath
-  }
-
-  const ejectedFilePath = path.join(
+  const defaultEjectedFilePath = path.join(
     config.projectDir,
     DEFAULTS.ejectedFilePath!,
   )
-  const ejectFile = config.yogaConfig.prisma
-    ? renderPrismaEjectFile(ejectedFilePath, config)
-    : renderSimpleIndexFile(ejectedFilePath, config)
+  if (config.yogaConfig.ejectedFilePath) {
+    return config.yogaConfig.ejectedFilePath
+  } else if(existsSync(defaultEjectedFilePath)){
+    return defaultEjectedFilePath
+  } else {
+    const ejectFile = config.yogaConfig.prisma
+    ? renderPrismaEjectFile(defaultEjectedFilePath, config)
+    : renderSimpleIndexFile(defaultEjectedFilePath, config)
 
-  writeFile(ejectedFilePath, ejectFile)
+  writeFile(defaultEjectedFilePath, ejectFile)
 
   const resolverIndexPath = path.join(
     config.yogaConfig.resolversPath || '',
@@ -82,22 +88,26 @@ export function writeEjectFiles(
   )
 
   if (!existsSync(resolverIndexPath)) {
+    logger.info("No Resolver Index Found")
+    logger.info(`Creating Resolver index @ ${resolverIndexPath}`)
     const resolverIndexFile = renderResolversIndex(config)
-
+    
     resolverIndexFile && writeFile(resolverIndexPath, resolverIndexFile)
   }
 
-  return ejectedFilePath
+  return defaultEjectedFilePath
+  }
+
 }
 
 export function getTranspiledPath(
-  projectDir: string,
   filePath: string,
   outDir: string,
+  info: ConfigWithInfo
 ) {
-  const pathFromRootToFile = path.relative(projectDir, filePath)
-  const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
-  const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
+  const relativePath = path.relative(info.projectDir, filePath)
+  const jsFileName = path.basename(relativePath, '.ts') + '.js'
+  const pathToJsFile = path.join(path.dirname(relativePath), jsFileName)
 
   return path.join(outDir, pathToJsFile)
 }
@@ -132,19 +142,19 @@ function outputFile(
   filePath: string,
   fileContent: string,
   compilerOptions: ts.CompilerOptions,
-  info: ConfigWithInfo,
+  yogaConfig: ConfigWithInfo,
 ) {
   const transpiled = transpileModule(fileContent, compilerOptions)
   const outFilePath = getTranspiledPath(
-    info.projectDir,
     filePath,
     compilerOptions.outDir!,
+    yogaConfig
   )
-
   writeFileSync(outFilePath, transpiled)
+  logger.done(`${prettyPath(outFilePath)}`)
 }
 
-function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
+function fixConfig(config: ts.ParsedCommandLine, _projectDir: string) {
   // Target ES5 output by default (instead of ES3).
   if (config.options.target === undefined) {
     config.options.target = ts.ScriptTarget.ES5
@@ -159,7 +169,7 @@ function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
     config.options.outDir = 'dist'
   }
 
-  config.options.rootDir = projectDir
+  // config.options.rootDir = projectDir
 
   return config
 }
