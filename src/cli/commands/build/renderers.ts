@@ -4,6 +4,47 @@ import { findFileByExtension } from '../../../helpers'
 import { ConfigWithInfo } from '../../../types'
 import { getRelativePath } from '../build'
 
+export function renderPermissionFile(ejectFilePath: string) {
+  return `
+  import yoga from '${getRelativePath(
+    path.dirname(ejectFilePath),
+    ejectFilePath,
+  )}'
+
+  import { and, or, rule, shield } from 'graphql-shield';
+  import { ShieldRule } from 'graphql-shield/dist/types';
+  import { NexusGenArgTypes } from './generated/nexus';
+  import { UserType } from './generated/prisma-client';
+
+  type NexusPermissions = {
+    [T in keyof NexusGenArgTypes]?: {
+      [P in keyof NexusGenArgTypes[T]]?: ShieldRule   
+    }
+  }
+  const isAuthenticated = rule('isAuthenticated')(async (parent, args, ctx, info) => {
+    return Boolean(ctx.user)
+  })
+
+  const isAdmin = rule()(async (parent, args, ctx, info) => {
+    return ctx.user.userType === "ADMIN"
+  })
+
+  const isEmployee = rule()(async (parent, args, ctx, info) => {
+    return ctx.user.userType === "EMPLOYEE"
+  })
+  const isSameUser = rule()(async (parent, args, ctx, info) => {
+    return  ctx.user.id === args.where.id
+  })
+
+  const ruleTree: NexusPermissions = {
+    
+  }
+
+  const permissions = shield(ruleTree)
+
+  export default permissions
+  `
+}
 export function renderIndexFile(ejectFilePath: string) {
   return `
   import yoga from '${getRelativePath(
@@ -21,32 +62,33 @@ export function renderIndexFile(ejectFilePath: string) {
   `
 }
 // TODO Fix ConfigWithInfo Types
-export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
+export function renderPrismaEjectFile(filePath: string, config: ConfigWithInfo) {
   const fileDir = path.dirname(filePath)
 
   return `
   import * as path from 'path'
-  import { ApolloServer, makePrismaSchema, express, yogaEject } from '@atto-byte/yoga'
-  ${renderImportIf('* as types', fileDir, info.yogaConfig.resolversPath)}
-  ${renderImportIf('context', fileDir, info.yogaConfig.contextPath)}
-  ${renderImportIf('expressMiddleware', fileDir, info.yogaConfig.expressPath)}
-  ${renderImportIf('datamodelInfo', fileDir, info.datamodelInfoDir)}
-  ${renderImportIf('{ prisma }', fileDir, info.prismaClientDir)}
+  import { ApolloServer, makePrismaSchema, express, yogaEject, applyMiddleware } from '@atto-byte/yoga'
+  ${renderImportIf('* as types', fileDir, config.yogaConfig.resolversPath)}
+  ${renderImportIf('context', fileDir, config.yogaConfig.contextPath)}
+  ${renderImportIf('expressMiddleware', fileDir, config.yogaConfig.expressPath)}
+  ${renderImportIf('graphqlMiddleware', fileDir, config.yogaConfig.graphqlMiddlewarePath)}
+  ${renderImportIf('datamodelInfo', fileDir, config.datamodelInfoDir)}
+  ${renderImportIf('{ prisma }', fileDir, config.prismaClientDir)}
 
   export default yogaEject({
     async server() {
-      const schema = makePrismaSchema({
+      let schema = makePrismaSchema({
         types,
         prisma: {
           datamodelInfo,
           client: prisma
         },
         outputs: {
-          schema: ${info.yogaConfig.output.schemaPath &&
-            renderPathJoin(fileDir, info.yogaConfig.output.schemaPath)},
+          schema: ${config.yogaConfig.output.schemaPath &&
+            renderPathJoin(fileDir, config.yogaConfig.output.schemaPath)},
           typegen: ${renderPathJoin(
             fileDir,
-            info.yogaConfig.output.typegenPath || '',
+            config.yogaConfig.output.typegenPath || '',
           )}
         },
         nonNullDefaults: {
@@ -56,20 +98,20 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
         typegenAutoConfig: {
           sources: [
             ${
-              info.yogaConfig.contextPath
+              config.yogaConfig.contextPath
                 ? `{
-              source: ${renderPathJoin(fileDir, info.yogaConfig.contextPath)},
+              source: ${renderPathJoin(fileDir, config.yogaConfig.contextPath)},
               alias: 'ctx',
             }`
                 : ''
             },
             ${
-              info.yogaConfig.prisma
+              config.yogaConfig.prisma
                 ? `{
               source: ${renderPathJoin(
                 fileDir,
                 path.join(
-                  info.yogaConfig.prisma.datamodelInfo.clientPath,
+                  config.yogaConfig.prisma.datamodelInfo.clientPath,
                   'index.ts',
                 ),
               )},
@@ -78,24 +120,26 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
                 : ''
             },
             ${
-              info.yogaConfig.typesPath
+              config.yogaConfig.typesPath
                 ? `{
-              source: ${renderPathJoin(fileDir, info.yogaConfig.typesPath)},
+              source: ${renderPathJoin(fileDir, config.yogaConfig.typesPath)},
               alias: 'types',
             }`
                 : ''
             },
           ],
-          ${info.yogaConfig.contextPath ? `contextType: 'ctx.Context'` : ''}
+          ${config.yogaConfig.contextPath ? `contextType: 'ctx.Context'` : ''}
         }
-      })   
+      })
+      ${config.yogaConfig.graphqlMiddlewarePath ? 'schema = applyMiddleware(schema, ...graphqlMiddleware)' : ''}
+      
       const apolloServer = new ApolloServer.ApolloServer({
         schema,
-        ${info.yogaConfig.contextPath ? 'context' : ''}
+        ${config.yogaConfig.contextPath ? 'context' : ''}
       })
       const app = express()
     
-      ${info.yogaConfig.expressPath ? 'await expressMiddleware(app)' : ''}
+      ${config.yogaConfig.expressPath ? 'await expressMiddleware({app})' : ''}
       apolloServer.applyMiddleware({ app, path: '/' })
 
       return app
@@ -119,10 +163,11 @@ export function renderSimpleIndexFile(filePath: string, info: ConfigWithInfo) {
 
   return `\
 import * as path from 'path'
-import { ApolloServer, makeSchema, express, yogaEject } from '@atto-byte/yoga'
+import { ApolloServer, makeSchema, express, yogaEject, applyMiddleware } from '@atto-byte/yoga'
 ${renderImportIf('* as types', fileDir, info.yogaConfig.resolversPath)}
 ${renderImportIf('context', fileDir, info.yogaConfig.contextPath)}
 ${renderImportIf('expressMiddleware', fileDir, info.yogaConfig.expressPath)}
+${renderImportIf('graphqlMiddleware', fileDir, info.yogaConfig.graphqlMiddlewarePath)}
 
 export default yogaEject({
   async server() {
@@ -160,13 +205,14 @@ export default yogaEject({
         contextType: 'ctx.Context'
       }
     })
+    ${info.yogaConfig.graphqlMiddlewarePath ? 'schema = applyMiddleware(schema, ...graphqlMiddleware)' : ''}
     const apolloServer = new ApolloServer.ApolloServer({
       schema,
       ${info.yogaConfig.contextPath ? 'context' : ''}
     })
     const app = express()
     
-    ${info.yogaConfig.expressPath ? 'await expressMiddleware(app)' : ''}
+    ${info.yogaConfig.expressPath ? 'await expressMiddleware({app})' : ''}
     apolloServer.applyMiddleware({ app, path: '/' })
 
     return app

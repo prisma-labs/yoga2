@@ -20,17 +20,17 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
 }
 
 export default (argv: Record<string, string>) => {
-  const yogaConfig = importYogaConfig({ env: argv.env })
-  const tsConfig = readConfigFromTsConfig(yogaConfig)
+  const config = importYogaConfig({ env: argv.env })
+  const tsConfig = readConfigFromTsConfig(config)
 
   compile(tsConfig.fileNames, tsConfig.options)
   
   
-  const ejectedFilePath = writeEjectFiles(yogaConfig, (filePath, content) => {
+  const ejectedFilePath = writeEjectFiles(config, (filePath, content) => {
     logger.info(`Generating Eject Files`)
-    outputFile(filePath, content, tsConfig.options, yogaConfig)
+    outputFile(filePath, content, tsConfig.options, config)
   })
-  useEntryPoint(yogaConfig, ejectedFilePath, tsConfig)
+  useEntryPoint(config, ejectedFilePath, tsConfig)
 }
 
 function compile(rootNames: string[], options: ts.CompilerOptions) {
@@ -80,22 +80,22 @@ export function writeEjectFiles(
     ? renderPrismaEjectFile(defaultEjectedFilePath, config)
     : renderSimpleIndexFile(defaultEjectedFilePath, config)
 
-  writeFile(defaultEjectedFilePath, ejectFile)
+    writeFile(defaultEjectedFilePath, ejectFile)
 
-  const resolverIndexPath = path.join(
-    config.yogaConfig.resolversPath || '',
-    'index.ts',
-  )
+    const resolverIndexPath = path.join(
+      config.yogaConfig.resolversPath || '',
+      'index.ts',
+    )
 
-  if (!existsSync(resolverIndexPath)) {
-    logger.info("No Resolver Index Found")
-    logger.info(`Creating Resolver index @ ${resolverIndexPath}`)
-    const resolverIndexFile = renderResolversIndex(config)
-    
-    resolverIndexFile && writeFile(resolverIndexPath, resolverIndexFile)
-  }
+    if (!existsSync(resolverIndexPath)) {
+      logger.info("No Resolver Index Found")
+      logger.info(`Creating Resolver index @ ${resolverIndexPath}`)
+      const resolverIndexFile = renderResolversIndex(config)
+      
+      resolverIndexFile && writeFile(resolverIndexPath, resolverIndexFile)
+    }
 
-  return defaultEjectedFilePath
+    return defaultEjectedFilePath
   }
 
 }

@@ -42,7 +42,7 @@ If you have to following env file `.env.staging` then you can pass it to Yoga us
 ## Roadmap
 
 - [ ] Remove Unnecessary Abstraction
-- [ ] Add GraphQL Shield Integration
+- [x] Add GraphQL Shield Integration
 - [ ] Add Examples
   - [ ] GraphQL Shield
   - [ ] Express Middleware

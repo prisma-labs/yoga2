@@ -44,6 +44,7 @@ export const DEFAULTS: DefaultConfig = {
     },
   },
   expressPath: './src/express.ts',
+  graphqlMiddlewarePath: './src/graphqlMiddleware.ts'
 }
 
 export const DEFAULT_META_SCHEMA_DIR = './src/generated/nexus-prisma/'
@@ -62,6 +63,7 @@ export function normalizeConfig(
     typesPath: typesPath(projectDir, config.typesPath),
     ejectedFilePath: ejectFilePath(projectDir, config.ejectedFilePath),
     expressPath: expressPath(projectDir, config.expressPath),
+    graphqlMiddlewarePath: graphqlMiddlewarePath(projectDir, config.graphqlMiddlewarePath),
     output: output(projectDir, config.output),
     prisma: prisma(projectDir, config.prisma),
   }
@@ -179,7 +181,14 @@ function expressPath(
 
   return optional(path, input, buildError(projectDir, path, 'expressPath'))
 }
+function graphqlMiddlewarePath(
+  projectDir: string,
+  input: string | undefined,
+): string | undefined {
+  const path = inputOrDefaultPath(projectDir, input, DEFAULTS.graphqlMiddlewarePath!)
 
+  return optional(path, input, buildError(projectDir, path, 'graphqlMiddleware'))
+}
 function output(
   projectDir: string,
   input: InputOutputFilesConfig | undefined,

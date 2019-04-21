@@ -1,6 +1,8 @@
 import { PrismaClientInput, PrismaSchemaConfig } from 'nexus-prisma/dist/types'
 import Express from 'express'
 import { Server as HttpServer } from 'http'
+import { IMiddlewareWithOptions, IMiddlewareResolver } from 'graphql-middleware/dist/types';
+import { IMiddlewareTypeMap, IMiddlewareGenerator } from 'graphql-middleware';
 
 export type MaybePromise<T> = Promise<T> | T
 
@@ -66,6 +68,13 @@ export type InputConfig = {
    * @default ./src/express.ts
    */
   expressPath?: string
+    /**
+   * Path to the `graphqlMiddleware.ts` file.
+   * This file returns graphql middleware to inject into the schema .
+   * **If provided, path has to exist**
+   * @default ./src/graphqlMiddleware.ts
+   */
+  graphqlMiddlewarePath?: string
   /**
    * Config for the outputted files (schema, typings ..)
    */
@@ -80,6 +89,8 @@ type RequiredProperty<T extends keyof InputConfig> = Exclude<
   InputConfig[T],
   undefined
 >
+export type GraphqlMiddleware = 
+  (IMiddlewareGenerator<any, any, any> | IMiddlewareWithOptions<any, any, any> | IMiddlewareResolver<any, any, any> | IMiddlewareTypeMap<any, any, any>)[];
 
 export type Config = {
   resolversPath: RequiredProperty<'resolversPath'>
@@ -89,6 +100,7 @@ export type Config = {
   output: RequiredProperty<'output'>
   prisma?: PrismaSchemaConfig['prisma']
   expressPath?: RequiredProperty<'expressPath'>
+  graphqlMiddlewarePath?: RequiredProperty<'graphqlMiddlewarePath'>
 }
 export type DefaultConfig = {
   resolversPath: string
@@ -101,6 +113,7 @@ export type DefaultConfig = {
   }
   prisma: PrismaSchemaConfig['prisma']
   expressPath: RequiredProperty<'expressPath'>
+  graphqlMiddlewarePath: RequiredProperty<'graphqlMiddlewarePath'>
 }
 
 export type ConfigWithInfo = {

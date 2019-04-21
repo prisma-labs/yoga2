@@ -31,6 +31,7 @@
     "execa": "^1.0.0",
     "express": "^4.16.4",
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
+    "graphql-middleware": "^3.0.2",
     "inquirer": "^6.3.1",
     "inquirer-path": "^1.0.0-beta5",
     "js-yaml": "^3.13.1",
@@ -53,6 +54,7 @@
     "yargs": "^13.2.2"
   },
   "devDependencies": {
+    "@telerik/semantic-prerelease": "^1.2.1",
     "@types/dotenv": "^6.1.1",
     "@types/execa": "^0.9.0",
     "@types/express": "4.16.1",
@@ -87,6 +89,19 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "all"
+  },
+  "release": {
+    "branchTags": {
+      "dev": "dev"
+    },
+    "fallbackTags": {
+      "dev": "latest"
+    },
+    "analyzeCommits": "@telerik/semantic-prerelease/analyzeCommits",
+    "generateNotes": "@telerik/semantic-prerelease/generateNotes",
+    "getLastRelease": "@telerik/semantic-prerelease/getLastRelease",
+    "verifyConditions": "@telerik/semantic-prerelease/verifyConditions",
+    "verifyRelease": "@telerik/semantic-prerelease/verifyRelease"
   },
   "gitHead": "28cdc869c914c90e90cce64cd31f3bc055d80336"
 }
