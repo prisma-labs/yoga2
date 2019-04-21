@@ -5,10 +5,10 @@ import * as Http from 'http'
 import * as logger from './logger'
 import { InputConfig as YogaConfig, MaybePromise, Yoga } from './types'
 import { injectCustomEnvironmentVariables } from './config'
-
+import * as middleware from 'graphql-middleware'
 export * from 'nexus'
 export * from 'nexus-prisma'
-export { ApolloServer, express, logger }
+export { ApolloServer, express, logger, middleware }
 
 
 injectCustomEnvironmentVariables()

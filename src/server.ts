@@ -1,20 +1,20 @@
-import { ApolloServer } from 'apollo-server-express'
-import express from 'express'
-import { existsSync } from 'fs'
-import { Server } from 'http'
-import { makeSchema } from 'nexus'
-import { makePrismaSchema } from 'nexus-prisma'
-import * as path from 'path'
-import PrettyError from 'pretty-error'
-import { register } from 'ts-node'
-import { importYogaConfig } from './config'
-import { findFileByExtension, importFile } from './helpers'
-import * as logger from './logger'
-import { makeSchemaDefaults } from './nexusDefaults'
-import { ConfigWithInfo, Yoga, GraphqlMiddleware } from './types'
-import nodeWatch from 'node-watch'
-import { applyMiddleware } from 'graphql-middleware';
+import { ApolloServer } from 'apollo-server-express';
+import express from 'express';
+import { existsSync } from 'fs';
 import { GraphQLSchema } from 'graphql';
+import { applyMiddleware } from 'graphql-middleware';
+import { Server } from 'http';
+import { makeSchema } from 'nexus';
+import { makePrismaSchema } from 'nexus-prisma';
+import nodeWatch from 'node-watch';
+import * as path from 'path';
+import PrettyError from 'pretty-error';
+import { register } from 'ts-node';
+import { importYogaConfig } from './config';
+import { findFileByExtension, importFile } from './helpers';
+import * as logger from './logger';
+import { makeSchemaDefaults } from './nexusDefaults';
+import { ConfigWithInfo, GraphqlMiddleware, Yoga } from './types';
 
 const pe = new PrettyError().appendStyle({
   'pretty-error': {
@@ -229,11 +229,12 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
         )
         let schema: GraphQLSchema;
         if(config.prisma){
-          logger.info("Using makePrismaSchema")
+          logger.info("Using MakePrismaSchema")
           schema = makePrismaSchema({
             ...makeSchemaOptions,
             prisma: config.prisma,
           })
+          logger.done("Prisma Schema Generated")
         } else {
           schema = makeSchema(makeSchemaOptions)
         }
