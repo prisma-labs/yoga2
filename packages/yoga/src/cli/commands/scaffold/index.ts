@@ -270,7 +270,7 @@ function updateDatamodel(datamodelPath: string, typeName: string): void {
   const typeToAdd = `\n
 type ${typeName} {
   # Add your fields here
-  id: ID! @unique
+  id: ID! @id
 }`
 
   try {
