@@ -77,7 +77,7 @@ export type InputConfig = {
 }
 
 type RequiredProperty<T extends keyof InputConfig> = Exclude<
-  Required<InputConfig[T]>,
+  Required<Exclude<InputConfig[T], undefined>>,
   undefined
 >
 
