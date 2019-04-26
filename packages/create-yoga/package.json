@@ -47,7 +47,7 @@
     "@types/tar": "4.0.0",
     "@types/tmp": "0.0.34",
     "@types/update-notifier": "2.5.0",
-    "ts-node": "8.0.3",
+    "ts-node": "8.1.0",
     "tslint": "5.16.0",
     "tslint-config-prettier": "1.18.0",
     "tslint-config-standard": "8.0.1",
