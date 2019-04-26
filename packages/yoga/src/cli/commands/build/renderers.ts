@@ -189,7 +189,7 @@ function renderPathJoin(sourceDir: string, targetPath: string) {
     relativePath = './' + relativePath
   }
 
-  return `path.join(__dirname, '${relativePath}')`
+  return `path.join(__dirname, '${relativePath.replace(/\\/g, '/')}')`
 }
 
 export function renderResolversIndex(info: ConfigWithInfo) {
