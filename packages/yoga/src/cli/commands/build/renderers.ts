@@ -59,9 +59,9 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
                 ? `{
               source: ${renderPathJoin(fileDir, info.yogaConfig.contextPath)},
               alias: 'ctx',
-            }`
+            },`
                 : ''
-            },
+            }
             ${
               info.yogaConfig.prisma
                 ? `{
@@ -73,9 +73,9 @@ export function renderPrismaEjectFile(filePath: string, info: ConfigWithInfo) {
                 ),
               )},
               alias: 'prisma',
-            }`
+            },`
                 : ''
-            },
+            }
             ${
               info.yogaConfig.typesPath
                 ? `{
@@ -142,17 +142,17 @@ export default yogaEject({
               ? `{
             source: ${renderPathJoin(fileDir, info.yogaConfig.contextPath)},
             alias: 'ctx',
-          }`
+          },`
               : ''
-          },
+          }
           ${
             info.yogaConfig.typesPath
               ? `{
             source: ${renderPathJoin(fileDir, info.yogaConfig.typesPath)},
             alias: 'types',
-          }`
+          },`
               : ''
-          },
+          }
         ],
         contextType: 'ctx.Context'
       }
