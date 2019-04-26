@@ -25,13 +25,13 @@ export const DEFAULTS: Config = {
   prisma: {
     /**
      * Do not use that as a default value, this is just a placeholder
-     * When `datamodelInfo` isn't provided, we're importing it from `DEFAULT_NEXUS_PRISMA_SCHEMA_PATH` defined below
+     * When `datamodelInfo` isn't provided, we're importing it from `DEFAULT_META_SCHEMA_DIR` defined below
      */
     datamodelInfo: {
       schema: { __schema: null },
       uniqueFieldsByModel: {},
       clientPath: '',
-      embeddedTypes: []
+      embeddedTypes: [],
     },
     /**
      * Do not use that as a default value, this is just a placeholder
