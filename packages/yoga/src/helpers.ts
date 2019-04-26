@@ -56,9 +56,9 @@ export function importUncached<T extends any = any>(
 export function importFile<T extends any = any>(
   filePath: string,
   exportName?: string,
-  invalidateModule: boolean = false,
+  invalidateModuleAndDeps: boolean = false,
 ): T {
-  const importedModule = importUncached<T>(filePath, invalidateModule)
+  const importedModule = importUncached<T>(filePath, invalidateModuleAndDeps)
 
   if (exportName && importedModule[exportName] === undefined) {
     throw new Error(`\`${filePath}\` must have a '${exportName}' export`)

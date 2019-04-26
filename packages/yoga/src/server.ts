@@ -247,7 +247,7 @@ function getYogaServer(info: ConfigWithInfo): Yoga {
     }
   }
 
-  const yogaServer = importFile<Yoga>(config.ejectFilePath, 'default')
+  const yogaServer = importFile<Yoga>(config.ejectFilePath, 'default', true)
 
   if (yogaServer.server && yogaServer.startServer && yogaServer.stopServer) {
     return yogaServer
