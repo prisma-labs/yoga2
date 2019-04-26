@@ -1,0 +1,124 @@
+---
+name: How to use
+route: /how-to-use
+---
+
+# How to use
+
+As Yoga is built with conventions in mind, there are a couple of requirements needed with your folder structure for it to work.
+
+## Conventions
+
+Here's the exhaustive list of files that are supported by Yoga:
+
+```bash
+.
+├── src
+│   ├── graphql
+│   │   └── Query.ts
+│   ├── context.ts  (optional)
+│   ├── express.ts  (optional)
+│   └── server.ts   (optional)
+└── yoga.config.ts  (optional)
+```
+
+- `src/graphql/*` (required): The folder in which you define all your resolvers
+- `src/context.ts` (optional): A file to define the context of your GraphQL server.
+- `src/express.ts` (optional): A file to access the underlying express instance (and use middlewares, expose webhooks etc..)
+- `src/types.ts` (optional): A file to overrride the generated nexus TypeScript types used to annotate GraphQL types
+- `src/yoga.config.ts` (optional): [See configuration here](../configuration)
+- `src/server.ts` (optional): Where you define your own GraphQL server if needed. (**Adding this file ejects you from the conventions**)
+
+### Examples
+
+**`graphql/*` (required)**
+
+The folder in which you define all your resolvers
+
+```ts
+// src/graphql/Query.ts
+import { objectType } from "yoga";
+
+export const Query = objectType({
+  name: "Query",
+  definition(t) {
+    t.string("hello", o => "world");
+  }
+});
+```
+
+**`context.ts` (optional)**
+
+A file to define the context of your GraphQL server. It must default export a function.
+
+```ts
+// src/context.ts
+import { yogaContext } from "yoga";
+import { orm } from "./my-orm";
+
+// `context` is an optional helper to provide type-safety and autocompletion
+export default yogaContext(({ req }) => ({ req, orm }));
+```
+
+**`express.ts` (optional)**
+
+A file to access the underlying express instance (and use middlewares, expose webhooks etc..)
+
+```ts
+// src/express.ts
+import { yogaExpress } from "yoga";
+import { middleware } from "my-express-middleware";
+
+// `express` is an optional helper to provide type-safety and autocompletion
+export default yogaExpress(app => {
+  // Define any express related logic using the injected `app` express instance
+  app.use(middleware);
+  // app.get('/login', ...)
+  // app.get('/logout', ...)
+});
+```
+
+**`types.ts` (optional)**
+
+A file to overrride the generated nexus TypeScript types used to annotate GraphQL types
+
+**Example**
+
+Let's say you have the following GraphQL type:
+
+```graphql
+type User {
+  id: ID!
+  name: String!
+}
+```
+
+Nexus will generate the following TypeScript type to type the `root` property of your `User` resolvers
+
+```ts
+interface User {
+  id: string
+  name: string
+}
+```
+
+If you are querying more fields than what Nexus can infer, simply declare a `User` interface in your `src/types.ts` file to override it
+
+```ts
+//src/types.ts
+
+interface User {
+  id: string
+  name: string
+  age: int // new field queried from an external source
+}
+```
+
+
+## Eject from conventions
+
+Although Yoga is built on top of many conventions, you can very simply opt-out from it if needed at some point in your development
+
+> Note: **This step is not irreversible. Don't be afraid of trying it.**
+
+### [See `yoga eject` command for more info](../cli#yoga-eject)

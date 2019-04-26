@@ -1,0 +1,145 @@
+---
+name: Getting started
+route: /getting-started
+---
+
+# Getting started
+
+## From scratch
+
+Bootstrap a ready-to-use GraphQL server based on handcrafted boilerplates that helps you get setup in a few seconds.
+
+- Run the Yoga bootsrapper tool
+
+```bash
+yarn create yoga
+```
+
+or
+
+```bash
+npm init yoga
+```
+
+- Select `Start from scratch`
+
+```
+? Start from scratch or from an existing database? (Use arrow keys)
+❯ Start from scratch
+  Start from an existing database
+```
+
+- Select the template you're looking for
+
+```bash
+? Choose a GraphQL server template? (Use arrow keys)
+❯ minimal-yoga (Basic starter template)
+  db-yoga (Template with Prisma database support)
+```
+
+- Follow the CLI intructions
+- Run `yarn dev` or `npm run dev`
+- You're ready to start 🚀
+
+## From an existing database
+
+Take advantage of Prisma's introspection capabilities to bootstrap a ready-to-use GraphQL Server on top of your existing database.
+
+> Note: The current workflow is temporary until we open up the Prisma CLI's API.
+
+- Create an empty folder
+
+```bash
+mkdir new-project && cd new-project
+```
+
+- Run `prisma init` (or `npx prisma init` if you don't have the prisma cli installed globally)
+
+```bash
+prisma init
+```
+
+- Select `Use existing database`
+
+```bash
+? Set up a new Prisma server or deploy to an existing server? (Use arrow keys)
+
+  Set up a new Prisma server for local development (based on docker-compose):
+❯ Use existing database      Connect to existing database
+  Create new database        Set up a local database using Docker
+
+  Or deploy to an existing Prisma server:
+  Demo server                Hosted demo environment incl. database
+  Use other server           Manually provide endpoint of a running Prisma server
+```
+
+- Select the kind of database you want to introspect
+
+```bash
+? What kind of database do you want to deploy to? (Use arrow keys)
+❯ MySQL             MySQL compliant databases like MySQL or MariaDB
+  PostgreSQL        PostgreSQL database
+  MongoDB           Mongo Database
+```
+
+- Follow the rest of the CLI workflow. For PostgreSQL, here's what you might expect
+
+```bash
+? Does your database contain existing data? Yes
+? Enter database host localhost
+? Enter database port 5432
+? Enter database user prisma
+? Enter database password prisma
+? Enter database name (the database includes the schema) prisma
+? Use SSL? No
+? Please select the schema you want to introspect default$default
+Introspecting database default$default 703ms
+Created datamodel definition based on 11 tables.
+? Select the programming language for the generated Prisma client Don't generate
+
+Created 3 new files:
+
+  prisma.yml           Prisma service definition
+  datamodel.prisma    GraphQL SDL-based datamodel (foundation for database)
+  docker-compose.yml   Docker configuration file
+``
+```
+
+- Once you're done, run the Yoga bootsrapper tool
+
+```bash
+yarn create yoga
+```
+
+or
+
+```bash
+npm init yoga
+```
+
+- Select `Start from an existing database`
+
+```bash
+? Start from scratch or from an existing database?
+  Start from scratch
+❯ Start from an existing database
+```
+
+- Select the `Query` and `Mutation` fields you want to expose (press `a` to select all)
+
+```bash
+? Select the types and fields you would like to expose (Press <space> to select, <a> to toggle all, <
+i> to invert selection)
+ Query
+❯◯ user
+ ◯ users
+ ◯ usersConnection
+ ◯ post
+ ◯ posts
+ ◯ postsConnection
+(Move up and down to reveal more choices)
+```
+
+- Run `yarn prisma deploy`
+- Run `yarn dev` or `npm run dev`
+- You're ready to start 🚀

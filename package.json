@@ -10,7 +10,9 @@
     "reset": "yarn clean && yarn bootstrap",
     "build": "lerna run build",
     "build:ci": "lerna run build:ci",
-    "lint": "lerna exec -- npm run lint"
+    "lint": "lerna exec -- npm run lint",
+    "docz:dev": "docz dev",
+    "docz:build": "docz build"
   },
   "workspaces": [
     "packages/*",
@@ -18,6 +20,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "docz": "latest",
+    "docz-theme-default": "latest",
     "lerna": "3.13.1"
   }
 }
