@@ -32,7 +32,7 @@
     "pretty-error": "2.2.0-rc.1",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3333",
-    "yargs": "^12.0.5"
+    "yargs": "^13.0.0"
   },
   "devDependencies": {
     "@types/chokidar": "1.7.5",
@@ -43,7 +43,7 @@
     "@types/js-yaml": "3.12.0",
     "@types/node": "10.14.5",
     "@types/pluralize": "0.0.29",
-    "@types/yargs": "12.0.9",
+    "@types/yargs": "13.0.0",
     "tslint-config-prettier": "1.17.0",
     "tslint-config-standard": "8.0.1"
   },
