@@ -64,7 +64,7 @@ export async function watch(env?: string): Promise<void> {
 
         if (filesToReloadBatched.length === 2) {
           // TODO: Do not invalidate everything, only the necessary stuff
-          info = importYogaConfig({ invalidate: true, env})
+          info = importYogaConfig({ invalidate: true, env })
           filesToReloadBatched = []
         } else {
           return Promise.resolve(true)
@@ -155,10 +155,10 @@ function importArtifacts(
   let types: any = null
 
   if (existsSync(resolversIndexPath)) {
-    types = importFile(resolversIndexPath)
+    types = importFile(resolversIndexPath, undefined, true)
   } else {
     types = findFileByExtension(resolversPath, '.ts').map(file =>
-      importFile(file),
+      importFile(file, undefined, true),
     )
   }
 
@@ -166,7 +166,7 @@ function importArtifacts(
   let express = undefined
 
   if (contextPath !== undefined) {
-    context = importFile(contextPath, 'default')
+    context = importFile(contextPath, 'default', true)
 
     if (typeof context !== 'function') {
       throw new Error(`${contextPath} must default export a function`)
@@ -174,7 +174,7 @@ function importArtifacts(
   }
 
   if (expressPath !== undefined) {
-    express = importFile(expressPath, 'default')
+    express = importFile(expressPath, 'default', true)
 
     if (typeof express !== 'function') {
       throw new Error(`${expressPath} must default export a function`)
