@@ -10,7 +10,7 @@
     "lint": "echo linting disabled"
   },
   "dependencies": {
-    "yoga": "0.0.18"
+    "yoga": "0.0.20"
   },
   "devDependencies": {
     "@types/graphql": "^14.0.4",
