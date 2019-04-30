@@ -53,9 +53,10 @@ export async function watch(env?: string): Promise<void> {
       info.datamodelInfoDir,
       info.prismaClientDir,
     ),
-  }).on('change', async fileName => {
+  }).on('raw', async (eventName, fileName) => {
     try {
       if (
+        eventName === 'change' &&
         info.yogaConfig.prisma &&
         (fileName === path.join(info.prismaClientDir!, 'index.ts') ||
           fileName === path.join(info.datamodelInfoDir!, 'datamodel-info.ts'))
@@ -70,21 +71,24 @@ export async function watch(env?: string): Promise<void> {
           return Promise.resolve(true)
         }
       }
-      logger.clearConsole()
-      logger.info('Compiling')
 
-      const { server, startServer, stopServer } = getYogaServer(info)
+      if (eventName === 'change' || eventName === 'unlink') {
+        logger.clearConsole()
+        logger.info('Compiling')
 
-      if (oldServer !== undefined) {
-        await stopServer(oldServer)
+        const { server, startServer, stopServer } = getYogaServer(info)
+
+        if (oldServer !== undefined) {
+          await stopServer(oldServer)
+        }
+
+        const serverInstance = await server()
+
+        logger.clearConsole()
+        logger.done('Compiled succesfully')
+
+        oldServer = await startServer(serverInstance)
       }
-
-      const serverInstance = await server()
-
-      logger.clearConsole()
-      logger.done('Compiled succesfully')
-
-      oldServer = await startServer(serverInstance)
     } catch (e) {
       console.error(pe.render(e))
     }

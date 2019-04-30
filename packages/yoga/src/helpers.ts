@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import decache from 'decache'
 import * as prettier from 'prettier'
+import { decache } from './decache'
 
 /**
  * Find all files recursively in a directory based on an extension
