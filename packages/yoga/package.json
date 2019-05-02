@@ -22,7 +22,7 @@
     "chokidar": "^2.1.1",
     "create-yoga": "0.0.2",
     "decache": "^4.5.1",
-    "dotenv": "^7.0.0",
+    "dotenv": "^8.0.0",
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
     "inquirer": "^6.2.1",
     "js-yaml": "^3.12.1",
