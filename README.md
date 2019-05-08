@@ -23,7 +23,7 @@ We take care of the boilerplate, you focus on the business logic.
 
 ### What sort of abstraction does Yoga provide ?
 
-Yoga is shipped with several technologies embedded such as a **GraphQL server**, a **database** to persist your data, and a **[library](https://graphql-nexus.com/)** to easily maintain and scale your server.
+Yoga is shipped with several technologies embedded such as a **GraphQL server**, a **database** to persist your data, and a **[library](https://nexus.js.org/)** to easily maintain and scale your server.
 
 Thanks to _opinionated conventions_, Yoga offers built-in integration tools to better your daily workflows when crafting your GraphQL server:
 
