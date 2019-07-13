@@ -44,7 +44,7 @@
     "@types/parse-github-url": "1.0.0",
     "@types/request": "2.48.1",
     "@types/rimraf": "2.0.2",
-    "@types/tar": "4.0.0",
+    "@types/tar": "4.0.3",
     "@types/tmp": "0.1.0",
     "@types/update-notifier": "2.5.0",
     "ts-node": "8.1.0",
