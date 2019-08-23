@@ -21,7 +21,7 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "execa": "^1.0.0",
-    "inquirer": "^6.2.0",
+    "inquirer": "^7.0.0",
     "inquirer-path": "^1.0.0-beta5",
     "js-yaml": "^3.12.2",
     "meow": "^5.0.0",
