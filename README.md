@@ -28,7 +28,7 @@ Yoga is shipped with several technologies embedded such as a **GraphQL server**,
 Thanks to _opinionated conventions_, Yoga offers built-in integration tools to better your daily workflows when crafting your GraphQL server:
 
 - Speed-up your productivity with the **interactive scaffolding commands**.
-- **Deploy anywhere** with the build command to deploy to any plateform
+- **Deploy anywhere** with the build command to deploy to any platform
 - Solve the usual **N+1 problem with ease** thanks to the integrated built-in dataloading helpers
 - Optimized typescript **live reload**
 - Easily **handle authentication and permissions**
@@ -150,7 +150,7 @@ Options:
 | --------------------------- | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resolversPath`                  | `string` | `./src/graphql/`  | Path to the directory where your resolvers are defined. **If provided, path has to exist.** |
 | `contextPath` | `string` | `./src/context.ts` | Path to your `context.ts` file. **If provided, path has to exist.** |
-| `ejectFilePath` | `string` | `./src/server.ts` | Path to an `server.ts` file to eject from default configuration `yoga.config.ts`. When provided, all other configuration properties are ignored and should be configured programatically. **If provided, path has to exist.** |
+| `ejectFilePath` | `string` | `./src/server.ts` | Path to an `server.ts` file to eject from default configuration `yoga.config.ts`. When provided, all other configuration properties are ignored and should be configured programmatically. **If provided, path has to exist.** |
 | `output` | [`InputOutputFilesConfig`](/packages/yoga/src/types.ts#L25) | See below. | Configuration for the outputted files (schema, typings, etc). |
 | `prisma` | [`InputPrismaConfig`](/packages/yoga/src/types.ts#L9) | See below. | Configuration for the Prisma integration. |
 
